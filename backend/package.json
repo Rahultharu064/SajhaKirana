@@ -1,0 +1,32 @@
+{
+  "name": "sajilokirana-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "node src/server.ts",
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "dev": "nodemon --watch \"src/**/*.ts\" --exec \"npx tsx src/server.ts\"",
+    "prisma:generate": "prisma generate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@prisma/client": "^6.19.0",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.10.1",
+    "prisma": "^6.19.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "http": "^0.0.1-security",
+    "joi": "^18.0.2",
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.11"
+  }
+}
