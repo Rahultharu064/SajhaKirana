@@ -9,8 +9,34 @@ export const createProduct = async (
   next: NextFunction
 ) => {
   try {
-    const { title, slug, description, price, mrp, stock, categoryId, isActive } =
+    const { title, slug, description, price, mrp, stock, categoryId, isActive, sku } =
       req.body;
+
+    // Parse and validate input types
+    const parsedPrice = parseFloat(price);
+    const parsedMrp = parseFloat(mrp);
+    const parsedStock = parseInt(stock);
+    const parsedCategoryId = parseInt(categoryId);
+
+    if (isNaN(parsedPrice) || isNaN(parsedMrp) || isNaN(parsedStock) || isNaN(parsedCategoryId)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "INVALID_INPUT",
+          message: "Invalid numeric values for price, mrp, stock, or categoryId",
+        },
+      });
+    }
+
+    if (!sku || typeof sku !== "string") {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "INVALID_SKU",
+          message: "SKU is required and must be a string",
+        },
+      });
+    }
 
     // Handle file uploads
     const files = (req as any).files;
@@ -64,7 +90,7 @@ export const createProduct = async (
 
     // Verify category exists
     const category = await prismaClient.category.findUnique({
-      where: { id: categoryId },
+      where: { id: parsedCategoryId },
     });
 
     if (!category) {
@@ -84,11 +110,12 @@ export const createProduct = async (
       data: {
         title,
         slug,
+        sku,
         description,
-        price,
-        mrp,
-        stock,
-        categoryId,
+        price: parsedPrice,
+        mrp: parsedMrp,
+        stock: parsedStock,
+        categoryId: parsedCategoryId,
         images: JSON.stringify(imagePaths),
         isActive: isActive !== undefined ? isActive : true,
       },
@@ -195,7 +222,7 @@ export const getAllProducts = async (
     ]);
 
     // Parse images for all products
-    const productsResponse = products.map((product) => ({
+    const productsResponse = products.map((product: any) => ({
       ...product,
       images: JSON.parse(product.images),
     }));
@@ -559,7 +586,7 @@ export const searchProducts = async (
     });
 
     // Parse images for all products
-    const productsResponse = products.map((product) => ({
+    const productsResponse = products.map((product: any) => ({
       ...product,
       images: JSON.parse(product.images),
     }));
@@ -647,7 +674,7 @@ export const getProductsByCategory = async (
     ]);
 
     // Parse images for all products
-    const productsResponse = products.map((product) => ({
+    const productsResponse = products.map((product: any) => ({
       ...product,
       images: JSON.parse(product.images),
     }));
@@ -727,7 +754,7 @@ export const bulkImportProducts = async (
       )
     );
 
-    const productsResponse = createdProducts.map((product) => ({
+    const productsResponse = createdProducts.map((product: any) => ({
       ...product,
       images: JSON.parse(product.images),
     }));

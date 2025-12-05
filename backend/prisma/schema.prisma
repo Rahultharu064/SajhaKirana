@@ -10,7 +10,6 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
 
 
@@ -37,6 +36,7 @@ model Product {
   title       String   @unique
   slug        String   @unique
   description String   @db.LongText
+  sku        String   @unique
   price       Float
   mrp         Float
   stock       Int      @default(0)
@@ -62,4 +62,34 @@ model cart {
 
   @@unique([userId, productId])
 
+}
+
+model Inventory {
+  id            Int      @id @default(autoincrement())
+  sku           String   @unique
+  totalStock    Int      @default(0)
+  availableStock Int     @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  reservations  Reservation[]
+}
+
+model Reservation {
+  id        Int             @id @default(autoincrement())
+  orderId   String
+  sku       String
+  quantity  Int
+  status    ReservationStatus @default(RESERVED)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  inventory Inventory        @relation(fields: [sku], references: [sku], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([sku])
+}
+
+enum ReservationStatus {
+  RESERVED
+  COMMITTED
+  RELEASED
 }

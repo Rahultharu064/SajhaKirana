@@ -5,6 +5,7 @@ import productRoutes from "./routes/productRoute";
 import path from "path";
 import { fileURLToPath } from "url";
 import cartRoutes from "./routes/cartRoute";
+import inventoryRoutes from "./routes/inventoryRoute";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,5 +23,6 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/inventory", inventoryRoutes);
 
 export default app;
