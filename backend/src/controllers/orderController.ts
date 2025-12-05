@@ -16,10 +16,24 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
     // In future, can add Address model
     const shippingAddress = req.body.shippingAddress; // JSON in the order
 
-    // Calculate total
+    // Validate and get product details
+    const orderItems = [];
     let total = 0;
     for (const item of items) {
+      const product = await prismaClient.product.findUnique({ where: { sku: item.sku } });
+      if (!product) {
+        return res.status(404).json({ success: false, error: { code: "PRODUCT_NOT_FOUND", message: `Product with SKU ${item.sku} not found` } });
+      }
+      if (product.stock < item.qty) {
+        return res.status(400).json({ success: false, error: { code: "INSUFFICIENT_STOCK", message: `Insufficient stock for ${product.title}` } });
+      }
       total += item.price * item.qty;
+      orderItems.push({
+        productId: product.id,
+        sku: item.sku,
+        quantity: item.qty,
+        price: item.price,
+      });
     }
 
     // Apply coupon if any (placeholder)
@@ -31,10 +45,12 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
     const order = await prismaClient.order.create({
       data: {
         userId: parseInt(userId),
-        items: JSON.stringify(items),
         total,
         paymentMethod,
         shippingAddress: JSON.stringify(shippingAddress),
+        orderItems: {
+          create: orderItems,
+        },
       },
     });
 
@@ -85,7 +101,7 @@ export const getOrder = async (req: Request, res: Response, next: NextFunction) 
     }
     const order = await prismaClient.order.findUnique({
       where: { id: parseInt(id) },
-      include: { payments: true },
+      include: { payments: true, orderItems: { include: { product: true } } },
     });
     if (!order) {
       return res.status(404).json({ success: false, error: { code: "ORDER_NOT_FOUND", message: "Order not found" } });
@@ -106,10 +122,33 @@ export const getUserOrders = async (req: Request, res: Response, next: NextFunct
     const userId = parseInt(userIdStr);
     const orders = await prismaClient.order.findMany({
       where: { userId },
-      include: { payments: true },
+      include: { payments: true, orderItems: { include: { product: true } } },
       orderBy: { createdAt: 'desc' },
     });
     res.status(200).json({ success: true, data: orders });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get all orders (admin)
+export const getAllOrders = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { status, page = 1, limit = 10 } = req.query;
+    const skip = (parseInt(page as string) - 1) * parseInt(limit as string);
+    const where: any = {};
+    if (status) {
+      where.orderStatus = status;
+    }
+    const orders = await prismaClient.order.findMany({
+      where,
+      include: { user: { select: { id: true, name: true, email: true } }, payments: true, orderItems: { include: { product: true } } },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: parseInt(limit as string),
+    });
+    const total = await prismaClient.order.count({ where });
+    res.status(200).json({ success: true, data: orders, pagination: { page: parseInt(page as string), limit: parseInt(limit as string), total } });
   } catch (error) {
     next(error);
   }
@@ -145,6 +184,45 @@ export const cancelOrder = async (req: Request, res: Response, next: NextFunctio
     });
 
     res.status(200).json({ success: true, message: "Order cancelled" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update order status (admin or system)
+export const updateOrderStatus = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const idStr = req.params.id;
+    if (!idStr || isNaN(parseInt(idStr))) {
+      return res.status(400).json({ success: false, error: { code: "INVALID_ID", message: "Invalid order ID" } });
+    }
+    const id = parseInt(idStr);
+    const { status } = req.body;
+
+    const validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ success: false, error: { code: "INVALID_STATUS", message: "Invalid order status" } });
+    }
+
+    const order = await prismaClient.order.findUnique({ where: { id } });
+    if (!order) {
+      return res.status(404).json({ success: false, error: { code: "ORDER_NOT_FOUND", message: "Order not found" } });
+    }
+
+    let updateData: any = { orderStatus: status };
+
+    // Generate OTP when status is shipped
+    if (status === 'shipped' && !order.otp) {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+      updateData.otp = otp;
+    }
+
+    await prismaClient.order.update({
+      where: { id },
+      data: updateData,
+    });
+
+    res.status(200).json({ success: true, message: `Order status updated to ${status}` });
   } catch (error) {
     next(error);
   }

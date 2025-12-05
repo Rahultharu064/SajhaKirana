@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { createOrder, getOrder, getUserOrders, cancelOrder, confirmDelivery } from "../controllers/orderController";
-import { createOrderSchema, confirmDeliverySchema } from "../validators/orderValidator";
+import { createOrder, getOrder, getUserOrders, getAllOrders, cancelOrder, confirmDelivery, updateOrderStatus } from "../controllers/orderController";
+import { createOrderSchema, confirmDeliverySchema, updateOrderStatusSchema } from "../validators/orderValidator";
 import { validate } from "../middlewares/validate";
 
 const orderRoutes = Router();
@@ -13,6 +13,12 @@ orderRoutes.get("/:id", getOrder);
 
 // Get user orders
 orderRoutes.get("/user/:userId", getUserOrders);
+
+// Get all orders (admin)
+orderRoutes.get("/", getAllOrders);
+
+// Update order status (admin)
+orderRoutes.put("/:id/status", validate(updateOrderStatusSchema, "body"), updateOrderStatus);
 
 // Cancel order
 orderRoutes.post("/:id/cancel", cancelOrder);

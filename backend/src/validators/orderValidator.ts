@@ -30,6 +30,15 @@ export const createOrderSchema = Joi.object({
     couponCode: Joi.string().optional(),
 });
 
+// Update order status validation schema
+export const updateOrderStatusSchema = Joi.object({
+    status: Joi.string().valid('pending', 'confirmed', 'shipped', 'delivered', 'cancelled').required().messages({
+        "string.base": "Status must be a string",
+        "any.only": "Status must be one of: pending, confirmed, shipped, delivered, cancelled",
+        "any.required": "Status is required",
+    }),
+});
+
 // Confirm delivery validation schema
 export const confirmDeliverySchema = Joi.object({
     otp: Joi.string().length(6).required().messages({

@@ -21,6 +21,7 @@ model User {
   phone  String?  // added for auth
   password String
   role   String   @default("user")
+  profileImage String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   carts  CartItem[]
@@ -51,6 +52,7 @@ model Product {
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  orderItems  OrderItem[]
 
   @@index([categoryId])
   @@index([slug])
@@ -93,11 +95,26 @@ model Reservation {
   @@index([sku])
 }
 
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  sku       String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([productId])
+}
+
 model Order {
   id              Int      @id @default(autoincrement())
   userId          Int
   user            User     @relation(fields: [userId], references: [id])
-  items           String   @db.LongText // JSON array of {sku, qty, price}
   total           Float
   paymentMethod   String
   paymentStatus   String   @default("pending")
@@ -107,6 +124,7 @@ model Order {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   payments        Payment[]
+  orderItems      OrderItem[]
 
   @@index([userId])
 }

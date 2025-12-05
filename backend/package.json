@@ -13,21 +13,27 @@
   "license": "ISC",
   "devDependencies": {
     "@prisma/client": "^7.1.0",
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.10.1",
+    "@types/nodemailer": "^6.4.17",
     "prisma": "^7.1.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@prisma/adapter-planetscale": "^7.1.0",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "http": "^0.0.1-security",
     "joi": "^18.0.2",
+    "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
+    "nodemailer": "^6.9.15",
     "nodemon": "^3.1.11"
   }
 }

@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import categoryRoutes from "./routes/categoryRoute";
 import productRoutes from "./routes/productRoute";
+import authRoutes from "./routes/authRoute";
 import path from "path";
 import { fileURLToPath } from "url";
 import cartRoutes from "./routes/cartRoute";
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // API Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
