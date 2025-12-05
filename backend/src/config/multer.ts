@@ -6,19 +6,37 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, "../../uploads/categories");
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+// Ensure uploads directories exist
+const categoriesUploadDir = path.join(__dirname, "../../uploads/categories");
+const productsUploadDir = path.join(__dirname, "../../uploads/products");
+
+if (!fs.existsSync(categoriesUploadDir)) {
+    fs.mkdirSync(categoriesUploadDir, { recursive: true });
 }
 
-// Configure storage
-const storage = multer.diskStorage({
+if (!fs.existsSync(productsUploadDir)) {
+    fs.mkdirSync(productsUploadDir, { recursive: true });
+}
+
+// Configure storage for categories
+const categoriesStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, uploadDir);
+        cb(null, categoriesUploadDir);
     },
     filename: (req, file, cb) => {
-        // Generate unique filename: timestamp-randomstring-originalname
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const ext = path.extname(file.originalname);
+        const name = path.basename(file.originalname, ext).replace(/\s+/g, "-");
+        cb(null, `${name}-${uniqueSuffix}${ext}`);
+    }
+});
+
+// Configure storage for products
+const productsStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, productsUploadDir);
+    },
+    filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
         const ext = path.extname(file.originalname);
         const name = path.basename(file.originalname, ext).replace(/\s+/g, "-");
@@ -37,25 +55,43 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
     }
 };
 
-// Create multer upload instance
-export const upload = multer({
-    storage: storage,
+// Create multer upload instances
+export const uploadCategories = multer({
+    storage: categoriesStorage,
     fileFilter: fileFilter,
     limits: {
         fileSize: 5 * 1024 * 1024 // 5MB limit
     }
 });
 
-// Helper function to delete old image file
-export const deleteImageFile = (imagePath: string | null) => {
+export const uploadProducts = multer({
+    storage: productsStorage,
+    fileFilter: fileFilter,
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB limit for products
+    }
+});
+
+// Helper function to delete image files
+export const deleteImageFile = (imagePath: string | null, folder: "categories" | "products" = "categories") => {
     if (!imagePath) return;
 
     try {
-        const fullPath = path.join(__dirname, "../../uploads/categories", path.basename(imagePath));
+        const uploadDir = folder === "products" ? productsUploadDir : categoriesUploadDir;
+        const fullPath = path.join(uploadDir, path.basename(imagePath));
         if (fs.existsSync(fullPath)) {
             fs.unlinkSync(fullPath);
         }
     } catch (error) {
         console.error("Error deleting image file:", error);
     }
+};
+
+// Helper function to delete multiple image files
+export const deleteImageFiles = (imagePaths: string[], folder: "categories" | "products" = "categories") => {
+    if (!Array.isArray(imagePaths)) return;
+
+    imagePaths.forEach((imagePath) => {
+        deleteImageFile(imagePath, folder);
+    });
 };

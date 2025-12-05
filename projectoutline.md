@@ -1,8 +1,47 @@
+KiranaPasal — Complete Wireframe UI & Routes
+
+Purpose: A developer-ready wireframe and route specification for frontend (React + TypeScript + Tailwind) and backend (Node + Express + TypeScript + Prisma + MySQL). Organized step-by-step (MVP → full) and includes UI wireframes, component list, frontend routes, backend REST API endpoints, Socket.IO events, and minimal data model summaries.
+
+Table of contents
+
+Project overview & priorities
+
+UI wireframes (page-by-page) — visual layout descriptions
+
+Component inventory (reusable components)
+
+Frontend routes (React Router paths) + route responsibilities
+
+Backend API endpoints (grouped by service) + sample request/response shapes
+
+Socket.IO events (real-time contracts)
+
+Prisma / Data model summary (key models)
+
+Step-by-step implementation roadmap (what to build at every step)
+
+Developer notes: auth, validation, errors, testing
+
+1. Project overview & priorities
+
+Stack: React (TS) + Tailwind, Node + Express (TS), Prisma + MySQL, Socket.IO, Redis (cache & socket adapter), eSewa & Khalti integration.
+
+Priority order:
+
+Phase 0 (Prep): repo, monorepo setup, shared types, CI, dev db seed
+
+Phase 1 (MVP): Public product pages, Auth, Cart, Checkout, Order creation, Payment (single gateway), Admin basic dashboard, Inventory decrement, Socket notifications for order status
+
+Phase 2: Search filters, wishlist, reviews, coupons, payment reconciliation, CSV import
+
+Phase 3: Offline POS, delivery app, analytics, loyalty, multi-warehouse
+
 2. UI Wireframes (page-by-page)
 
 Below are wireframe descriptions — use them to implement React pages and Tailwind layouts. Each page includes primary sections and expected components.
 
 Public Website (No Login Required)
+
 Home Page — /
 
 Header: logo (left), search bar (center), cart icon & login CTA (right)
@@ -42,6 +81,7 @@ Static Pages
 About /about, Contact /contact, Policies /privacy, /terms, /returns — simple content-centered pages with headings and card layout sections
 
 User (Authenticated) Pages
+
 Auth Pages
 
 Login /auth/login — email/phone and password, OTP button for phone
@@ -97,6 +137,7 @@ Inventory /admin/inventory
 SKU table, stock adjustments modal, import CSV
 
 Coupons /admin/coupons and Promotions /admin/promotions
+
 Settings /admin/settings
 
 Payment keys, tax, delivery charges, theme upload, backup trigger
@@ -217,7 +258,7 @@ POST /auth/request-otp — { phone } → { otpSent }
 
 POST /auth/verify-otp — { phone, otp } → issue tokens
 
-Product & Category Service — /api/products & /api/categories
+Product Service — /api/products
 
 GET /products — query: {q,category,brand,priceMin,priceMax,sort,page,limit} → {items,total}
 
@@ -231,45 +272,9 @@ DELETE /products/:id (admin)
 
 POST /products/import (admin) — CSV import
 
-GET /products/:id/variants — list variants for product
-
-Category endpoints (product-category pairing & routing)
-
-GET /categories — list all categories (supports ?include=subcategories=true)
-
-Response: [{ id, name, slug, parentId, image, description, order }]
-
-GET /categories/:id — get single category (with children and productCount)
-
-GET /categories/slug/:slug — get category by slug (used by frontend route /category/:slug)
-
-POST /categories (admin) — create category
-
-Body: { name, slug?, parentId?, image?, description?, order? }
-
-PUT /categories/:id (admin) — update category
-
-DELETE /categories/:id (admin) — delete category (soft delete recommended)
-
-Category ↔ Product pairing notes:
-
-Each product has a categoryId (primary) and optional categoryIds[] for multi-category tagging.
-
-Frontend product-listing route uses GET /products?category=<slug|id> which resolves slug to id via /categories/slug/:slug on the backend if needed.
-
-Breadcrumbs are built from category parent chain: /categories/:id returns ancestors array for easy breadcrumbs.
+GET /categories — list categories
 
 Inventory Service — /api/inventory
-
-GET /inventory/sku/:sku — {sku,stock}
-
-POST /inventory/adjust (admin) — {sku,qty,type,note}
-
-POST /inventory/reserve — {orderId,items[]} → reserves stock
-
-POST /inventory/commit — {orderId} → commit reserved
-
-POST /inventory/release — {orderId} → release reservation — /api/inventory
 
 GET /inventory/sku/:sku — {sku,stock}
 
@@ -334,3 +339,51 @@ POST /delivery/login
 GET /delivery/orders — assigned to delivery user
 
 POST /delivery/orders/:id/status — update with OTP check
+
+Error format (consistent):
+
+{ "success": false, "error": { "code": "INVALID_REQUEST", "message": "..." } }
+
+Success format:
+
+{ "success": true, "data": { ... } }
+
+6. Socket.IO events (contracts)
+
+Use namespaced events or include type in payloads. Authenticate socket with JWT on connection query param.
+
+Client -> Server
+
+socket.emit('order:subscribe', { orderId }) — subscribe to order updates
+
+socket.emit('chat:send', { toUserId, message }) — send chat message
+
+Server -> Client
+
+order:update — payload: { orderId, status, timestamp, meta }
+
+inventory:low — { sku, stock }
+
+chat:message — { fromUserId, message, timestamp }
+
+admin:metrics — periodic dashboard push for admin
+
+Rooms: user:<userId>, order:<orderId>, admin:alerts
+
+7. Prisma / Data model summary (high-level)
+
+Only key fields — map these into schema.prisma when ready.
+
+User: id, name, email, phone, passwordHash, role, createdAt
+
+Product: id, title, slug, description, images(json), categoryId, isActive, createdAt
+
+Variant: id, productId, sku, attributes(json), price, mrp, stock
+
+InventoryAdjustment: id, sku, qty, type, note, createdAt
+
+CartItem: id, userId, sku, qty, price, addedAt
+
+Order: id, userId, items(json), total, paymentMethod, paymentStatus, orderStatus, shippingAddress(json), otp, createdAt
+
+Payment: id, orderId, gateway, txnId,
