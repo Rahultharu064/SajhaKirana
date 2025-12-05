@@ -12,11 +12,11 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@prisma/client": "^6.19.0",
+    "@prisma/client": "^4.16.2",
     "@types/express": "^5.0.6",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.10.1",
-    "prisma": "^6.19.0",
+    "prisma": "^4.16.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },

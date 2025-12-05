@@ -50,3 +50,16 @@ model Product {
   @@index([categoryId])
   @@index([slug])
 }
+
+model cart {
+  id      Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  quantity  Int      @default(1)
+  price    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+
+}
