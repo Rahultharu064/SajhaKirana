@@ -15,11 +15,16 @@ datasource db {
 
 
 model User {
-  id   Int   @id @default(autoincrement())
+  id     Int      @id @default(autoincrement())
   name   String
-  email  String @unique
-  password String 
-  
+  email  String   @unique
+  phone  String?  // added for auth
+  password String
+  role   String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  carts  CartItem[]
+  orders Order[]
 
 }
 
@@ -51,17 +56,17 @@ model Product {
   @@index([slug])
 }
 
-model cart {
+model CartItem {
   id      Int      @id @default(autoincrement())
-  userId    Int
-  productId Int
-  quantity  Int      @default(1)
-  price    Float
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId  Int
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sku     String
+  quantity Int     @default(1)
+  price   Float
+  addedAt DateTime @default(now())
 
-  @@unique([userId, productId])
-
+  @@unique([userId, sku])
+  @@index([userId])
 }
 
 model Inventory {
@@ -86,6 +91,38 @@ model Reservation {
 
   @@index([orderId])
   @@index([sku])
+}
+
+model Order {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id])
+  items           String   @db.LongText // JSON array of {sku, qty, price}
+  total           Float
+  paymentMethod   String
+  paymentStatus   String   @default("pending")
+  orderStatus     String   @default("pending")
+  shippingAddress String   @db.LongText // JSON
+  otp             String?  // for delivery confirmation
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  payments        Payment[]
+
+  @@index([userId])
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id])
+  gateway   String   // e.g., 'esewa', 'khalti'
+  txnId     String?  @unique
+  amount    Float
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([orderId])
 }
 
 enum ReservationStatus {

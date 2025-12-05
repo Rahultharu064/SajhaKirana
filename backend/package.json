@@ -1,8 +1,8 @@
 {
-  "name": "sajilokirana-backend",
+  "name": "sajha-kirana-backend",
   "version": "1.0.0",
   "type": "module",
-  "main": "node src/server.ts",
+  "main": "src/server.ts",
   "scripts": {
     "start": "tsx src/server.ts",
     "dev": "nodemon --watch \"src/**/*.ts\" --exec \"npx tsx src/server.ts\"",

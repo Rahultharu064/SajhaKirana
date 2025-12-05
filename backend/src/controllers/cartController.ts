@@ -1,29 +1,28 @@
 import type { Request, Response , NextFunction } from "express";
 import { prismaClient } from "../config/client";
 // Add item to cart
-interface cartitem {
+interface CartItemRequest {
     userId: string;
-    productId: string;
+    sku: string;
     quantity: string;
 }
 
 
 export const addItemToCart = async ( req: Request , res: Response , next: NextFunction ) => {
     try {
-        const { userId , productId, quantity } = req.body as cartitem;
+        const { userId , sku, quantity } = req.body as CartItemRequest;
         const userIdNum = parseInt(userId);
-        const productIdNum = parseInt(productId);
         const quantityNum = parseInt(quantity);
         // Check if the product already exists in the user's cart
-        const existingCartItem = await prismaClient.cart.findFirst({
+        const existingCartItem = await prismaClient.cartItem.findFirst({
             where: {
                 userId: userIdNum,
-                productId: productIdNum,
+                sku: sku,
             },
         });
         if (existingCartItem) {
             // If it exists, update the quantity
-            const updatedCartItem = await prismaClient.cart.update({
+            const updatedCartItem = await prismaClient.cartItem.update({
                 where: { id: existingCartItem.id },
                 data: { quantity: existingCartItem.quantity + quantityNum },
             });
@@ -32,16 +31,16 @@ export const addItemToCart = async ( req: Request , res: Response , next: NextFu
         else {
             // Get product price
             const product = await prismaClient.product.findUnique({
-                where: { id: productIdNum },
+                where: { sku: sku },
             });
             if (!product) {
                 return res.status(404).json({ error: "Product not found" });
             }
             // If it doesn't exist, create a new cart item
-            const newCartItem = await prismaClient.cart.create({
+            const newCartItem = await prismaClient.cartItem.create({
                 data: {
                     userId: userIdNum,
-                    productId: productIdNum,
+                    sku: sku,
                     quantity: quantityNum,
                     price: product.price,
                 },
@@ -58,7 +57,7 @@ export const removeItemFromCart = async ( req: Request , res: Response , next: N
         const { cartItemId } = req.params;
         const cartItemIdNum = parseInt(cartItemId as string);
         // Delete the cart item
-        await prismaClient.cart.delete({
+        await prismaClient.cartItem.delete({
             where: { id: cartItemIdNum },
         });
         res.status(200).json({ message: "Item removed from cart successfully" });
@@ -67,4 +66,19 @@ export const removeItemFromCart = async ( req: Request , res: Response , next: N
     }
 };
 
-
+export const getCart = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { userId } = req.params;
+        const userIdNum = parseInt(userId as string);
+        const cartItems = await prismaClient.cartItem.findMany({
+            where: { userId: userIdNum },
+            include: {
+                user: false, // don't include user data
+            },
+        });
+        const totals = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        res.status(200).json({ items: cartItems, totals });
+    } catch (error) {
+        next(error);
+    }
+};

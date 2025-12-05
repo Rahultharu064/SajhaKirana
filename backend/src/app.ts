@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import cartRoutes from "./routes/cartRoute";
 import inventoryRoutes from "./routes/inventoryRoute";
+import orderRoutes from "./routes/orderRoute";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,5 +25,6 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/inventory", inventoryRoutes);
+app.use("/api/orders", orderRoutes);
 
 export default app;

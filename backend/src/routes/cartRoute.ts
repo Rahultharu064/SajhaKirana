@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { addItemToCart , removeItemFromCart} from "../controllers/cartController";
-import { addtoCartSchema , removeFromCartSchema } from "../validators/cartValidator";
+import { addItemToCart, removeItemFromCart, getCart } from "../controllers/cartController";
+import { addtoCartSchema, removeFromCartSchema } from "../validators/cartValidator";
 import { validate } from "../middlewares/validate";
 
-
 const cartRoutes = Router();
+
+// Get cart
+cartRoutes.get("/:userId", getCart); // No validation needed
 
 // Add item to cart with validation
 cartRoutes.post(
@@ -12,11 +14,12 @@ cartRoutes.post(
     validate(addtoCartSchema, "body"),
     addItemToCart
 );
+
 // Remove item from cart with validation
 cartRoutes.post(
     "/remove",
     validate(removeFromCartSchema, "body"),
     removeItemFromCart
 );
-export default cartRoutes;
 
+export default cartRoutes;
