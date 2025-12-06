@@ -21,7 +21,7 @@ const COOKIE_OPTIONS ={
 export const registerUser = async (req:Request , res:Response , next:NextFunction) : Promise<void>=> {
 
     try {
-        const { name  , email , password , phone, profileImage}: { name:string , email:string , password:string, phone:string, profileImage?:string} = req.body;
+        const { name  , email , password , phone}: { name:string , email:string , password:string, phone:string} = req.body;
 
         // Check if user already exists
         const existinguiser= await prismaClient.user.findUnique({where: {email}  })
@@ -37,7 +37,6 @@ export const registerUser = async (req:Request , res:Response , next:NextFunctio
                 email,
                 phone,
                 password: hashedPassword,
-                profileImage: profileImage ?? null,
             },
         });
         // Generate JWT token
@@ -54,8 +53,7 @@ export const registerUser = async (req:Request , res:Response , next:NextFunctio
                 name:newUser.name,
                 email:newUser.email,
                 phone:newUser.phone,
-                role:newUser.role,
-                profileImage:newUser.profileImage
+                role:newUser.role
             }
         })
         return ;
@@ -93,6 +91,13 @@ export const registerUser = async (req:Request , res:Response , next:NextFunctio
                 res.status(400).json({ message:"Invalid creditendials"});
                 return ;
             }
+
+            // Update last login timestamp
+            await prismaClient.user.update({
+                where: { id: user.id },
+                data: { lastLogin: new Date() }
+            });
+
             // Generate JWT token
             const token = jwt.sign({
                 userId: user.id,
@@ -107,8 +112,8 @@ export const registerUser = async (req:Request , res:Response , next:NextFunctio
                     name:user.name,
                     email:user.email,
                     phone:user.phone,
-                    role:user.role,
-                    profileImage:user.profileImage
+                    address:user.address,
+                    role:user.role
                 }
                 })
                 return;}
@@ -157,8 +162,10 @@ export const registerUser = async (req:Request , res:Response , next:NextFunctio
                             name:user.name,
                             email:user.email,
                             phone:user.phone,
+                            address:user.address,
                             role:user.role,
-                            profileImage:user.profileImage
+                            profileImage:user.profileImage,
+                            lastLogin:user.lastLogin
                         }
                     });
                     return ;
@@ -177,12 +184,29 @@ export const registerUser = async (req:Request , res:Response , next:NextFunctio
                         res.status(401).json({ message:"Unauthorized"});
                         return ;
                     }
-                    const { name, phone, profileImage }: { name?:string, phone?:string, profileImage?:string } = req.body;
+                    const { name, phone, address }: { name?:string, phone?:string, address?:string } = req.body;
 
                     const updateData: any = {};
                     if (name) updateData.name = name;
                     if (phone) updateData.phone = phone;
-                    if (profileImage !== undefined) updateData.profileImage = profileImage;
+                    if (address !== undefined) updateData.address = address;
+
+                    // Handle profile image upload
+                    if (req.file) {
+                        // Get current user to check for existing profile image
+                        const currentUser = await prismaClient.user.findUnique({
+                            where: { id: userId }
+                        });
+
+                        // Delete old profile image if exists
+                        if (currentUser?.profileImage) {
+                            const { deleteImageFile } = await import("../config/multer");
+                            deleteImageFile(currentUser.profileImage, "profiles");
+                        }
+
+                        // Set new profile image path
+                        updateData.profileImage = req.file.filename;
+                    }
 
                     const updatedUser = await prismaClient.user.update({
                         where: { id: userId },
@@ -196,8 +220,10 @@ export const registerUser = async (req:Request , res:Response , next:NextFunctio
                             name:updatedUser.name,
                             email:updatedUser.email,
                             phone:updatedUser.phone,
+                            address:updatedUser.address,
                             role:updatedUser.role,
-                            profileImage:updatedUser.profileImage
+                            profileImage:updatedUser.profileImage,
+                            lastLogin:updatedUser.lastLogin
                         }
                     });
                     return ;

@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 // Ensure uploads directories exist
 const categoriesUploadDir = path.join(__dirname, "../../uploads/categories");
 const productsUploadDir = path.join(__dirname, "../../uploads/products");
+const profilesUploadDir = path.join(__dirname, "../../uploads/profiles");
 
 if (!fs.existsSync(categoriesUploadDir)) {
     fs.mkdirSync(categoriesUploadDir, { recursive: true });
@@ -16,6 +17,10 @@ if (!fs.existsSync(categoriesUploadDir)) {
 
 if (!fs.existsSync(productsUploadDir)) {
     fs.mkdirSync(productsUploadDir, { recursive: true });
+}
+
+if (!fs.existsSync(profilesUploadDir)) {
+    fs.mkdirSync(profilesUploadDir, { recursive: true });
 }
 
 // Configure storage for categories
@@ -41,6 +46,19 @@ const productsStorage = multer.diskStorage({
         const ext = path.extname(file.originalname);
         const name = path.basename(file.originalname, ext).replace(/\s+/g, "-");
         cb(null, `${name}-${uniqueSuffix}${ext}`);
+    }
+});
+
+// Configure storage for profiles
+const profilesStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, profilesUploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const ext = path.extname(file.originalname);
+        const name = path.basename(file.originalname, ext).replace(/\s+/g, "-");
+        cb(null, `profile-${uniqueSuffix}${ext}`);
     }
 });
 
@@ -72,12 +90,27 @@ export const uploadProducts = multer({
     }
 });
 
+export const uploadProfiles = multer({
+    storage: profilesStorage,
+    fileFilter: fileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit for profiles
+    }
+});
+
 // Helper function to delete image files
-export const deleteImageFile = (imagePath: string | null, folder: "categories" | "products" = "categories") => {
+export const deleteImageFile = (imagePath: string | null, folder: "categories" | "products" | "profiles" = "categories") => {
     if (!imagePath) return;
 
     try {
-        const uploadDir = folder === "products" ? productsUploadDir : categoriesUploadDir;
+        let uploadDir: string;
+        if (folder === "products") {
+            uploadDir = productsUploadDir;
+        } else if (folder === "profiles") {
+            uploadDir = profilesUploadDir;
+        } else {
+            uploadDir = categoriesUploadDir;
+        }
         const fullPath = path.join(uploadDir, path.basename(imagePath));
         if (fs.existsSync(fullPath)) {
             fs.unlinkSync(fullPath);
@@ -88,7 +121,7 @@ export const deleteImageFile = (imagePath: string | null, folder: "categories" |
 };
 
 // Helper function to delete multiple image files
-export const deleteImageFiles = (imagePaths: string[], folder: "categories" | "products" = "categories") => {
+export const deleteImageFiles = (imagePaths: string[], folder: "categories" | "products" | "profiles" = "categories") => {
     if (!Array.isArray(imagePaths)) return;
 
     imagePaths.forEach((imagePath) => {

@@ -12,6 +12,7 @@ import {
 } from "../controllers/authController";
 import { validate } from "../middlewares/validate";
 import { authMiddleware } from "../middlewares/authMiddleware";
+import { uploadProfiles } from "../config/multer";
 import {
   registerSchema,
   loginSchema,
@@ -35,7 +36,7 @@ authRoutes.post("/logout", authMiddleware, logoutUser);
 authRoutes.get("/me", authMiddleware, getCurrentUser);
 
 // Update user profile (protected)
-authRoutes.put("/profile", authMiddleware, updateProfile);
+authRoutes.put("/profile", uploadProfiles.single("profileImage"), authMiddleware, updateProfile);
 
 // Forget password (send reset link)
 authRoutes.post("/forget-password", validate(passwordResetSchema, "body"), forgetPassword);

@@ -19,9 +19,11 @@ model User {
   name   String
   email  String   @unique
   phone  String?  // added for auth
+  address String? // user address
   password String
-  role   String   @default("user")
+  role   String   @default("customer") // roles: admin, customer
   profileImage String?
+  lastLogin DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   carts  CartItem[]
