@@ -84,9 +84,9 @@ User (Authenticated) Pages
 
 Auth Pages
 
-Login /auth/login — email/phone and password, OTP button for phone
+Login /auth/login — email and password, OTP button for phone
 
-Register /auth/register — name, email, phone, password, confirm
+Register /auth/register — name, email, password, confirm
 
 Forgot Password /auth/forgot
 
@@ -246,17 +246,17 @@ Provide RESTful endpoints, JSON responses, use Authorization: Bearer <token> for
 
 Auth Service — /api/auth
 
-POST /auth/register — body: {name,email,phone,password} → 201 { user, accessToken, refreshToken }
+POST /auth/register — body: {name,email, password} → 201 { user, accessToken, refreshToken }
 
-POST /auth/login — {emailOrPhone,password} → { accessToken, refreshToken }
+POST /auth/login — {email,password} → { accessToken, refreshToken }
 
 POST /auth/refresh — { refreshToken } → { accessToken }
 
 POST /auth/logout — invalidate refresh
 
-POST /auth/request-otp — { phone } → { otpSent }
+POST /auth/request-otp — { email } → { otpSent }
 
-POST /auth/verify-otp — { phone, otp } → issue tokens
+POST /auth/verify-otp — { email, otp } → issue tokens
 
 Product Service — /api/products
 

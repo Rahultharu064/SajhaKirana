@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, MapPin, Calendar, LogOut, Camera,  Save } from 'lucide-react';
 import toast from 'react-hot-toast';
-import type { RootState, AppDispatch } from '../Redux/store';
-import { getCurrentUserAsync, logoutAsync, updateProfileAsync } from '../Redux/slices/authSlice';
+import type { RootState, AppDispatch } from '../../Redux/store';
+import { getCurrentUserAsync, logoutAsync, updateProfileAsync } from '../../Redux/slices/authSlice';
 
 const Profile: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();

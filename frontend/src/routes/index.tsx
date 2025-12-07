@@ -1,10 +1,16 @@
 
+// import Home from "../components/Home/Home.tsx";
 import Register from "../components/Auth/Register.tsx";
 import Login from "../components/Auth/Login.tsx";
-import Profile from "../components/Profile.tsx";
+import Profile from "../components/Auth/Profile.tsx";
 import ProfileEdit from "../components/Auth/ProfileEdit.tsx";
+import AdminDashboard from "../pages/AdminDashboard/AdminDashboard.tsx";
 
 const routes = [
+    // {
+    //     path: "/",
+    //     element: <Home />,
+    // },
     {
         path: "/register",
         element: <Register />,
@@ -20,6 +26,10 @@ const routes = [
     {
         path: "/profile/edit",
         element: <ProfileEdit />,
+    },
+    {
+        path: "/admin",
+        element: <AdminDashboard />,
     },
 ];
 
