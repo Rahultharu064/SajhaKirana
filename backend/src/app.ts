@@ -22,6 +22,9 @@ app.use(express.json());
 
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:5173",
+  "http://localhost:3000", // if using create-react-app default port
+  "http://localhost:8080", // if using other dev servers
+  "http://localhost:5003", // api server itself
 ];
 
 app.use(
@@ -30,6 +33,11 @@ app.use(
       // allow requests with no origin (like mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
       if (allowedOrigins.indexOf(origin) === -1) {
+        console.log(`CORS: Allowing access from ${origin}`);
+        // For development, allow any localhost origin
+        if (origin.startsWith('http://localhost:')) {
+          return callback(null, true);
+        }
         const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
         return callback(new Error(msg), false);
       }

@@ -160,11 +160,15 @@ export const logoutUser = async (req: Request, res: Response, next: NextFunction
 //get current user
 export const getCurrentUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const userId = (req as any).user.userId;
+        console.log('getCurrentUser: Request user object:', (req as any).user);
+        const userId = (req as any).user?.id;
         if (!userId) {
-            res.status(401).json({ message: "Unauthorized" });
+            console.log('getCurrentUser: No userId found, returning 401');
+            res.status(401).json({ message: "Unauthorized", debug: 'No userId in request.user' });
             return;
         }
+
+        console.log('getCurrentUser: Fetching user with ID:', userId);
         const user = await prismaClient.user.findUnique({
             where: { id: userId }
         });
@@ -197,7 +201,7 @@ export const getCurrentUser = async (req: Request, res: Response, next: NextFunc
 //update user profile
 export const updateProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const userId = (req as any).user.userId;
+        const userId = (req as any).user.id;
         if (!userId) {
             res.status(401).json({ message: "Unauthorized" });
             return;
@@ -397,7 +401,7 @@ export const verifyEmail = async (req: Request, res: Response, next: NextFunctio
 // send verification email
 export const sendVerificationEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const userId = (req as any).user.userId;
+        const userId = (req as any).user.id;
         const user = await prismaClient.user.findUnique({ where: { id: userId } });
         if (!user) {
             res.status(404).json({ message: "User not found" });

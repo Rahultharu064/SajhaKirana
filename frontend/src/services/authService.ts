@@ -8,7 +8,9 @@ export const register =(data:{name: string, email:string , password:string, phon
 }
 
 
-export const getCurrentUser =() =>{
+export const getCurrentUser =() => {
+    const token = localStorage.getItem('token');
+    console.log('getCurrentUser: Token from localStorage:', token);
     return api.get('/auth/me');
 }
 
@@ -49,4 +51,3 @@ export const verifyEmail =(token: string) =>{
 export const sendVerificationEmail =() =>{
     return api.post('/auth/send-verification');
 }
-

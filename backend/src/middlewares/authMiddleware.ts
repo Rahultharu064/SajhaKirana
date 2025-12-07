@@ -20,6 +20,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
 
   // No token found
   if (!token) {
+    console.log('AuthMiddleware: No token found in request');
     return res.status(401).json({ error: "No token provided" });
   }
 
@@ -30,16 +31,22 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
       role: string;
     };
 
+    console.log('AuthMiddleware: Token decoded successfully', { userId: decoded.userId, role: decoded.role });
+
     // Attach user object to request
-    req.user = {
+    (req as any).user = {
       id: decoded.userId,
       role: decoded.role,
     };
 
+    console.log('AuthMiddleware: User attached to request', (req as any).user);
+
     return next();
 
   } catch (error) {
-    return res.status(401).json({ error: "Invalid token" });
+    console.log('AuthMiddleware: Token verification failed', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unexpected error';
+    return res.status(401).json({ error: "Invalid token", details: errorMessage });
   }
 };
 
