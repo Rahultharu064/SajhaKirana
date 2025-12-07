@@ -21,18 +21,20 @@ export const registerSchema = Joi.object({
         "string.min": "Password must be at least 6 characters",
         "any.required": "Password is required",
     }),
-    phone: Joi.string().pattern(/^[0-9]{10,15}$/).optional().messages({
+    phone: Joi.alternatives().try(
+        Joi.string().allow('').length(0),
+        Joi.string().pattern(/^[0-9]{10,15}$/)
+    ).optional().messages({
         "string.base": "Phone number must be a string",
         "string.pattern.base": "Phone number must be between 10 to 15 digits",
     }),
 })
 // Login validation schema
 export const loginSchema = Joi.object({
-    email: Joi.string().email().required().messages({
-        "string.base": "Email must be a string",
-        "string.email": "Email must be a valid email",
-        "string.empty": "Email is required",
-        "any.required": "Email is required",
+    identifier: Joi.string().required().messages({
+        "string.base": "Identifier must be a string",
+        "string.empty": "Identifier is required",
+        "any.required": "Identifier is required",
     }),
     password: Joi.string().required().messages({
         "string.base": "Password must be a string",

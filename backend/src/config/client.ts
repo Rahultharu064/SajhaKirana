@@ -1,8 +1,9 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
-import { PrismaPlanetScale } from "@prisma/adapter-planetscale";
 
-const adapter = new PrismaPlanetScale({ url: process.env.DATABASE_URL! });
-const prisma = new PrismaClient({ adapter });
+// Initialize Prisma Client without adapter to avoid connection pool issues
+const prisma = new PrismaClient({
+    log: ['error', 'warn'],
+});
 
 export const prismaClient = prisma;

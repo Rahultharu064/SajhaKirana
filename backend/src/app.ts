@@ -1,5 +1,7 @@
+// src/app.ts (or index.ts)
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
 import categoryRoutes from "./routes/categoryRoute";
 import productRoutes from "./routes/productRoute";
 import authRoutes from "./routes/authRoute";
@@ -9,24 +11,43 @@ import cartRoutes from "./routes/cartRoute";
 import inventoryRoutes from "./routes/inventoryRoute";
 import orderRoutes from "./routes/orderRoute";
 
+dotenv.config();
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-dotenv.config();
 
 const app = express();
 
 app.use(express.json());
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "http://localhost:5173",
+];
+
+app.use(
+  cors({
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      // allow requests with no origin (like mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  })
+);
+
 // Serve static files from uploads directory
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // API Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/inventory", inventoryRoutes);
-app.use("/api/orders", orderRoutes);
+app.use("/auth", authRoutes);
+app.use("/categories", categoryRoutes);
+app.use("/products", productRoutes);
+app.use("/cart", cartRoutes);
+app.use("/inventory", inventoryRoutes);
+app.use("/orders", orderRoutes);
 
 export default app;

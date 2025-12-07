@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE `User` ADD COLUMN `phone` VARCHAR(191);
+ALTER TABLE `User` ADD COLUMN `address` VARCHAR(191);
+ALTER TABLE `User` ADD COLUMN `role` VARCHAR(191) NOT NULL DEFAULT 'customer';
+ALTER TABLE `User` ADD COLUMN `profileImage` VARCHAR(191);
+ALTER TABLE `User` ADD COLUMN `lastLogin` DATETIME(3);
+ALTER TABLE `User` ADD COLUMN `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
+ALTER TABLE `User` ADD COLUMN `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3);
+
+-- Update existing records to have current timestamps
+UPDATE `User` SET `createdAt` = NOW(), `updatedAt` = NOW() WHERE `createdAt` IS NULL OR `updatedAt` IS NULL;
