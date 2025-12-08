@@ -7,6 +7,7 @@ import {
     deleteCategory
 } from "../controllers/categoryController";
 import { validate } from "../middlewares/validate";
+import { uploadCategories } from "../config/multer";
 import {
     createCategorySchema,
     updateCategorySchema,
@@ -15,9 +16,10 @@ import {
 
 const categoryRoutes = Router();
 
-// Create category with validation
+// Create category with file upload and validation
 categoryRoutes.post(
     "/",
+    uploadCategories.single("image"),
     validate(createCategorySchema, "body"),
     createCategory
 );

@@ -1,23 +1,23 @@
 
 import { Home, Box, ShoppingCart, Layers, Gift, Settings } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
-type Props = {
-  activePage: string;
-  setActivePage: (page: string) => void;
-  dark: boolean;
-  setDark: (v: boolean) => void;
-};
+export default function Sidebar() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-export default function Sidebar({ activePage, setActivePage }: Props) {
   const menu = [
-    { name: "Dashboard", icon: <Home size={18} />, key: "dashboard" },
-    { name: "Products", icon: <Box size={18} />, key: "products" },
-    { name: "Orders", icon: <ShoppingCart size={18} />, key: "orders" },
-    { name: "Inventory", icon: <Layers size={18} />, key: "inventory" },
-    { name: "Coupons", icon: <Gift size={18} />, key: "coupons" },
-    { name: "Promotions", icon: <Gift size={18} />, key: "promotions" },
-    { name: "Settings", icon: <Settings size={18} />, key: "settings" },
+    { name: "Dashboard", icon: <Home size={18} />, path: "/admin/dashboard" },
+    { name: "Products", icon: <Box size={18} />, path: "/admin/products" },
+    { name: "Orders", icon: <ShoppingCart size={18} />, path: "/admin/orders" },
+    { name: "Inventory", icon: <Layers size={18} />, path: "/admin/inventory" },
+    { name: "Categories", icon: <Layers size={18} />, path: "/admin/categories" },
+    { name: "Coupons", icon: <Gift size={18} />, path: "/admin/coupons" },
+    { name: "Promotions", icon: <Gift size={18} />, path: "/admin/promotions" },
+    { name: "Settings", icon: <Settings size={18} />, path: "/admin/settings" },
   ];
+
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
@@ -27,10 +27,10 @@ export default function Sidebar({ activePage, setActivePage }: Props) {
       <nav className="flex-1 p-4 space-y-2">
         {menu.map((item) => (
           <button
-            key={item.key}
-            onClick={() => setActivePage(item.key)}
+            key={item.path}
+            onClick={() => navigate(item.path)}
             className={`flex items-center gap-3 w-full p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${
-              activePage === item.key ? "bg-emerald-500 text-white" : ""
+              isActive(item.path) ? "bg-emerald-500 text-white hover:bg-emerald-600" : ""
             }`}
           >
             {item.icon}

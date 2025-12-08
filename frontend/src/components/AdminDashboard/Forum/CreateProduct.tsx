@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
+import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { createProduct } from "../../../services/productService";
+import { getCategories } from "../../../services/categoryService";
 import toast, { Toaster } from "react-hot-toast";
 
-interface CreateProductFormProps {
-  categories: { id: number; name: string }[];
-}
-
-const CreateProduct: React.FC<CreateProductFormProps> = ({ categories }) => {
+const CreateProduct: React.FC = () => {
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
@@ -19,6 +20,18 @@ const CreateProduct: React.FC<CreateProductFormProps> = ({ categories }) => {
   const [isActive, setIsActive] = useState(true);
   const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -46,17 +59,8 @@ const CreateProduct: React.FC<CreateProductFormProps> = ({ categories }) => {
 
       toast.success("Product created successfully!");
 
-      // Reset form
-      setTitle("");
-      setSlug("");
-      setDescription("");
-      setPrice("");
-      setMrp("");
-      setStock("");
-      setCategoryId("");
-      setSku("");
-      setImages([]);
-      setIsActive(true);
+      // Navigate to products page
+      navigate('/admin/products');
     } catch (err: any) {
       const message = err?.response?.data?.error?.message || "Something went wrong";
       toast.error(message);
@@ -144,7 +148,17 @@ const CreateProduct: React.FC<CreateProductFormProps> = ({ categories }) => {
           </div>
         </div>
         <div>
-          <label htmlFor="category" className="block font-medium">Category</label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="category" className="block font-medium">Category</label>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/categories')}
+              className="p-1 rounded hover:bg-gray-100"
+              title="Add new category"
+            >
+              <Plus size={18} />
+            </button>
+          </div>
           <select
             id="category"
             value={categoryId}

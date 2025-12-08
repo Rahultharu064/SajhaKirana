@@ -4,6 +4,7 @@ CREATE TABLE `Product` (
     `title` VARCHAR(191) NOT NULL,
     `slug` VARCHAR(191) NOT NULL,
     `description` LONGTEXT NOT NULL,
+    `sku` VARCHAR(191) NOT NULL,
     `price` DOUBLE NOT NULL,
     `mrp` DOUBLE NOT NULL,
     `stock` INTEGER NOT NULL DEFAULT 0,
@@ -15,8 +16,10 @@ CREATE TABLE `Product` (
 
     UNIQUE INDEX `Product_title_key`(`title`),
     UNIQUE INDEX `Product_slug_key`(`slug`),
+    UNIQUE INDEX `Product_sku_key`(`sku`),
     INDEX `Product_categoryId_idx`(`categoryId`),
     INDEX `Product_slug_idx`(`slug`),
+    INDEX `Product_sku_idx`(`sku`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

@@ -23,7 +23,9 @@ export const validate = (schema: Joi.ObjectSchema, property: "body" | "params" |
         }
 
         // Replace request property with validated value
-        req[property] = value;
+        if (property !== 'query') {
+            req[property] = value;
+        }
         next();
     };
 };

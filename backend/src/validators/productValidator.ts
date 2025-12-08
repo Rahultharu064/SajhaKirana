@@ -49,6 +49,10 @@ export const createProductSchema = Joi.object({
     "number.positive": "Category ID must be a positive number",
     "any.required": "Category ID is required",
   }),
+  sku: Joi.string().required().trim().messages({
+    "string.empty": "SKU is required",
+    "any.required": "SKU is required",
+  }),
   images: Joi.array()
     .items(
       Joi.string()
@@ -117,6 +121,9 @@ export const updateProductSchema = Joi.object({
   categoryId: Joi.number().integer().positive().messages({
     "number.base": "Category ID must be a number",
     "number.positive": "Category ID must be a positive number",
+  }),
+  sku: Joi.string().trim().messages({
+    "string.empty": "SKU cannot be empty",
   }),
   images: Joi.array()
     .items(

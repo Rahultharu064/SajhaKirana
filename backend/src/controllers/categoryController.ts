@@ -8,7 +8,8 @@ export const createCategory = async (
   next: NextFunction
 ) => {
   try {
-    const { name } = req.body;
+    const { name, slug } = req.body;
+    const image = req.file;
 
     // Check if category with same name already exists
     const existingCategory = await prismaClient.category.findUnique({
@@ -22,17 +23,31 @@ export const createCategory = async (
       });
     }
 
+    // Check if category with same slug already exists
+    const existingSlugCategory = await prismaClient.category.findUnique({
+      where: { slug },
+    });
+
+    if (existingSlugCategory) {
+      return res.status(400).json({
+        success: false,
+        message: "Category with this slug already exists",
+      });
+    }
+
     // Create new category
     const category = await prismaClient.category.create({
       data: {
         name,
+        slug,
+        image: image ? image.filename : null,
       },
     });
 
     return res.status(201).json({
       success: true,
       message: "Category created successfully",
-     
+      data: category,
     });
   } catch (error) {
     next(error);

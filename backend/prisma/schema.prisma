@@ -34,6 +34,8 @@ model User {
 model Category {
   id        Int      @id @default(autoincrement())
   name      String   @unique
+  slug      String   @unique
+  image     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   products  Product[]
@@ -44,7 +46,7 @@ model Product {
   title       String   @unique
   slug        String   @unique
   description String   @db.LongText
-  sku        String   @unique
+  sku        String
   price       Float
   mrp         Float
   stock       Int      @default(0)
@@ -57,6 +59,7 @@ model Product {
   orderItems  OrderItem[]
   reviews     Review[]
 
+  @@unique([categoryId, sku])
   @@index([categoryId])
   @@index([slug])
 }

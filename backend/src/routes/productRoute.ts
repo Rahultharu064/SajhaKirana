@@ -32,7 +32,8 @@ productRoutes.post(
 // Get all products with filters and pagination
 productRoutes.get(
   "/",
-  validate(searchProductSchema, "query"),
+  // temporarily disable validation to debug
+  // validate(searchProductSchema, "query"),
   getAllProducts
 );
 

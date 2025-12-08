@@ -165,9 +165,12 @@ export const getAllProducts = async (
     } = req.query;
 
     // Build where clause for filtering
-    const where: any = {
-      isActive: isActive === "false" ? false : true,
-    };
+    const where: any = {};
+
+    // Only filter by isActive if explicitly provided
+    if (isActive !== undefined && isActive !== null) {
+      where.isActive = isActive === "false" ? false : true;
+    }
 
     if (q && typeof q === "string") {
       where.OR = [
