@@ -295,6 +295,30 @@ export const getProductById = async (
     next(error);
   }
 };
+// similar products 
+const getSimilarProducts = async (
+  categoryId: number,
+  excludeProductId: number,
+  limit: number = 5
+) => {
+  const products = await prismaClient.product.findMany({
+    where: {
+      categoryId,
+      id: { not: excludeProductId },
+      isActive: true,
+    },
+    take: limit,
+    include: {
+      category: true,
+    },
+  });
+
+  return products.map((product: any) => ({
+    ...product,
+    images: JSON.parse(product.images),
+  }));
+};
+  
 
 // Get product by slug
 export const getProductBySlug = async (

@@ -44,7 +44,29 @@ Public Website (No Login Required)
 
 Home Page — /
 
-Header: logo (left), search bar (center), cart icon & login CTA (right)
+Left: Logo → /
+
+Center (primary nav):
+
+Home — /
+
+Category — /category
+
+Products — /products
+
+About — /about
+
+Contact — /contact
+
+Right (utility area):
+
+Search bar or icon
+
+Wishlist (optional)
+
+Cart — /cart
+
+Login / Register (or user avatar menu)
 
 Hero: full-width banner with CTA buttons (Shop Now / Explore Categories)
 

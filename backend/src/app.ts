@@ -10,6 +10,7 @@ import { fileURLToPath } from "url";
 import cartRoutes from "./routes/cartRoute";
 import inventoryRoutes from "./routes/inventoryRoute";
 import orderRoutes from "./routes/orderRoute";
+import reviewRoutes from "./routes/reviewRoute";
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.use("/categories", categoryRoutes);
 app.use("/products", productRoutes);
 app.use("/cart", cartRoutes);
 app.use("/inventory", inventoryRoutes);
+app.use("/reviews", reviewRoutes);
 app.use("/orders", orderRoutes);
 
 export default app;

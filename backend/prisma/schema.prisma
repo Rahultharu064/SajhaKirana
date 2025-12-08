@@ -14,8 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 model User {
   id     Int      @id @default(autoincrement())
   name   String
@@ -30,7 +28,7 @@ model User {
   updatedAt DateTime @updatedAt
   carts  CartItem[]
   orders Order[]
-
+  reviews Review[]
 }
 
 model Category {
@@ -57,6 +55,7 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   orderItems  OrderItem[]
+  reviews     Review[]
 
   @@index([categoryId])
   @@index([slug])
@@ -145,6 +144,23 @@ model Payment {
   updatedAt DateTime @updatedAt
 
   @@index([orderId])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  userId    Int
+  rating    Int
+  comment   String   @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([userId])
+  @@unique([productId, userId])
 }
 
 enum ReservationStatus {
