@@ -19,9 +19,13 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
       <div className="relative">
         <img
-          src={product.image}
+          src={product.image?.startsWith('http') ? product.image : `/${product.image?.replace(/^\//, '')}`}
           alt={product.title}
           className="w-full h-48 object-cover"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = '/api/placeholder/400/400';
+            (e.target as HTMLImageElement).onerror = null;
+          }}
         />
         {product.discount && (
           <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-semibold">

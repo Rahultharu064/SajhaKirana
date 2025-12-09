@@ -1,6 +1,8 @@
 import Home from "@/pages/Publicwebsite/Home.tsx";
 import CategoryProducts from "../pages/Publicwebsite/CategoryProducts.tsx";
 import ProductDetail from "../pages/Publicwebsite/ProductDetail.tsx";
+import PublicCategories from "../pages/Publicwebsite/Categories.tsx";
+import PublicProducts from "../pages/Publicwebsite/Products.tsx";
 import Register from "../components/Auth/Register.tsx";
 import Login from "../components/Auth/Login.tsx";
 import Profile from "../components/Auth/Profile.tsx";
@@ -22,6 +24,14 @@ const routes = [
     {
         path: "/",
         element: <Home />,
+    },
+    {
+        path: "/products",
+        element: <PublicProducts />,
+    },
+    {
+        path: "/category",
+        element: <PublicCategories />,
     },
     {
         path: "/category/:id",

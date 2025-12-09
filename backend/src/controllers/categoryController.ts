@@ -1,6 +1,22 @@
 import type { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../config/client";
 
+// Helper to format category image URL
+const formatCategory = (category: any) => {
+  if (!category) return null;
+  if (!category.image) return category;
+
+  // If image already has the path or is a full URL, return as is (normalized)
+  if (category.image.startsWith('/uploads/') || category.image.startsWith('http')) {
+    return category;
+  }
+
+  return {
+    ...category,
+    image: `/uploads/categories/${category.image}`
+  };
+};
+
 // Create a new category
 export const createCategory = async (
   req: Request,
@@ -47,7 +63,7 @@ export const createCategory = async (
     return res.status(201).json({
       success: true,
       message: "Category created successfully",
-      data: category,
+      data: formatCategory(category),
     });
   } catch (error) {
     next(error);
@@ -67,10 +83,12 @@ export const getAllCategories = async (
       },
     });
 
+    const formattedCategories = categories.map(formatCategory);
+
     return res.status(200).json({
       success: true,
       message: "Categories retrieved successfully",
-      data: categories,
+      data: formattedCategories,
     });
   } catch (error) {
     next(error);
@@ -108,7 +126,7 @@ export const getCategoryById = async (
     return res.status(200).json({
       success: true,
       message: "Category retrieved successfully",
-      data: category,
+      data: formatCategory(category),
     });
   } catch (error) {
     next(error);
@@ -170,7 +188,7 @@ export const updateCategory = async (
     return res.status(200).json({
       success: true,
       message: "Category updated successfully",
-      data: updatedCategory,
+      data: formatCategory(updatedCategory),
     });
   } catch (error) {
     next(error);
@@ -247,10 +265,12 @@ export const searchCategories = async (
       },
     });
 
+    const formattedCategories = categories.map(formatCategory);
+
     return res.status(200).json({
       success: true,
       message: "Categories retrieved successfully",
-      data: categories,
+      data: formattedCategories,
     });
   } catch (error) {
     next(error);

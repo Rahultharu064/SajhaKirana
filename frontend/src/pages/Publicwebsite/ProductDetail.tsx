@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight,
   Star,
@@ -11,7 +11,9 @@ import {
   Truck,
   RotateCcw,
   Shield,
+  ChevronLeft,
   Check,
+  Share2,
 } from "lucide-react";
 import { getProductById, getProductsByCategory } from "../../services/productService";
 import Header from "../../components/Publicwebsite/Layouts/Header";
@@ -38,6 +40,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -78,15 +81,33 @@ export default function ProductDetail() {
   }, [id]);
 
   const handleAddToCart = () => {
-    toast.success(`Added ${quantity} x ${product.title} to your cart.`);
+    toast.success(`added ${quantity} x ${product.title} to your cart.`, {
+      style: {
+        border: '1px solid #10B981',
+        padding: '16px',
+        color: '#713200',
+      },
+      iconTheme: {
+        primary: '#10B981',
+        secondary: '#FFFAEE',
+      },
+    });
   };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    navigate('/cart');
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
         <div className="flex-grow flex justify-center items-center">
-          Loading...
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+            <p className="text-gray-500 font-medium">Loading product details...</p>
+          </div>
         </div>
         <Footer />
       </div>
@@ -97,9 +118,13 @@ export default function ProductDetail() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <Header />
-        <div className="container mx-auto px-4 py-16 text-center flex-grow flex flex-col justify-center items-center">
-          <h1 className="text-2xl font-bold mb-4">Product not found</h1>
-          <Button variant="primary" onClick={() => navigate('/')}>Browse Products</Button>
+        <div className="container mx-auto px-4 py-16 text-center flex-grow flex flex-col justify-center items-center max-w-md">
+          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+            <ShoppingCart className="h-10 w-10 text-gray-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Product not found</h1>
+          <p className="text-gray-500 mb-8">The product you are looking for might have been removed or is temporarily unavailable.</p>
+          <Button variant="primary" onClick={() => navigate('/')}>Continue Shopping</Button>
         </div>
         <Footer />
       </div>
@@ -112,280 +137,448 @@ export default function ProductDetail() {
       : 0;
 
   // Handle images array from backend
-  const displayImages = (product.images && product.images.length > 0)
-    ? product.images.map((img: string) => img.startsWith('/') || img.startsWith('http') ? img : `/${img}`)
+  // Handle images array from backend with robust checks
+  const getImages = () => {
+    if (!product) return [];
+
+    console.log('Product data:', product);
+    console.log('Raw images type:', typeof product.images);
+    console.log('Raw images value:', product.images);
+
+    if (!product.images) return ['/api/placeholder/400/400'];
+
+    let imgs = product.images;
+
+    // If it's a string, try to parse it as JSON, otherwise treat as single image
+    if (typeof imgs === 'string') {
+      if (imgs.trim().startsWith('[') && imgs.trim().endsWith(']')) {
+        try {
+          imgs = JSON.parse(imgs);
+          console.log('Parsed JSON images:', imgs);
+        } catch (e) {
+          console.error("Failed to parse images JSON:", e);
+          // Fallback: treat as single image string if parse fails, or empty?
+          // If it looks like JSON but fails, it might be corrupted. 
+          // But if it's just a path string, we use it.
+          return [imgs];
+        }
+      } else {
+        return [imgs];
+      }
+    }
+
+    return Array.isArray(imgs) ? imgs : [];
+  };
+
+  const rawImages = getImages();
+  const displayImages = rawImages.length > 0
+    ? rawImages.map((img: string) => img.startsWith('/') || img.startsWith('http') ? img : `/${img}`)
     : ['/api/placeholder/400/400'];
 
+  const nextImage = () => {
+    setSelectedImage((prev) => (prev + 1) % displayImages.length);
+  };
+
+  const prevImage = () => {
+    setSelectedImage((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white font-sans text-gray-900">
       <Header />
-      <div className="container mx-auto px-4 py-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link to="/" className="hover:text-blue-600 transition-colors">
-            Home
-          </Link>
-          <ChevronRight className="h-4 w-4" />
+      <div className="container mx-auto px-4 py-6 md:py-10">
+        {/* Breadcrumb - Clean & Minimal */}
+        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide">
+          <Link to="/" className="hover:text-primary-600 transition-colors">Home</Link>
+          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
           <Link
             to={product.categoryId ? `/category/${product.categoryId}` : '/products'}
-            className="hover:text-blue-600 transition-colors"
+            className="hover:text-primary-600 transition-colors"
           >
             {product.category?.name || 'Category'}
           </Link>
-          <ChevronRight className="h-4 w-4" />
-          <span className="text-gray-900 truncate max-w-[150px]">
+          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <span className="text-gray-900 font-medium truncate">
             {product.title}
           </span>
         </nav>
 
-        {/* Product Section */}
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
-          {/* Images */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-4"
-          >
-            {/* Main Image */}
-            <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100">
-              <motion.img
-                key={selectedImage}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                src={displayImages[selectedImage]}
-                alt={product.title}
-                className="w-full h-full object-contain mix-blend-multiply"
-              />
-              {/* Badges */}
-              <div className="absolute top-4 left-4 flex flex-col gap-2">
+        {/* Product Main Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-16 mb-20">
+          {/* Left Column: Image Gallery */}
+          <div className="space-y-6">
+            <div
+              className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/3] rounded-3xl overflow-hidden bg-gray-50 group border border-gray-100 shadow-sm cursor-zoom-in"
+              onClick={() => setIsZoomed(!isZoomed)}
+            >
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={selectedImage}
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: isZoomed ? 1.5 : 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  src={displayImages[selectedImage]}
+                  alt={product.title}
+                  className={cn(
+                    "w-full h-full object-contain mix-blend-multiply p-4 transition-transform duration-500 ease-out",
+                    isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
+                  )}
+                />
+              </AnimatePresence>
+
+              <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
                 {discountPercent > 0 && (
-                  <Badge variant="danger">-{discountPercent}% OFF</Badge>
+                  <span className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
+                    -{discountPercent}% OFF
+                  </span>
                 )}
-                {/* Add logic for new/bestseller badges if available in data */}
+                {/* New Arrival Badge Mockup */}
+                <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg w-max">
+                  NEW
+                </span>
               </div>
+
+              <div className="absolute top-4 right-4 z-10">
+                <button className="bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-sm hover:shadow-md transition-all text-gray-600 hover:text-primary-600">
+                  <Share2 className="h-5 w-5" />
+                </button>
+              </div>
+
+              {displayImages.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-md hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-md hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Thumbnails */}
             {displayImages.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
+              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
                 {displayImages.map((img: string, index: number) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
                     className={cn(
-                      "flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all bg-white",
+                      "flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all p-2 snap-center bg-gray-50",
                       selectedImage === index
-                        ? "border-blue-600 ring-2 ring-blue-50"
-                        : "border-transparent opacity-70 hover:opacity-100 hover:border-gray-200"
+                        ? "border-primary-600 ring-2 ring-primary-50 scale-105"
+                        : "border-transparent hover:border-gray-200 grayscale hover:grayscale-0 opacity-70 hover:opacity-100"
                     )}
                   >
                     <img
                       src={img}
-                      alt={`${product.title} view ${index + 1}`}
+                      alt={`View ${index + 1}`}
                       className="w-full h-full object-contain mix-blend-multiply"
                     />
                   </button>
                 ))}
               </div>
             )}
-          </motion.div>
+          </div>
 
-          {/* Details */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-6"
-          >
-            {/* Category & Title */}
-            <div>
-              <p className="text-sm text-blue-600 font-medium mb-2">
-                {product.category?.name}
-              </p>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+          {/* Right Column: Product Details */}
+          <div className="flex flex-col">
+            <div className="mb-auto">
+              <div className="flex items-center gap-2 mb-3">
+                <Link to={`/category/${product.categoryId}`} className="text-sm font-semibold text-primary-600 bg-primary-50 px-3 py-1 rounded-full hover:bg-primary-100 transition-colors">
+                  {product.category?.name}
+                </Link>
+                {product.stock > 0 ? (
+                  <div className="flex items-center gap-1 text-sm font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                    <Check className="h-3 w-3" /> In Stock
+                  </div>
+                ) : (
+                  <div className="text-sm font-medium text-red-600 bg-red-50 px-3 py-1 rounded-full">
+                    Out of Stock
+                  </div>
+                )}
+              </div>
+
+              <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
                 {product.title}
               </h1>
-            </div>
 
-            {/* Rating - Placeholder for now */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
+              {/* Rating Summary */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-100">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-bold text-gray-900">4.5</span>
+                </div>
+                <span className="text-gray-400 text-sm">|</span>
+                <a href="#reviews" className="text-sm font-medium text-gray-500 hover:text-primary-600 underline-offset-4 hover:underline">
+                  128 Reviews
+                </a>
+                <span className="text-gray-400 text-sm">|</span>
+                <span className="text-sm text-gray-500">2.5k Sold</span>
+              </div>
+
+              {/* Price Block */}
+              <div className="bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-100">
+                <div className="flex items-end gap-3 mb-2">
+                  <span className="text-4xl font-extrabold text-gray-900 tracking-tight">
+                    Rs. {product.price.toLocaleString()}
+                  </span>
+                  {product.mrp > product.price && (
+                    <span className="text-xl text-gray-400 line-through font-medium mb-1">
+                      Rs. {product.mrp.toLocaleString()}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-500 font-medium">Inclusive of all taxes</p>
+              </div>
+
+              <div className="prose prose-sm text-gray-600 mb-8 line-clamp-3">
+                {product.description}
+              </div>
+
+              {/* Selector & Actions */}
+              <div className="space-y-6 pt-6 border-t border-gray-100">
+                <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+                  {/* Quantity */}
+                  {product.stock > 0 && (
+                    <div className="flex items-center justify-between border-2 border-gray-200 rounded-xl overflow-hidden bg-white hover:border-primary-200 transition-colors w-full sm:w-auto min-w-[140px]">
+                      <button
+                        className="p-3.5 hover:bg-gray-50 text-gray-600 hover:text-primary-600 transition-colors"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        disabled={quantity <= 1}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <span className="text-lg font-bold w-8 text-center">{quantity}</span>
+                      <button
+                        className="p-3.5 hover:bg-gray-50 text-gray-600 hover:text-primary-600 transition-colors"
+                        onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                        disabled={quantity >= product.stock}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Wishlist Mobile */}
+                  <button
                     className={cn(
-                      "h-5 w-5",
-                      i < 4 // Mock rating
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300"
+                      "sm:hidden flex items-center justify-center p-3.5 border-2 border-gray-200 rounded-xl",
+                      isWishlisted ? "text-red-500 border-red-200 bg-red-50" : "text-gray-400 hover:text-gray-600"
                     )}
-                  />
+                    onClick={() => setIsWishlisted(!isWishlisted)}
+                  >
+                    <Heart className={cn("h-6 w-6", isWishlisted && "fill-current")} />
+                  </button>
+                </div>
+
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    variant="primary"
+                    className="flex-1 h-14 text-lg font-semibold rounded-xl shadow-lg shadow-primary-500/20 gap-2 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    onClick={handleAddToCart}
+                    disabled={product.stock <= 0}
+                  >
+                    <ShoppingCart className="h-5 w-5" />
+                    Add to Cart
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="hidden sm:flex h-14 w-14 p-0 items-center justify-center rounded-xl border-gray-200 hover:border-red-200 hover:bg-red-50 group transition-all"
+                    onClick={() => setIsWishlisted(!isWishlisted)}
+                  >
+                    <Heart
+                      className={cn("h-6 w-6 text-gray-400 group-hover:text-red-500 transition-colors", isWishlisted && "text-red-500 fill-current")}
+                    />
+                  </Button>
+                  <Button
+                    className="flex-1 h-14 text-lg font-semibold rounded-xl border-2 border-gray-900 bg-gray-900 text-white hover:bg-gray-800 hover:border-gray-800 transition-all"
+                    onClick={handleBuyNow}
+                    disabled={product.stock <= 0}
+                  >
+                    Buy Now
+                  </Button>
+                </div>
+              </div>
+
+              {/* Features Grid */}
+              <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-gray-100">
+                {features.map((feature) => (
+                  <div key={feature.title} className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-2xl hover:bg-primary-50/50 transition-colors">
+                    <div className="mb-3 p-2.5 bg-white rounded-xl shadow-sm text-primary-600">
+                      <feature.icon className="h-6 w-6" />
+                    </div>
+                    <p className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-1">{feature.title}</p>
+                    <p className="text-[10px] sm:text-xs text-gray-500 leading-tight">{feature.desc}</p>
+                  </div>
                 ))}
               </div>
-              <span className="font-medium">4.0</span>
-              <span className="text-gray-500">
-                (0 reviews)
-              </span>
+
             </div>
-
-            {/* Price */}
-            <div className="flex items-baseline gap-3">
-              <span className="text-3xl font-bold text-gray-900">
-                Rs. {product.price}
-              </span>
-              {product.mrp > product.price && (
-                <span className="text-xl text-gray-500 line-through">
-                  Rs. {product.mrp}
-                </span>
-              )}
-              {discountPercent > 0 && (
-                <Badge variant="success" className="ml-2">
-                  Save {discountPercent}%
-                </Badge>
-              )}
-            </div>
-
-            {/* Description */}
-            <p className="text-gray-600 leading-relaxed">
-              {product.description ||
-                "No description available."}
-            </p>
-
-            {/* Stock Status */}
-            <div className="flex items-center gap-2">
-              {product.stock > 0 ? (
-                <>
-                  <Check className="h-5 w-5 text-green-600" />
-                  <span className="text-green-600 font-medium">In Stock</span>
-                </>
-              ) : (
-                <Badge variant="danger">Out of Stock</Badge>
-              )}
-            </div>
-
-            {/* Quantity & Actions */}
-            <div className="flex flex-wrap items-center gap-4">
-              {/* Quantity Selector */}
-              {product.stock > 0 && (
-                <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden bg-white">
-                  <button
-                    className="p-3 hover:bg-gray-50"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    disabled={quantity <= 1}
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="w-12 text-center font-medium">{quantity}</span>
-                  <button
-                    className="p-3 hover:bg-gray-50"
-                    onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                    disabled={quantity >= product.stock}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-
-              {/* Add to Cart */}
-              <Button
-                variant="primary"
-                className="flex-1 md:flex-initial gap-2 h-12 px-8 text-lg"
-                onClick={handleAddToCart}
-                disabled={product.stock <= 0}
-              >
-                <ShoppingCart className="h-5 w-5" />
-                Add to Cart
-              </Button>
-
-              {/* Wishlist */}
-              <Button
-                variant="outline"
-                className={cn("h-12 w-12 p-0 flex items-center justify-center rounded-xl border-gray-300", isWishlisted && "text-red-500 border-red-200 bg-red-50")}
-                onClick={() => setIsWishlisted(!isWishlisted)}
-              >
-                <Heart
-                  className={cn("h-5 w-5", isWishlisted && "fill-current")}
-                />
-              </Button>
-            </div>
-
-            {/* Features */}
-            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-200">
-              {features.map((feature) => (
-                <div key={feature.title} className="text-center">
-                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 mb-2">
-                    <feature.icon className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <p className="text-xs font-bold text-gray-900 uppercase tracking-wide">{feature.title}</p>
-                  <p className="text-xs text-gray-500">{feature.desc}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+          </div>
         </div>
 
-        {/* Tabs Section */}
-        <div className="mb-16">
+        {/* Content Tabs Section */}
+        <div className="max-w-6xl mx-auto mb-20">
           <Tabs defaultValue="description" className="w-full">
-            <TabsList className="w-full justify-start border-b border-gray-200 rounded-none bg-transparent h-auto p-0 mb-6 gap-8">
-              <TabsTrigger
-                value="description"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 pb-3 px-0 font-semibold text-gray-500 hover:text-gray-700"
-              >
-                Description
-              </TabsTrigger>
-              <TabsTrigger
-                value="details"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 pb-3 px-0 font-semibold text-gray-500 hover:text-gray-700"
-              >
-                Details
-              </TabsTrigger>
-              <TabsTrigger
-                value="reviews"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 pb-3 px-0 font-semibold text-gray-500 hover:text-gray-700"
-              >
-                Reviews (0)
-              </TabsTrigger>
-            </TabsList>
+            <div className="flex justify-center mb-8">
+              <TabsList className="bg-gray-100/80 p-1 rounded-full inline-flex h-auto">
+                <TabsTrigger
+                  value="description"
+                  className="rounded-full px-8 py-3 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary-600 data-[state=active]:shadow-md transition-all"
+                >
+                  Description
+                </TabsTrigger>
+                <TabsTrigger
+                  value="details"
+                  className="rounded-full px-8 py-3 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary-600 data-[state=active]:shadow-md transition-all"
+                >
+                  Specifications
+                </TabsTrigger>
+                <TabsTrigger
+                  value="reviews"
+                  className="rounded-full px-8 py-3 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary-600 data-[state=active]:shadow-md transition-all"
+                >
+                  Reviews
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
             <TabsContent value="description" className="mt-0">
-              <div className="prose prose-sm max-w-none text-gray-600">
-                <p>
-                  {product.description ||
-                    "This high-quality product is sourced directly from local Nepali farmers. We ensure freshness by maintaining a cold chain from farm to your doorstep."}
-                </p>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm"
+              >
+                <h3 className="text-xl font-bold mb-4">Product Description</h3>
+                <div className="prose max-w-none text-gray-600 leading-relaxed">
+                  <p>
+                    {product.description ||
+                      "This high-quality product is sourced directly from local Nepali farmers. We ensure freshness by maintaining a cold chain from farm to your doorstep."}
+                  </p>
+                  <p className="mt-4">
+                    We prioritize quality and freshness in every item we deliver. Our team meticulously selects products to ensure they meet our high standards. Whether you are cooking a family meal or stocking up your pantry, you can trust our products to deliver authentic taste and nutrition.
+                  </p>
+                </div>
+              </motion.div>
             </TabsContent>
+
             <TabsContent value="details" className="mt-0">
-              <div className="grid gap-4 max-w-2xl">
-                <div className="flex justify-between py-3 border-b border-gray-100">
-                  <span className="text-gray-500">Category</span>
-                  <span className="font-medium text-gray-900">{product.category?.name}</span>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm"
+              >
+                <h3 className="text-xl font-bold mb-6">Technical Specifications</h3>
+                <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
+                  <div className="flex justify-between py-3 border-b border-gray-100">
+                    <span className="text-gray-500 font-medium">Category</span>
+                    <span className="font-semibold text-gray-900 text-right">{product.category?.name}</span>
+                  </div>
+                  <div className="flex justify-between py-3 border-b border-gray-100">
+                    <span className="text-gray-500 font-medium">SKU / Code</span>
+                    <span className="font-semibold text-gray-900 text-right">{product.sku || product.slug || 'N/A'}</span>
+                  </div>
+                  <div className="flex justify-between py-3 border-b border-gray-100">
+                    <span className="text-gray-500 font-medium">Stock Status</span>
+                    <span className={cn("font-semibold text-right", product.stock > 0 ? "text-green-600" : "text-red-600")}>
+                      {product.stock > 0 ? `${product.stock} units left` : 'Out of Stock'}
+                    </span>
+                  </div>
+                  {/* Add more dynamic details here later */}
                 </div>
-                <div className="flex justify-between py-3 border-b border-gray-100">
-                  <span className="text-gray-500">SKU</span>
-                  <span className="font-medium text-gray-900">{product.sku || product.slug}</span>
-                </div>
-                {/* Add more details as needed */}
-              </div>
+              </motion.div>
             </TabsContent>
-            <TabsContent value="reviews" className="mt-0">
-              <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                <p>Customer reviews coming soon!</p>
-              </div>
+
+            <TabsContent value="reviews" className="mt-0" id="reviews">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm"
+              >
+                <div className="flex flex-col md:flex-row gap-10 items-center justify-between mb-10">
+                  <div className="text-center md:text-left">
+                    <h3 className="text-2xl font-bold mb-2">Customer Reviews</h3>
+                    <div className="flex items-center gap-2 mb-1 justify-center md:justify-start">
+                      <div className="flex text-yellow-400">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star key={s} className={cn("h-6 w-6", s <= 4 ? "fill-current" : "text-gray-200 fill-gray-200")} />
+                        ))}
+                      </div>
+                      <span className="text-xl font-bold text-gray-900">4.5</span>
+                    </div>
+                    <p className="text-gray-500">Based on 128 verified reviews</p>
+                  </div>
+
+                  <Button variant="outline" className="h-12 border-gray-300">
+                    Write a Review
+                  </Button>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Mock Review */}
+                  <div className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600">
+                          JD
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900">John Doe</h4>
+                          <div className="flex items-center gap-2">
+                            <div className="flex text-yellow-400 text-xs">
+                              <Star className="h-3 w-3 fill-current" />
+                              <Star className="h-3 w-3 fill-current" />
+                              <Star className="h-3 w-3 fill-current" />
+                              <Star className="h-3 w-3 fill-current" />
+                              <Star className="h-3 w-3 fill-current" />
+                            </div>
+                            <span className="text-xs text-gray-400">2 days ago</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 mt-2">
+                      Absolutely loved the quality! The delivery was super fast and everything arrived fresh. Will definitely order again.
+                    </p>
+                  </div>
+
+                  {/* Empty State (if needed dynamic logic) */}
+                  {/* <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                        <Star className="h-8 w-8 mx-auto text-gray-300 mb-2" />
+                        <p className="font-medium">No reviews yet</p>
+                        <p className="text-sm">Be the first to share your thoughts!</p>
+                    </div> */}
+                </div>
+              </motion.div>
             </TabsContent>
           </Tabs>
         </div>
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <ProductCarousel
-            title="You May Also Like"
-            subtitle="Products from the same category"
-            products={relatedProducts}
-            viewAllLink={product.categoryId ? `/category/${product.categoryId}` : '/products'}
-          />
+          <div className="border-t border-gray-100 pt-16">
+            <ProductCarousel
+              title="You May Also Like"
+              subtitle="Curated products just for you"
+              products={relatedProducts}
+              viewAllLink={product.categoryId ? `/category/${product.categoryId}` : '/products'}
+            />
+          </div>
         )}
       </div>
       <Footer />
+      {/* Lightbox/Zoom Effect Modal could go here */}
     </div>
   );
 }
