@@ -8,15 +8,12 @@ export const createProductSchema = Joi.object({
     "string.max": "Product title cannot exceed 255 characters",
   }),
   slug: Joi.string()
-    .required()
+    .optional()
     .lowercase()
-    .pattern(/^[a-z0-9-]+$/)
+    .trim()
     .min(3)
     .max(255)
     .messages({
-      "string.empty": "Product slug is required",
-      "string.pattern.base":
-        "Slug must contain only lowercase letters, numbers, and hyphens",
       "string.min": "Slug must be at least 3 characters",
       "string.max": "Slug cannot exceed 255 characters",
     }),
@@ -73,6 +70,63 @@ export const createProductSchema = Joi.object({
   }),
 });
 
+// Create product validation schema for Multipart/Form-Data (file uploads)
+export const createProductMultipartSchema = Joi.object({
+  title: Joi.string().required().min(3).max(255).trim().messages({
+    "string.empty": "Product title is required",
+    "string.min": "Product title must be at least 3 characters",
+    "string.max": "Product title cannot exceed 255 characters",
+  }),
+  slug: Joi.string()
+    .optional()
+    .lowercase()
+    .trim()
+    .min(3)
+    .max(255)
+    .messages({
+      "string.min": "Slug must be at least 3 characters",
+      "string.max": "Slug cannot exceed 255 characters",
+    }),
+  description: Joi.string().required().min(10).max(5000).messages({
+    "string.empty": "Product description is required",
+    "string.min": "Product description must be at least 10 characters",
+    "string.max": "Product description cannot exceed 5000 characters",
+  }),
+  price: Joi.number().positive().precision(2).required().messages({
+    "number.base": "Price must be a number",
+    "number.positive": "Price must be greater than 0",
+    "any.required": "Price is required",
+  }),
+  mrp: Joi.number()
+    .positive()
+    .precision(2)
+    .required()
+    .messages({
+      "number.base": "MRP must be a number",
+      "number.positive": "MRP must be greater than 0",
+      "any.required": "MRP is required",
+    }),
+  stock: Joi.number().integer().min(0).default(0).messages({
+    "number.base": "Stock must be a number",
+    "number.integer": "Stock must be an integer",
+    "number.min": "Stock cannot be negative",
+  }),
+  categoryId: Joi.number().integer().positive().required().messages({
+    "number.base": "Category ID must be a number",
+    "number.positive": "Category ID must be a positive number",
+    "any.required": "Category ID is required",
+  }),
+  sku: Joi.string().required().trim().messages({
+    "string.empty": "SKU is required",
+    "any.required": "SKU is required",
+  }),
+  // Images are handled by multer (req.files), but we allow the key to exist in body (ignored)
+  images: Joi.any().optional(),
+  isActive: Joi.boolean().default(true).messages({
+    "boolean.base": "isActive must be a boolean value",
+  }),
+});
+
 // Update product validation schema
 export const updateProductSchema = Joi.object({
   title: Joi.string().min(3).max(255).trim().messages({
@@ -81,12 +135,10 @@ export const updateProductSchema = Joi.object({
   }),
   slug: Joi.string()
     .lowercase()
-    .pattern(/^[a-z0-9-]+$/)
+    .trim()
     .min(3)
     .max(255)
     .messages({
-      "string.pattern.base":
-        "Slug must contain only lowercase letters, numbers, and hyphens",
       "string.min": "Slug must be at least 3 characters",
       "string.max": "Slug cannot exceed 255 characters",
     }),

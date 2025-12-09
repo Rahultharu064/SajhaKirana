@@ -13,6 +13,7 @@ import {
 import { validate } from "../middlewares/validate";
 import {
   createProductSchema,
+  createProductMultipartSchema, // Import the new schema
   updateProductSchema,
   idParamSchema,
   searchProductSchema,
@@ -25,7 +26,7 @@ const productRoutes = Router();
 productRoutes.post(
   "/",
   uploadProducts.array("images", 10),
-  validate(createProductSchema, "body"),
+  validate(createProductMultipartSchema, "body"), // Use Multipart schema
   createProduct
 );
 

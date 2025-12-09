@@ -15,6 +15,9 @@ export const validate = (schema: Joi.ObjectSchema, property: "body" | "params" |
                 message: detail.message
             }));
 
+            // Log validation errors
+            console.error(`Validation Error [${property}]:`, JSON.stringify(errors, null, 2));
+
             return res.status(400).json({
                 success: false,
                 message: "Validation failed",

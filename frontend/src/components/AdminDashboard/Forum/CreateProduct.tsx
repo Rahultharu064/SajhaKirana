@@ -41,6 +41,17 @@ const CreateProduct: React.FC = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    if (images.length === 0) {
+      toast.error("Please select at least one product image");
+      return;
+    }
+
+    if (!categoryId) {
+      toast.error("Please select a category");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -62,7 +73,8 @@ const CreateProduct: React.FC = () => {
       // Navigate to products page
       navigate('/admin/products');
     } catch (err: any) {
-      const message = err?.response?.data?.error?.message || "Something went wrong";
+      console.error(err);
+      const message = err?.response?.data?.error?.message || err?.response?.data?.message || "Something went wrong";
       toast.error(message);
     } finally {
       setLoading(false);

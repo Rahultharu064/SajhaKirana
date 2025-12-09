@@ -2,6 +2,15 @@ import type { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../config/client";
 import { deleteImageFiles } from "../config/multer";
 
+const generateSlug = (text: string) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[\s\W-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 // Create a new product
 export const createProduct = async (
   req: Request,
@@ -9,8 +18,15 @@ export const createProduct = async (
   next: NextFunction
 ) => {
   try {
-    const { title, slug, description, price, mrp, stock, categoryId, isActive, sku } =
+    let { title, slug, description, price, mrp, stock, categoryId, isActive, sku } =
       req.body;
+
+    // Generate or clean slug
+    if (!slug && title) {
+      slug = generateSlug(title);
+    } else if (slug) {
+      slug = generateSlug(slug);
+    }
 
     // Parse and validate input types
     const parsedPrice = parseFloat(price);
@@ -321,7 +337,7 @@ const getSimilarProducts = async (
     images: JSON.parse(product.images),
   }));
 };
-  
+
 
 // Get product by slug
 export const getProductBySlug = async (
@@ -383,8 +399,13 @@ export const updateProduct = async (
 ) => {
   try {
     const { id } = req.params;
-    const { title, slug, description, price, mrp, stock, categoryId, isActive } =
+    let { title, slug, description, price, mrp, stock, categoryId, isActive } =
       req.body;
+
+    // Clean slug if provided
+    if (slug) {
+      slug = generateSlug(slug);
+    }
 
     // Validate ID
     if (!id || isNaN(parseInt(id))) {

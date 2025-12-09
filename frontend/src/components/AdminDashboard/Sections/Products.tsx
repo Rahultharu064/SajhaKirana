@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Table from '../Layouts/Table';
 import AdminProductCard from '../Forum/AdminProductCard';
 import { Edit, Trash, Grid, List } from 'lucide-react';
-import { getAllProducts } from '../../../services/productService';
+import { getAllProducts, deleteProduct } from '../../../services/productService';
 
 function Products() {
   const navigate = useNavigate();
@@ -51,9 +51,18 @@ function Products() {
     navigate(`/admin/edit-product/${productId}`);
   };
 
-  const handleDelete = (productId: number) => {
-    // TODO: Implement delete functionality
-    console.log('Delete product:', productId);
+  const handleDelete = async (productId: number) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await deleteProduct(productId);
+        // Refresh the list after successful deletion
+        fetchProducts();
+      } catch (err) {
+        console.error('Failed to delete product:', err);
+        // Ideally show a toast here, but for now we'll just log it
+        alert('Failed to delete product');
+      }
+    }
   };
 
   const tableData = products.map((product: any) => ({
@@ -81,22 +90,20 @@ function Products() {
           <div className="flex bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setViewMode('table')}
-              className={`flex items-center gap-2 px-3 py-1 rounded ${
-                viewMode === 'table'
-                  ? 'bg-white shadow text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`flex items-center gap-2 px-3 py-1 rounded ${viewMode === 'table'
+                ? 'bg-white shadow text-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
               <List size={16} />
               Table
             </button>
             <button
               onClick={() => setViewMode('card')}
-              className={`flex items-center gap-2 px-3 py-1 rounded ${
-                viewMode === 'card'
-                  ? 'bg-white shadow text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`flex items-center gap-2 px-3 py-1 rounded ${viewMode === 'card'
+                ? 'bg-white shadow text-blue-600'
+                : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
               <Grid size={16} />
               Card
