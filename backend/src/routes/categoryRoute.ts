@@ -34,11 +34,11 @@ categoryRoutes.get(
     getCategoryById
 );
 
-// Update category with validation
+// Update category with file upload and validation
 categoryRoutes.put(
     "/:id",
+    uploadCategories.single("image"),
     validate(idParamSchema, "params"),
-    validate(updateCategorySchema, "body"),
     updateCategory
 );
 

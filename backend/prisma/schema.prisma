@@ -46,7 +46,7 @@ model Product {
   title       String   @unique
   slug        String   @unique
   description String   @db.LongText
-  sku        String
+  sku         String   @unique
   price       Float
   mrp         Float
   stock       Int      @default(0)

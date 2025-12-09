@@ -3,6 +3,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { createCategory } from "../../../services/categoryService";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import Button from "../../ui/Button";
 
 const CreateCategory: React.FC = () => {
   const navigate = useNavigate();
@@ -82,13 +83,14 @@ const CreateCategory: React.FC = () => {
             className="mt-1"
           />
         </div>
-        <button
+<Button
           type="submit"
-          disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          variant="primary"
+          size="md"
+          loading={loading}
         >
           {loading ? "Creating..." : "Create Category"}
-        </button>
+        </Button>
       </form>
     </div>
   );

@@ -2,17 +2,18 @@ import type { Request, Response , NextFunction } from "express";
 import { prismaClient } from "../config/client";
 // Add item to cart
 interface CartItemRequest {
-    userId: string;
+    userId: number;
     sku: string;
-    quantity: string;
+    quantity: number;
 }
 
 
 export const addItemToCart = async ( req: Request , res: Response , next: NextFunction ) => {
     try {
         const { userId , sku, quantity } = req.body as CartItemRequest;
-        const userIdNum = parseInt(userId);
-        const quantityNum = parseInt(quantity);
+        console.log('addItemToCart: Received', { userId, sku, quantity, type: typeof userId });
+        const userIdNum = userId;
+        const quantityNum = quantity;
         // Check if the product already exists in the user's cart
         const existingCartItem = await prismaClient.cartItem.findFirst({
             where: {
@@ -20,6 +21,7 @@ export const addItemToCart = async ( req: Request , res: Response , next: NextFu
                 sku: sku,
             },
         });
+        console.log('addItemToCart: existingCartItem', existingCartItem);
         if (existingCartItem) {
             // If it exists, update the quantity
             const updatedCartItem = await prismaClient.cartItem.update({
@@ -33,6 +35,7 @@ export const addItemToCart = async ( req: Request , res: Response , next: NextFu
             const product = await prismaClient.product.findUnique({
                 where: { sku: sku },
             });
+            console.log('addItemToCart: product found', product);
             if (!product) {
                 return res.status(404).json({ error: "Product not found" });
             }
@@ -45,16 +48,18 @@ export const addItemToCart = async ( req: Request , res: Response , next: NextFu
                     price: product.price,
                 },
             });
+            console.log('addItemToCart: newCartItem created', newCartItem);
             res.status(201).json(newCartItem);
         }
     } catch (error) {
+        console.error('addItemToCart: error', error);
         next(error);
     }
 };
 
 export const removeItemFromCart = async ( req: Request , res: Response , next: NextFunction ) => {
     try {
-        const { cartItemId } = req.params;
+        const { cartItemId } = req.body;
         const cartItemIdNum = parseInt(cartItemId as string);
         // Delete the cart item
         await prismaClient.cartItem.delete({
@@ -62,6 +67,7 @@ export const removeItemFromCart = async ( req: Request , res: Response , next: N
         });
         res.status(200).json({ message: "Item removed from cart successfully" });
     } catch (error) {
+        console.error('removeItemFromCart: error', error);
         next(error);
     }
 };

@@ -20,6 +20,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:5173",
@@ -59,5 +60,11 @@ app.use("/cart", cartRoutes);
 app.use("/inventory", inventoryRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/orders", orderRoutes);
+
+// Error handling middleware
+app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+});
 
 export default app;

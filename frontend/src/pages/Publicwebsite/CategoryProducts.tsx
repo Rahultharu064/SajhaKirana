@@ -11,6 +11,7 @@ interface Product {
   title: string;
   price: number;
   mrp: number;
+  sku: string;
   images: string[];
 }
 
@@ -70,6 +71,7 @@ const CategoryProducts = () => {
         mrp: product.mrp,
         rating: 4.5, // Default rating
         image: imageUrl,
+        sku: product.sku,
         discount: product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0,
       };
     });

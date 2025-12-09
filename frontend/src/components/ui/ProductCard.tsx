@@ -1,5 +1,9 @@
 import { Heart } from 'lucide-react';
 import Button from './Button';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../../Redux/store';
+import { addToCart } from '../../Redux/slices/cartSlice';
+import toast from 'react-hot-toast';
 
 interface ProductCardProps {
   product: {
@@ -9,12 +13,25 @@ interface ProductCardProps {
     mrp: number;
     rating: number;
     image: string;
+    sku: string;
     discount?: number;
   };
   onViewDetails?: (productId: number) => void;
 }
 
 const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleAddToCart = async () => {
+    try {
+      await dispatch(addToCart({ sku: product.sku, quantity: 1 })).unwrap();
+      toast.success('Product added to cart!');
+    } catch (error) {
+      console.error('Add to cart failed:', error);
+      toast.error('Failed to add to cart');
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
       <div className="relative">
@@ -64,7 +81,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
         </div>
 
         <div className="space-y-2">
-          <Button variant="success" fullWidth>
+          <Button variant="success" fullWidth onClick={handleAddToCart}>
             Add to Cart
           </Button>
           <Button

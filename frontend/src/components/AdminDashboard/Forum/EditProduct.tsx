@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { updateProduct, getProductById } from "../../../services/productService";
 import { getCategories } from "../../../services/categoryService";
 import toast, { Toaster } from "react-hot-toast";
+import Button from "../../ui/Button";
 
 const EditProduct: React.FC = () => {
   const navigate = useNavigate();
@@ -110,12 +111,15 @@ const EditProduct: React.FC = () => {
       <Toaster position="top-right" reverseOrder={false} />
 
       <div className="flex items-center gap-4 mb-6">
-        <button
+<Button
+          type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => navigate('/admin/products')}
-          className="p-2 hover:bg-gray-100 rounded-full"
-        >
-          <ArrowLeft size={20} />
-        </button>
+          className="rounded-full"
+          title="Back to Products"
+          startIcon={<ArrowLeft size={20} />}
+        />
         <h2 className="text-2xl font-semibold">Edit Product</h2>
       </div>
 
@@ -196,14 +200,14 @@ const EditProduct: React.FC = () => {
         <div>
           <div className="flex items-center justify-between">
             <label htmlFor="category" className="block font-medium">Category</label>
-            <button
+<Button
               type="button"
+              variant="ghost"
+              size="xs"
               onClick={() => navigate('/admin/categories')}
-              className="p-1 rounded hover:bg-gray-100"
               title="Add new category"
-            >
-              <Plus size={18} />
-            </button>
+              startIcon={<Plus size={18} />}
+            />
           </div>
           <select
             id="category"
@@ -266,20 +270,22 @@ const EditProduct: React.FC = () => {
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
-          <button
+<Button
             type="button"
+            variant="outline"
+            size="md"
             onClick={() => navigate('/admin/products')}
-            className="px-4 py-2 border rounded hover:bg-gray-50"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+<Button
             type="submit"
-            disabled={loading}
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            variant="primary"
+            size="md"
+            loading={loading}
           >
             {loading ? "Saving..." : "Save Changes"}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

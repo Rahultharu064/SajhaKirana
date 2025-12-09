@@ -54,6 +54,7 @@ const Products = () => {
                         mrp: p.mrp,
                         rating: 4.5, // Placeholder if no rating in model
                         image: getProductImage(p), // Helper to get one image
+                        sku: p.sku,
                         discount: p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0,
                     }));
 

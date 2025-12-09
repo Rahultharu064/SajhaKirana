@@ -1,5 +1,6 @@
 import React from 'react';
 import { Edit, Trash } from 'lucide-react';
+import Button from '../../ui/Button';
 
 interface AdminProductCardProps {
   product: {
@@ -60,20 +61,24 @@ const AdminProductCard: React.FC<AdminProductCardProps> = ({ product, onEdit, on
         </div>
 
         <div className="flex justify-between items-center">
-          <button
+<Button
+            variant="ghost"
+            size="sm"
             onClick={() => onEdit?.(product.id)}
-            className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 text-sm"
+            className="bg-blue-50 text-blue-600 hover:bg-blue-100"
+            startIcon={<Edit size={14} />}
           >
-            <Edit size={14} />
             Edit
-          </button>
-          <button
+          </Button>
+<Button
+            variant="ghost"
+            size="sm"
             onClick={() => onDelete?.(product.id)}
-            className="flex items-center gap-1 px-3 py-1 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm"
+            className="bg-red-50 text-red-600 hover:bg-red-100"
+            startIcon={<Trash size={14} />}
           >
-            <Trash size={14} />
             Delete
-          </button>
+          </Button>
         </div>
       </div>
     </div>

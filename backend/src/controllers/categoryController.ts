@@ -141,13 +141,29 @@ export const updateCategory = async (
 ) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, slug } = req.body;
+    const image = req.file;
 
     // Validate ID
     if (!id || isNaN(parseInt(id))) {
       return res.status(400).json({
         success: false,
         message: "Invalid category ID",
+      });
+    }
+
+    // Validate input fields
+    if (name && (typeof name !== 'string' || name.trim().length < 2 || name.length > 100)) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name must be between 2 and 100 characters",
+      });
+    }
+
+    if (slug && (typeof slug !== 'string' || slug.trim().length < 2 || slug.length > 100)) {
+      return res.status(400).json({
+        success: false,
+        message: "Category slug must be between 2 and 100 characters",
       });
     }
 
@@ -164,9 +180,9 @@ export const updateCategory = async (
     }
 
     // Check if new name is already taken by another category
-    if (name) {
+    if (name && name.trim() !== existingCategory.name) {
       const duplicateCategory = await prismaClient.category.findUnique({
-        where: { name },
+        where: { name: name.trim() },
       });
 
       if (duplicateCategory && duplicateCategory.id !== parseInt(id)) {
@@ -177,12 +193,30 @@ export const updateCategory = async (
       }
     }
 
+    // Check if new slug is already taken by another category
+    if (slug && slug.trim() !== existingCategory.slug) {
+      const duplicateSlugCategory = await prismaClient.category.findUnique({
+        where: { slug: slug.trim() },
+      });
+
+      if (duplicateSlugCategory && duplicateSlugCategory.id !== parseInt(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Category with this slug already exists",
+        });
+      }
+    }
+
+    // Prepare update data
+    const updateData: any = {};
+    if (name) updateData.name = name.trim();
+    if (slug) updateData.slug = slug.trim();
+    if (image) updateData.image = image.filename;
+
     // Update category
     const updatedCategory = await prismaClient.category.update({
       where: { id: parseInt(id) },
-      data: {
-        ...(name && { name }),
-      },
+      data: updateData,
     });
 
     return res.status(200).json({
@@ -191,6 +225,7 @@ export const updateCategory = async (
       data: formatCategory(updatedCategory),
     });
   } catch (error) {
+    console.error("Update category error:", error);
     next(error);
   }
 };

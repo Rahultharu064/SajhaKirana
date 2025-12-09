@@ -1,11 +1,13 @@
-import { Component } from 'react';
+import { Component, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { BrowserRouter, useRoutes } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 import routes from "./routes";
 
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import { store } from './Redux/store';
+import type { AppDispatch } from './Redux/store';
+import { getCurrentUserAsync } from './Redux/slices/authSlice';
 
 // ErrorBoundary component
 class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: any }> {
@@ -51,6 +53,20 @@ function App() {
 
 function AppContent() {
   const element = useRoutes(routes);
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    console.log('App: Initializing, token present:', !!token);
+    if (token) {
+      console.log('App: Dispatching getCurrentUserAsync');
+      dispatch(getCurrentUserAsync())
+        .unwrap()
+        .then(user => console.log('App: User loaded:', user))
+        .catch(err => console.error('App: Failed to load user:', err));
+    }
+  }, [dispatch]);
+
   return element;
 }
 

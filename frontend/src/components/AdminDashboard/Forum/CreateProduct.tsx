@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { createProduct } from "../../../services/productService";
 import { getCategories } from "../../../services/categoryService";
 import toast, { Toaster } from "react-hot-toast";
+import Button from "../../ui/Button";
 
 const CreateProduct: React.FC = () => {
   const navigate = useNavigate();
@@ -162,14 +163,14 @@ const CreateProduct: React.FC = () => {
         <div>
           <div className="flex items-center justify-between">
             <label htmlFor="category" className="block font-medium">Category</label>
-            <button
+<Button
               type="button"
+              variant="ghost"
+              size="xs"
               onClick={() => navigate('/admin/categories')}
-              className="p-1 rounded hover:bg-gray-100"
               title="Add new category"
-            >
-              <Plus size={18} />
-            </button>
+              startIcon={<Plus size={18} />}
+            />
           </div>
           <select
             id="category"
@@ -220,13 +221,14 @@ const CreateProduct: React.FC = () => {
             className="mt-1"
           />
         </div>
-        <button
+<Button
           type="submit"
-          disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+          variant="primary"
+          size="md"
+          loading={loading}
         >
           {loading ? "Creating..." : "Create Product"}
-        </button>
+        </Button>
       </form>
     </div>
   );

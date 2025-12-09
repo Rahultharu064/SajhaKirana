@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom';
 import { Search, ShoppingCart, Heart } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../../Redux/store';
 
 const Header = () => {
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,12 +48,14 @@ const Header = () => {
             </button>
 
             {/* Cart */}
-            <button className="p-2 rounded-full hover:bg-gray-100 relative">
+            <Link to="/cart" className="p-2 rounded-full hover:bg-gray-100 relative">
               <ShoppingCart className="h-5 w-5 text-gray-600" />
-              <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                2
-              </span>
-            </button>
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
 
             {/* Login/Register */}
             <div className="flex items-center space-x-2">

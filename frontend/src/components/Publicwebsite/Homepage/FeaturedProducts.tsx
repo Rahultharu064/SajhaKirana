@@ -7,6 +7,7 @@ interface Product {
   title: string;
   price: number;
   mrp: number;
+  sku: string;
   images: string[];
 }
 
@@ -45,6 +46,7 @@ const FeaturedProducts = () => {
         mrp: product.mrp,
         rating: 4.5, // Default rating (can be fetched from reviews later)
         image: imageUrl,
+        sku: product.sku,
         discount: product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0,
       };
     });

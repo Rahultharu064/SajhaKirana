@@ -7,6 +7,7 @@ import Register from "../components/Auth/Register.tsx";
 import Login from "../components/Auth/Login.tsx";
 import Profile from "../components/Auth/Profile.tsx";
 import ProfileEdit from "../components/Auth/ProfileEdit.tsx";
+import Cart from "../components/Publicwebsite/Cart/Cart.tsx";
 import AdminDashboard from "../pages/AdminDashboard/AdminDashboard.tsx";
 import { Navigate } from "react-router-dom";
 import Dashboard from "../components/AdminDashboard/Sections/Dashboard.tsx";
@@ -56,6 +57,10 @@ const routes = [
     {
         path: "/profile/edit",
         element: <ProfileEdit />,
+    },
+    {
+        path: "/cart",
+        element: <Cart />,
     },
     // Admin Routes
     {

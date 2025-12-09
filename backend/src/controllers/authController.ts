@@ -173,7 +173,8 @@ export const getCurrentUser = async (req: Request, res: Response, next: NextFunc
             where: { id: userId }
         });
         if (!user) {
-            res.status(404).json({ message: "User not found" });
+            console.log('getCurrentUser: User not found in database, returning 401');
+            res.status(401).json({ message: "User not authenticated" });
             return;
         }
         res.status(200).json({

@@ -16,10 +16,13 @@ export const createCategorySchema = Joi.object({
 
 // Update category validation schema
 export const updateCategorySchema = Joi.object({
-    name: Joi.string().required().min(2).max(100).messages({
-        "string.empty": "Category name is required",
+    name: Joi.string().optional().min(2).max(100).messages({
         "string.min": "Category name must be at least 2 characters",
         "string.max": "Category name cannot exceed 100 characters"
+    }),
+    slug: Joi.string().optional().min(2).max(100).messages({
+        "string.min": "Category slug must be at least 2 characters",
+        "string.max": "Category slug cannot exceed 100 characters"
     })
 });
 
