@@ -48,8 +48,7 @@ function Products() {
   if (error) return <div>Error: {error}</div>;
 
   const handleEdit = (productId: number) => {
-    // TODO: Implement edit functionality
-    console.log('Edit product:', productId);
+    navigate(`/admin/edit-product/${productId}`);
   };
 
   const handleDelete = (productId: number) => {

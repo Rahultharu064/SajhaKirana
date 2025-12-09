@@ -1,32 +1,40 @@
+import { useState, useEffect } from 'react';
 import CategoryCard from '../../ui/CategoryCard';
+import { getCategories } from '../../../services/categoryService';
 
-const Categories = () => {
-  const categories = [
-    {
-      id: 1,
-      name: "Groceries",
-      image: "/api/placeholder/200/150",
-      icon: "🛒",
-    },
-    {
-      id: 2,
-      name: "Beverages",
-      image: "/api/placeholder/200/150",
-      icon: "🥤",
-    },
-    {
-      id: 3,
-      name: "Snacks",
-      image: "/api/placeholder/200/150",
-      icon: "🍿",
-    },
-    {
-      id: 4,
-      name: "Dairy",
-      image: "/api/placeholder/200/150",
-      icon: "🥛",
-    },
-  ];
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  image?: string;
+}
+
+interface CategoriesProps {
+  onCategorySelect: (category: Category) => void;
+}
+
+const Categories = ({ onCategorySelect }: CategoriesProps) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const fetchedCategories = await getCategories();
+        setCategories(fetchedCategories);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  if (loading) {
+    return <div className="py-16 bg-gray-50 text-center">Loading categories...</div>;
+  }
 
   return (
     <section className="py-16 bg-gray-50">
@@ -38,7 +46,11 @@ const Categories = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {categories.map((category) => (
-            <CategoryCard key={category.id} category={category} />
+            <CategoryCard
+              key={category.id}
+              category={category}
+              onClick={() => onCategorySelect(category)}
+            />
           ))}
         </div>
       </div>

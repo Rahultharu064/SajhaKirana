@@ -75,11 +75,8 @@ export const registerAsync = createAsyncThunk(
   async (data: { name: string; email: string; password: string; phone?: string }, { rejectWithValue }) => {
     try {
       const response = await register(data);
-      const { user } = response.data;
-      // Assuming JWT token is sent in response after backend fix
-      const token = response.data.token;
-      localStorage.setItem('token', token);
-      return { user, token };
+      // Registration successful, but don't auto-login
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
     }
@@ -231,12 +228,9 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerAsync.fulfilled, (state, action) => {
+      .addCase(registerAsync.fulfilled, (state) => {
         state.loading = false;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-        state.isAuthenticated = true;
-        toast.success('Registration successful!');
+        toast.success('Registration successful! Please login.');
       })
       .addCase(registerAsync.rejected, (state, action) => {
         state.loading = false;

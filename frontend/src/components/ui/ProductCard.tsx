@@ -1,4 +1,5 @@
 import { Heart } from 'lucide-react';
+import Button from './Button';
 
 interface ProductCardProps {
   product: {
@@ -10,9 +11,10 @@ interface ProductCardProps {
     image: string;
     discount?: number;
   };
+  onViewDetails?: (productId: number) => void;
 }
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
   return (
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
       <div className="relative">
@@ -26,9 +28,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
             -{product.discount}%
           </div>
         )}
-        <button className="absolute top-2 right-2 p-2 rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 transition-opacity" aria-label="Add to wishlist">
+        <Button
+          className="absolute top-2 right-2 p-2 rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 transition-opacity"
+          aria-label="Add to wishlist"
+          variant="ghost"
+          size="xs"
+        >
           <Heart className="h-4 w-4 text-gray-600" />
-        </button>
+        </Button>
       </div>
 
       <div className="p-4">
@@ -52,9 +59,18 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <span className="text-sm text-gray-600">({product.rating})</span>
         </div>
 
-        <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-md font-medium transition-colors">
-          Add to Cart
-        </button>
+        <div className="space-y-2">
+          <Button variant="success" fullWidth>
+            Add to Cart
+          </Button>
+          <Button
+            variant="outline"
+            fullWidth
+            onClick={() => onViewDetails && onViewDetails(product.id)}
+          >
+            View Details
+          </Button>
+        </div>
       </div>
     </div>
   );

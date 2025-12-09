@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mono and Stereo Panning Example</title>
+    <style>
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: #f0f8ff;
+    color: #2c3e50;
+    text-align: center;
+}
+.container {
+    background: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    max-width: 500px;
+    width: 90%;
+}
+h1 {
+    color: #1a567f;
+    margin-bottom: 5px;
+}
+p {
+    margin-bottom: 25px;
+    font-style: italic;
+}
+.controls, .mode-buttons {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+.mode-buttons button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    margin: 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+.mode-buttons button:hover:not(:disabled) {
+    background-color: #2980b9;
+}
+.mode-buttons button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+.mode-buttons button.active {
+    background-color: #27ae60;
+    box-shadow: 0 0 5px #27ae60;
+}
+input[type="range"] {
+    width: 90%;
+    margin-top: 15px;
+}
+.status {
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #e67e22;
+}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎧 Mono and Stereo Panning Example</h1>
+        <p>Using a pure tone to avoid "Failed to fetch" errors. Use headphones!</p>
+
+        <div class="mode-buttons">
+            <button id="monoBtn">Play MONO</button>
+            <button id="stereoBtn">Play STEREO</button>
+            <button id="stopBtn" disabled>Stop</button>
+        </div>
+
+        <div class="controls">
+            <h3>Stereo Pan Control</h3>
+            <p id="panHelp">Click the STEREO button to enable panning.</p>
+            <input type="range" id="panSlider" min="-1.0" max="1.0" step="0.01" value="0.0" disabled title="Pan Control">
+            <div class="status" id="panStatus">Pan: 0.0 (Center)</div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript (Web Audio API)
+        
+        let audioCtx;
+        let oscillatorSource;
+        let panner;
+        
+        // --- Utility Functions ---
+
+        function updatePanStatus(value) {
+            let statusText;
+            if (value < -0.9) {
+                statusText = 'Pan: ' + value.toFixed(2) + ' (Extreme Left ⬅️)';
+            } else if (value > 0.9) {
+                statusText = 'Pan: ' + value.toFixed(2) + ' (Extreme Right ➡️)';
+            } else {
+                 statusText = 'Pan: ' + value.toFixed(2) + ' (Center ⏺️)';
+            }
+            document.getElementById('panStatus').textContent = statusText;
+        }
+
+        function resetState() {
+            document.getElementById('panSlider').disabled = true;
+            document.getElementById('panSlider').value = 0.0;
+            document.getElementById('panHelp').textContent = "Click the STEREO button to enable panning.";
+            document.getElementById('monoBtn').classList.remove('active');
+            document.getElementById('stereoBtn').classList.remove('active');
+            updatePanStatus(0.0);
+        }
+
+        function stopSound() {
+            if (oscillatorSource) {
+                // Fade out the sound nicely before stopping
+                oscillatorSource.gainNode.gain.setValueAtTime(oscillatorSource.gainNode.gain.value, audioCtx.currentTime);
+                oscillatorSource.gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.1);
+                
+                // Stop after a short delay
+                setTimeout(() => {
+                    if (oscillatorSource) {
+                        oscillatorSource.stop();
+                        oscillatorSource = null;
+                        resetState();
+                        document.getElementById('stopBtn').disabled = true;
+                    }
+                }, 100); 
+            }
+        }
+        
+        // --- Core Audio Functions ---
+
+        function playSound(mode) {
+            // 1. Stop any currently playing sound
+            stopSound();
+            
+            // 2. Initialize AudioContext (must be done after a user gesture)
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            // 3. Create the Sound Source (Oscillator for simplicity)
+            const oscillator = audioCtx.createOscillator();
+            oscillator.type = 'sine'; // Pure tone
+            oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // A4 note
+            oscillator.start();
+
+            // 4. Create the Panner Node (Key for Stereo)
+            panner = audioCtx.createStereoPanner();
+            
+            // 5. Create a GainNode for smooth control and volume
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime); // Start at 0 volume
+            gainNode.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.5); // Ramp up volume
+
+            // 6. Connect the graph: Oscillator -> Panner -> Gain -> Destination
+            oscillator.connect(panner).connect(gainNode).connect(audioCtx.destination);
+            
+            // Store the source and gain node for control
+            oscillatorSource = oscillator;
+            oscillatorSource.gainNode = gainNode;
+
+            // --- Mode Specific Settings ---
+            if (mode === 'mono') {
+                // MONO: Set the pan to center (0.0)
+                panner.pan.setValueAtTime(0.0, audioCtx.currentTime);
+                resetState();
+                document.getElementById('monoBtn').classList.add('active');
+                updatePanStatus(0.0);
+                document.getElementById('panHelp').textContent = "MONO Mode: Panning disabled. Sound is fixed to center.";
+
+            } else if (mode === 'stereo') {
+                // STEREO: Reset pan to center, enable slider
+                resetState(); 
+                document.getElementById('panSlider').disabled = false;
+                document.getElementById('stereoBtn').classList.add('active');
+                document.getElementById('panHelp').textContent = "STEREO Mode: Move the slider to pan the sound left or right.";
+                // Note: panner.pan remains at 0.0 until the user moves the slider
+            }
+
+            document.getElementById('stopBtn').disabled = false;
+        }
+
+        function handlePanChange(event) {
+            // Only respond to pan changes if stereo mode is active
+            if (document.getElementById('stereoBtn').classList.contains('active') && panner) {
+                const panValue = parseFloat(event.target.value);
+                // Apply the pan value to the panner node
+                panner.pan.setValueAtTime(panValue, audioCtx.currentTime);
+                updatePanStatus(panValue);
+            }
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('monoBtn').addEventListener('click', () => playSound('mono'));
+        document.getElementById('stereoBtn').addEventListener('click', () => playSound('stereo'));
+        document.getElementById('stopBtn').addEventListener('click', stopSound);
+        document.getElementById('panSlider').addEventListener('input', handlePanChange);
+
+    </script>
+</body> 
+</html>

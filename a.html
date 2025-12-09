@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Spatial Audio Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #e8f5e9;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+
+        #playButton {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        #playButton:hover {
+            background-color: #45a049;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Surround/Spatial Sound Demo (Stereo Panning)</h1>
+        <p>Click the button to play a sound that will move from left to right.</p>
+        <button id="playButton">Start Panning Sound</button>
+        <p id="status">Ready.</p>
+    </div>
+
+    <script>
+        const button = document.getElementById('playButton');
+        const statusDisplay = document.getElementById('status');
+        let audioContext;
+        let panner;
+        let oscillator;
+        let animationFrameId;
+
+        // Function to create and start the Web Audio components
+        function startSound() {
+            // Check for Web Audio API support
+            if (!window.AudioContext && !window.webkitAudioContext) {
+                statusDisplay.textContent = "Error: Web Audio API not supported.";
+                return;
+            }
+
+            // Create AudioContext if it doesn't exist (needed for user gesture)
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            // --- 1. Create Source: Oscillator (a simple tone) ---
+            oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine'; // A smooth tone
+
+            // --- 2. Create Effect Node: Panner for spatial control ---
+            panner = audioContext.createPanner();
+            panner.panningModel = 'HRTF'; // High-quality spatial model
+            panner.distanceModel = 'linear';
+            
+            // Start at the far left (x=-1)
+            panner.positionX.value = -1;
+            panner.positionY.value = 0;
+            panner.positionZ.value = 0;
+
+            // --- 3. Connect the Nodes: Source -> Panner -> Destination ---
+            oscillator.connect(panner);
+            panner.connect(audioContext.destination);
+
+            // Start the tone
+            oscillator.start();
+            button.textContent = "Panning...";
+            button.disabled = true;
+
+            // Start the panning animation
+            animatePan();
+
+            // Stop sound after a short duration
+            setTimeout(stopSound, 4000); 
+        }
+
+        // Function to move the sound position over time
+        function animatePan() {
+            const duration = 4.0; // Panning duration in seconds
+            const startTime = audioContext.currentTime;
+
+            function panStep() {
+                const elapsed = audioContext.currentTime - startTime;
+                const progress = elapsed / duration; // 0 to 1
+
+                if (progress < 1) {
+                    // Panner position moves from -1 (left) to 1 (right)
+                    // The formula calculates a value from -1 to 1 based on progress (0 to 1)
+                    const xPosition = -1 + (2 * progress);
+                    panner.positionX.setValueAtTime(xPosition, audioContext.currentTime);
+                    statusDisplay.textContent = `Panning... Position X: ${xPosition.toFixed(2)}`;
+                    animationFrameId = requestAnimationFrame(panStep);
+                } else {
+                    stopSound();
+                }
+            }
+            animationFrameId = requestAnimationFrame(panStep);
+        }
+
+        // Function to stop the Web Audio components
+        function stopSound() {
+            if (oscillator) {
+                oscillator.stop();
+                oscillator.disconnect();
+                panner.disconnect();
+                oscillator = null;
+                panner = null;
+                cancelAnimationFrame(animationFrameId);
+
+                button.textContent = "Start Panning Sound";
+                button.disabled = false;
+                statusDisplay.textContent = "Ready. (Sound stopped)";
+            }
+        }
+
+        // Event Listener
+        button.addEventListener('click', startSound);
+    </script>
+</body>
+</html>

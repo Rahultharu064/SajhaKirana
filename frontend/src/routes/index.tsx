@@ -1,4 +1,6 @@
 import Home from "@/pages/Publicwebsite/Home.tsx";
+import CategoryProducts from "../pages/Publicwebsite/CategoryProducts.tsx";
+import ProductDetail from "../pages/Publicwebsite/ProductDetail.tsx";
 import Register from "../components/Auth/Register.tsx";
 import Login from "../components/Auth/Login.tsx";
 import Profile from "../components/Auth/Profile.tsx";
@@ -14,11 +16,20 @@ import Promotions from "../components/AdminDashboard/Sections/Promotions.tsx";
 import Settings from "../components/AdminDashboard/Sections/Settings.tsx";
 import Categories from "../components/AdminDashboard/Sections/Categories.tsx";
 import CreateProduct from "../components/AdminDashboard/Forum/CreateProduct.tsx";
+import EditProduct from "../components/AdminDashboard/Forum/EditProduct.tsx";
 
 const routes = [
     {
         path: "/",
         element: <Home />,
+    },
+    {
+        path: "/category/:id",
+        element: <CategoryProducts />,
+    },
+    {
+        path: "/product/:id",
+        element: <ProductDetail />,
     },
     {
         path: "/register",
@@ -56,6 +67,10 @@ const routes = [
             {
                 path: "create-product",
                 element: <CreateProduct />
+            },
+            {
+                path: "edit-product/:id",
+                element: <EditProduct />
             },
             {
                 path: "orders",

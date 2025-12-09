@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>360 Degree Orbiting Spatial Audio</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f4f8;
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            background-color: white;
+            text-align: center;
+        }
+
+        h1 {
+            color: #d84315; /* Orange-Red for Movement */
+            margin-bottom: 5px;
+        }
+
+        p {
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        #playButton {
+            background-color: #ff9800; /* Orange */
+            color: white;
+            border: none;
+            padding: 15px 35px;
+            text-align: center;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: background-color 0.3s ease, transform 0.1s;
+            font-weight: bold;
+        }
+
+        #playButton:hover {
+            background-color: #fb8c00;
+        }
+
+        #playButton:active {
+            transform: scale(0.98);
+        }
+
+        .status-box {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #fff3e0;
+            border-left: 5px solid #ff9800;
+            text-align: left;
+        }
+
+        .status-box strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #e65100;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>360° Orbiting Audio Demo</h1>
+        <p>This simulates a sound source orbiting around your head using trigonometry. **Put on your headphones** to experience the full circular motion.</p>
+        <button id="playButton">Start 360° Orbit</button>
+
+        <div class="status-box">
+            <strong>Current Position:</strong>
+            <p id="params">Orbit Radius: **4 meters** | Orbit Speed: **60 BPM**</p>
+            <strong>Status:</strong>
+            <p id="status">Ready.</p>
+        </div>
+    </div>
+
+    <script>
+        const button = document.getElementById('playButton');
+        const statusDisplay = document.getElementById('status');
+        let audioContext;
+        let panner;
+        let oscillator;
+        let isPlaying = false;
+        let angle = 0; // The current angle (in radians) for the orbit
+        let animationFrameId;
+
+        // --- Orbit Parameters ---
+        const ORBIT_RADIUS = 4; // Distance from the center (you) in meters
+        const ORBIT_SPEED = 0.05; // How much the angle changes per frame (speed of orbit)
+
+        function initAudio() {
+            if (isPlaying) {
+                stopSound();
+                return;
+            }
+
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            // --- 1. Audio Source (The Sound) ---
+            oscillator = audioContext.createOscillator();
+            oscillator.type = 'square'; // A buzzing tone helps locate the source
+            oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+
+            // --- 2. PannerNode (The Location) ---
+            panner = audioContext.createPanner();
+            panner.panningModel = 'HRTF'; // Critical for 360° realism
+            panner.distanceModel = 'linear'; // Keeps distance model simple for smooth sound
+            
+            // --- 3. AudioListener (You, the User) ---
+            const listener = audioContext.listener;
+            listener.positionX.setValueAtTime(0, audioContext.currentTime);
+            listener.positionY.setValueAtTime(0, audioContext.currentTime);
+            listener.positionZ.setValueAtTime(0, audioContext.currentTime);
+
+            // --- 4. Connections ---
+            oscillator.connect(panner);
+            panner.connect(audioContext.destination);
+
+            // Start the sound and the animation loop
+            oscillator.start();
+            isPlaying = true;
+            button.textContent = "Stop 360° Orbit";
+            animateOrbit();
+        }
+
+        // --- CORE ANIMATION FUNCTION ---
+        function animateOrbit() {
+            // Calculate new X and Z positions using trigonometry
+            // X = Radius * cos(angle)
+            // Z = Radius * sin(angle)
+            
+            // We use COS for X (Left/Right) and SIN for Z (Front/Back)
+            // This is standard for circular motion on the X/Z plane.
+            const xPosition = ORBIT_RADIUS * Math.cos(angle);
+            const zPosition = ORBIT_RADIUS * Math.sin(angle);
+            
+            // Update the panner node's position
+            panner.positionX.setValueAtTime(xPosition, audioContext.currentTime);
+            panner.positionZ.setValueAtTime(zPosition, audioContext.currentTime);
+            
+            // Increment the angle for the next frame
+            angle += ORBIT_SPEED;
+
+            // Loop the angle back to 0 once it hits a full circle (2*PI radians)
+            if (angle > 2 * Math.PI) {
+                angle -= 2 * Math.PI;
+            }
+
+            // Update the status display
+            statusDisplay.innerHTML = `Orbiting... X: **${xPosition.toFixed(2)}**, Z: **${zPosition.toFixed(2)}**`;
+
+            // Request the next frame
+            if (isPlaying) {
+                animationFrameId = requestAnimationFrame(animateOrbit);
+            }
+        }
+
+        function stopSound() {
+            if (oscillator) {
+                oscillator.stop();
+                oscillator.disconnect();
+                panner.disconnect();
+                oscillator = null;
+                panner = null;
+                isPlaying = false;
+                cancelAnimationFrame(animationFrameId);
+                button.textContent = "Start 360° Orbit";
+                statusDisplay.innerHTML = "Ready. Orbit stopped.";
+                angle = 0; // Reset angle for next run
+            }
+        }
+
+        // Event Listener
+        button.addEventListener('click', initAudio);
+    </script>
+</body>
+</html>
