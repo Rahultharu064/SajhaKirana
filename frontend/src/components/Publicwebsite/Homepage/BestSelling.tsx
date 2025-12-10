@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProductCard from '../../ui/ProductCard';
 import { getAllProducts } from '../../../services/productService';
 
@@ -14,6 +15,7 @@ interface Product {
 const BestSelling = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -31,6 +33,10 @@ const BestSelling = () => {
 
     fetchProducts();
   }, []);
+
+  const handleViewDetails = (productId: number) => {
+    navigate(`/product/${productId}`);
+  };
 
   // Map backend product data to ProductCard format
   const mapProductsToCardFormat = (products: Product[]) => {
@@ -70,7 +76,10 @@ const BestSelling = () => {
             <div className="flex space-x-6 pb-4 min-w-max">
               {mapProductsToCardFormat(products).map((product) => (
                 <div key={`bestseller-${product.id}`} className="flex-shrink-0 w-72">
-                  <ProductCard product={product} />
+                  <ProductCard
+                    product={product}
+                    onViewDetails={handleViewDetails}
+                  />
                 </div>
               ))}
             </div>

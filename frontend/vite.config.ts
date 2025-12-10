@@ -13,10 +13,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api/features': {
-        target: 'https://ab.reasonlabsapi.com/api',
-        changeOrigin: true,
-      },
+
       '/uploads': {
         target: 'http://localhost:5003',
         changeOrigin: true,

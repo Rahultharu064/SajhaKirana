@@ -5,10 +5,12 @@ import { prismaClient } from "../config/client";
 export const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId, paymentMethod, couponCode, items } = req.body;
+    console.log("Create Order Payload:", JSON.stringify(req.body, null, 2));
 
     // Validate user
     const user = await prismaClient.user.findUnique({ where: { id: parseInt(userId) } });
     if (!user) {
+      console.error(`Create Order Failed: User ${userId} not found`);
       return res.status(404).json({ success: false, error: { code: "USER_NOT_FOUND", message: "User not found" } });
     }
 
@@ -22,9 +24,11 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
     for (const item of items) {
       const product = await prismaClient.product.findUnique({ where: { sku: item.sku } });
       if (!product) {
+        console.error(`Create Order Failed: Product SKU ${item.sku} not found`);
         return res.status(404).json({ success: false, error: { code: "PRODUCT_NOT_FOUND", message: `Product with SKU ${item.sku} not found` } });
       }
       if (product.stock < item.qty) {
+        console.error(`Create Order Failed: Insufficient stock for ${product.title} (Requested: ${item.qty}, Available: ${product.stock})`);
         return res.status(400).json({ success: false, error: { code: "INSUFFICIENT_STOCK", message: `Insufficient stock for ${product.title}` } });
       }
       total += item.price * item.qty;
@@ -54,37 +58,81 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
       },
     });
 
-    // Reserve inventory
-    const inventoryItems = items.map((item: any) => ({ sku: item.sku, qty: item.qty }));
-    // Call reserveStock internally or via service
-    // For now, simulate
-    try {
-      const reserveResponse = await fetch(`${req.protocol}://${req.get('host')}/api/inventory/reserve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: order.id.toString(), items: inventoryItems }),
-      });
-      if (!reserveResponse.ok) {
-        // If reserve fails, delete order
-        await prismaClient.order.delete({ where: { id: order.id } });
-        return res.status(400).json({ success: false, error: { code: "RESERVATION_FAILED", message: "Failed to reserve stock" } });
+    // Initiate payment based on method
+    let paymentResponse = null;
+    if (paymentMethod === 'esewa' || paymentMethod === 'khalti') {
+      try {
+        console.log(`🔄 Initiating ${paymentMethod} payment for order ${order.id}...`);
+
+        // Import and call the payment controller functions directly
+        const { initiateEsewaPayment, initiateKhaltiPayment } = await import('./paymentController.js');
+
+        // Create a simple request object
+        const paymentReq = {
+          ...req,
+          params: { orderId: order.id.toString() }
+        } as any;
+
+        // Call the appropriate payment initiation function
+        if (paymentMethod === 'esewa') {
+          let responseCaptured: any = null;
+          const paymentRes = {
+            status: (code: number) => ({
+              json: (data: any) => {
+                responseCaptured = data;
+                return paymentRes;
+              }
+            })
+          } as any;
+
+          await initiateEsewaPayment(paymentReq, paymentRes, (err: any) => {
+            if (err) {
+              console.error(`❌ eSewa initiation failed:`, err);
+            }
+          });
+
+          if (responseCaptured) {
+            paymentResponse = { data: responseCaptured.data };
+            console.log(`✅ eSewa payment initiated successfully:`, paymentResponse);
+          }
+        } else if (paymentMethod === 'khalti') {
+          let responseCaptured: any = null;
+          const paymentRes = {
+            status: (code: number) => ({
+              json: (data: any) => {
+                responseCaptured = data;
+                return paymentRes;
+              }
+            })
+          } as any;
+
+          await initiateKhaltiPayment(paymentReq, paymentRes, (err: any) => {
+            if (err) {
+              console.error(`❌ Khalti initiation failed:`, err);
+            }
+          });
+
+          if (responseCaptured) {
+            paymentResponse = { data: responseCaptured.data };
+            console.log(`✅ Khalti payment initiated successfully:`, paymentResponse);
+          }
+        }
+      } catch (error) {
+        console.error(`💥 ${paymentMethod} initiation error:`, error);
       }
-    } catch (error) {
-      await prismaClient.order.delete({ where: { id: order.id } });
-      return next(error);
     }
+
+    console.log(`📦 Order ${order.id} created successfully`);
 
     // Clear cart
     await prismaClient.cartItem.deleteMany({ where: { userId: parseInt(userId) } });
-
-    // TODO: Initiate payment
 
     res.status(201).json({
       success: true,
       data: {
         orderId: order.id,
         total: order.total,
-        // paymentIntent: ... 
+        ...paymentResponse,  // Include payment redirect details
       }
     });
   } catch (error) {
@@ -177,7 +225,7 @@ export const cancelOrder = async (req: Request, res: Response, next: NextFunctio
     });
 
     // Release reservation
-    await fetch(`${req.protocol}://${req.get('host')}/api/inventory/release`, {
+    await fetch(`${req.protocol}://${req.get('host')}/inventory/release`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ orderId: id.toString() }),
@@ -252,7 +300,7 @@ export const confirmDelivery = async (req: Request, res: Response, next: NextFun
     });
 
     // Commit reservation
-    await fetch(`${req.protocol}://${req.get('host')}/api/inventory/commit`, {
+    await fetch(`${req.protocol}://${req.get('host')}/inventory/commit`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ orderId: id.toString() }),

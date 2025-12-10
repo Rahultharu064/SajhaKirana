@@ -20,3 +20,28 @@ export interface Category {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface AddressData {
+    fullName: string;
+    phone: string;
+    email: string;
+    address: string;
+    city: string;
+    district: string;
+    landmark: string;
+}
+
+export interface DeliveryOption {
+    id: string;
+    name: string;
+    description: string;
+    price: number;
+    estimatedDays: string;
+}
+
+export interface PaymentMethodData {
+    type: "cod" | "esewa" | "khalti" | "card";
+    cardNumber?: string;
+    expiryDate?: string;
+    cvv?: string;
+}

@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { addToCart } from "../../Redux/slices/cartSlice";
+import type { AppDispatch } from "../../Redux/store";
 import {
   ChevronRight,
   Star,
@@ -37,6 +39,7 @@ const features = [
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: any) => state.auth);
   const [product, setProduct] = useState<any | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
@@ -105,23 +108,66 @@ export default function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  const handleAddToCart = () => {
-    toast.success(`added ${quantity} x ${product.title} to your cart.`, {
-      style: {
-        border: '1px solid #10B981',
-        padding: '16px',
-        color: '#713200',
-      },
-      iconTheme: {
-        primary: '#10B981',
-        secondary: '#FFFAEE',
-      },
-    });
+  const handleAddToCart = async () => {
+    try {
+      if (!isAuthenticated) {
+        toast.error("Please login to add items to cart");
+        navigate('/login');
+        return;
+      }
+
+      const productImage = displayImages?.[0] || '/api/placeholder/400/400';
+
+      await dispatch(addToCart({
+        sku: product.sku,
+        quantity,
+        name: product.title,
+        image: productImage,
+        description: product.description?.substring(0, 100) || 'High-quality product'
+      })).unwrap();
+
+      toast.success(`Added ${quantity} x ${product.title} to your cart!`, {
+        style: {
+          border: '1px solid #10B981',
+          padding: '16px',
+          color: '#713200',
+        },
+        iconTheme: {
+          primary: '#10B981',
+          secondary: '#FFFAEE',
+        },
+      });
+    } catch (error) {
+      console.error('Add to cart failed:', error);
+      toast.error('Failed to add to cart');
+    }
   };
 
-  const handleBuyNow = () => {
-    handleAddToCart();
-    navigate('/cart');
+  const handleBuyNow = async () => {
+    try {
+      if (!isAuthenticated) {
+        toast.error("Please login to place an order");
+        navigate('/login');
+        return;
+      }
+
+      // Add to cart using Redux
+      const productImage = displayImages?.[0] || '/api/placeholder/400/400';
+
+      await dispatch(addToCart({
+        sku: product.sku,
+        quantity,
+        name: product.title,
+        image: productImage,
+        description: product.description?.substring(0, 100) || 'High-quality product'
+      })).unwrap();
+
+      // Navigate to checkout instead of cart
+      navigate('/checkout');
+    } catch (error) {
+      console.error('Buy now failed:', error);
+      toast.error('Failed to proceed to checkout');
+    }
   };
 
   const handleWriteReview = () => {

@@ -8,6 +8,9 @@ interface CartItem {
   sku: string;
   quantity: number;
   price: number;
+  name: string;
+  image: string;
+  description?: string;
 }
 
 interface CartState {
@@ -27,7 +30,19 @@ const initialState: CartState = {
 // Async thunks
 export const addToCart = createAsyncThunk(
   'cart/addToCart',
-  async ({ sku, quantity }: { sku: string; quantity: number }, { dispatch, getState }) => {
+  async ({
+    sku,
+    quantity,
+    name,
+    image,
+    description
+  }: {
+    sku: string;
+    quantity: number;
+    name?: string;
+    image?: string;
+    description?: string;
+  }, { dispatch, getState }) => {
     const state: any = getState();
     const userId = state.auth.user?.userId;
 
@@ -39,6 +54,17 @@ export const addToCart = createAsyncThunk(
     console.log('cartSlice: Sending addToCart payload:', payload);
 
     const response = await api.post('/cart/add', payload);
+
+    // If we have product info, store it temporarily for display purposes
+    if (name || image || description) {
+      try {
+        const productCache = JSON.parse(localStorage.getItem('cartProductCache') || '{}');
+        productCache[sku] = { name, image, description };
+        localStorage.setItem('cartProductCache', JSON.stringify(productCache));
+      } catch (error) {
+        console.warn('Failed to cache product info:', error);
+      }
+    }
 
     // Fetch cart after adding
     dispatch(fetchCart());
@@ -65,7 +91,22 @@ export const fetchCart = createAsyncThunk(
     }
 
     const response = await api.get(`/cart/${userId}`);
-    return response.data;
+
+    // Enrich cart items with product information from cache
+    const cartData = response.data;
+    const productCache = JSON.parse(localStorage.getItem('cartProductCache') || '{}');
+
+    // Add product information to cart items
+    if (cartData.items && Array.isArray(cartData.items)) {
+      cartData.items = cartData.items.map((item: CartItem) => ({
+        ...item,
+        name: productCache[item.sku]?.name || `Product ${item.sku}`,
+        image: productCache[item.sku]?.image || '/placeholder.jpg',
+        description: productCache[item.sku]?.description || 'Product description'
+      }));
+    }
+
+    return cartData;
   }
 );
 

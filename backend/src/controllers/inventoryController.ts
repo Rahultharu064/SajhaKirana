@@ -183,16 +183,17 @@ export const reserveStock = async (
     // Check availability and prepare reservations
     const reservationsToCreate: Array<{ orderId: string; sku: string; quantity: number }> = [];
     for (const item of items) {
-      const inventory = await prismaClient.inventory.findUnique({
+      let inventory = await prismaClient.inventory.findUnique({
         where: { sku: item.sku },
       });
 
+      // Create inventory record if it doesn't exist (with 0 stock)
       if (!inventory) {
-        return res.status(404).json({
-          success: false,
-          error: {
-            code: "INVENTORY_NOT_FOUND",
-            message: `Inventory not found for SKU: ${item.sku}`,
+        inventory = await prismaClient.inventory.create({
+          data: {
+            sku: item.sku,
+            totalStock: 0,
+            availableStock: 0
           },
         });
       }

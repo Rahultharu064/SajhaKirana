@@ -7,7 +7,7 @@ export const createOrderSchema = Joi.object({
         "number.positive": "User ID must be a positive number",
         "any.required": "User ID is required",
     }),
-    shippingAddress: Joi.object().required().messages({
+    shippingAddress: Joi.object().unknown().required().messages({
         "object.base": "Shipping address must be an object",
         "any.required": "Shipping address is required",
     }),
@@ -20,7 +20,7 @@ export const createOrderSchema = Joi.object({
         Joi.object({
             sku: Joi.string().required(),
             qty: Joi.number().integer().min(1).required(),
-            price: Joi.number().positive().required(),
+            price: Joi.number().min(0).required(),
         })
     ).min(1).required().messages({
         "array.base": "Items must be an array",
