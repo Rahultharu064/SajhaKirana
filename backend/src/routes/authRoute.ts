@@ -35,6 +35,9 @@ authRoutes.post("/logout", authMiddleware, logoutUser);
 // Get current user (protected)
 authRoutes.get("/me", authMiddleware, getCurrentUser);
 
+// Get user profile (protected)
+authRoutes.get("/profile", authMiddleware, getCurrentUser);
+
 // Update user profile (protected)
 authRoutes.put("/profile", uploadProfiles.single("profileImage"), authMiddleware, updateProfile);
 

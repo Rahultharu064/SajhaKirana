@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import StarRating from '../../ui/StarRating';
-import { getReviewsByProduct } from '../../../services/reviewService';
+import { getReviewsByProduct, deleteReview } from '../../../services/reviewService';
+import { useSelector } from 'react-redux';
+import { Edit, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface Review {
   id: number;
@@ -24,9 +27,11 @@ interface Review {
 
 interface ReviewListProps {
   productId: number;
+  onReviewEdit?: (review: Review) => void;
+  onReviewDeleted?: () => void;
 }
 
-const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
+const ReviewList: React.FC<ReviewListProps> = ({ productId, onReviewEdit, onReviewDeleted }) => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [stats, setStats] = useState<{
     total: number;
@@ -35,6 +40,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { user } = useSelector((state: any) => state.auth);
 
   useEffect(() => {
     fetchReviews();
@@ -59,6 +65,27 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const handleEditReview = (review: Review) => {
+    if (onReviewEdit) {
+      onReviewEdit(review);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: number) => {
+    if (window.confirm('Are you sure you want to delete this review?')) {
+      try {
+        await deleteReview(reviewId);
+        toast.success('Review deleted successfully');
+        await fetchReviews(); // Refresh reviews
+        if (onReviewDeleted) {
+          onReviewDeleted();
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'Failed to delete review');
+      }
+    }
   };
 
   if (loading) {
@@ -113,22 +140,55 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId }) => {
                   <div className="w-10 h-10 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
                     {review.user.profileImage ? (
                       <img
-                        src={review.user.profileImage}
+                        src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/uploads/profiles/${review.user.profileImage}`}
                         alt={review.user.name}
                         className="w-10 h-10 rounded-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '';
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          const fallback = parent?.querySelector('.fallback-letter');
+                          (fallback as HTMLElement)?.classList.remove('hidden');
+                        }}
                       />
-                    ) : (
+                    ) : null}
+                    {(!review.user.profileImage || false) && (
                       <span className="text-gray-600 font-medium">
                         {review.user.name.charAt(0).toUpperCase()}
                       </span>
                     )}
+                    {review.user.profileImage && (
+                      <span className="text-gray-600 font-medium hidden fallback-letter">
+                        {review.user.name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
-                  <div>
+                  <div className="flex-grow">
                     <p className="font-medium text-gray-900">{review.user.name}</p>
                     <p className="text-sm text-gray-500">{formatDate(review.createdAt)}</p>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <StarRating rating={review.rating} readonly />
+                    {user && user.userId === review.userId && (
+                      <div className="flex items-center gap-1 ml-2">
+                        <button
+                          onClick={() => handleEditReview(review)}
+                          className="p-1 text-gray-400 hover:text-blue-600 rounded transition-colors"
+                          title="Edit review"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteReview(review.id)}
+                          className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
+                          title="Delete review"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <StarRating rating={review.rating} readonly />
               </div>
               <p className="text-gray-700 leading-relaxed">{review.comment}</p>
             </div>

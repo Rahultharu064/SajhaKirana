@@ -80,7 +80,7 @@ export const getReviewsByProduct = async (
     limit?: number;
   }
 ): Promise<ReviewsResponse> => {
-  const response = await api.get(`/products/${productId}/reviews`, { params });
+  const response = await api.get(`/reviews/product/${productId}`, { params });
   return response.data;
 };
 

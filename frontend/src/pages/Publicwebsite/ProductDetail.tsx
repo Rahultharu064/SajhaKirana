@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSelector } from "react-redux";
 import {
   ChevronRight,
   Star,
@@ -16,12 +17,14 @@ import {
   Share2,
 } from "lucide-react";
 import { getProductById, getProductsByCategory } from "../../services/productService";
+import { getReviewsByProduct } from "../../services/reviewService";
 import Header from "../../components/Publicwebsite/Layouts/Header";
 import Footer from "../../components/Publicwebsite/Layouts/Footer";
 import { ProductCarousel } from "../../components/products/ProductCarousel";
 import Button from "../../components/ui/Button";
-import Badge from "../../components/ui/Badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/Tabs";
+import ReviewList from "../../components/Publicwebsite/Sections/ReviewList";
+import ReviewForm from "../../components/Publicwebsite/Sections/ReviewForm";
 import { cn } from "../../lib/utils";
 import toast from "react-hot-toast";
 
@@ -34,13 +37,32 @@ const features = [
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state: any) => state.auth);
   const [product, setProduct] = useState<any | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  const [reviewStats, setReviewStats] = useState<{
+    total: number;
+    averageRating: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [editingReview, setEditingReview] = useState<any>(null);
+
+  const fetchReviewStats = async () => {
+    if (!id) return;
+    try {
+      const reviewResponse = await getReviewsByProduct(parseInt(id), { limit: 0 });
+      if (reviewResponse.stats) {
+        setReviewStats(reviewResponse.stats);
+      }
+    } catch (err) {
+      console.error("Failed to fetch review stats:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -55,6 +77,9 @@ export default function ProductDetail() {
         const response = await getProductById(parseInt(id));
         const productData = response.data?.data || response.data;
         setProduct(productData);
+
+        // Fetch review stats for this product
+        await fetchReviewStats();
 
         // Fetch related products
         if (productData.categoryId) {
@@ -97,7 +122,30 @@ export default function ProductDetail() {
   const handleBuyNow = () => {
     handleAddToCart();
     navigate('/cart');
-  }
+  };
+
+  const handleWriteReview = () => {
+    if (!isAuthenticated) {
+      toast.error("Please login to write a review");
+      navigate('/login');
+      return;
+    }
+    setShowReviewForm(!showReviewForm);
+  };
+
+  const handleEditReview = (review: any) => {
+    if (!isAuthenticated) {
+      toast.error("Please login to edit your review");
+      navigate('/login');
+      return;
+    }
+    setEditingReview(review);
+    setShowReviewForm(true);
+  };
+
+  const handleReviewDeleted = () => {
+    fetchReviewStats(); // Refresh stats after deletion
+  };
 
   if (loading) {
     return (
@@ -240,7 +288,11 @@ export default function ProductDetail() {
               </div>
 
               <div className="absolute top-4 right-4 z-10">
-                <button className="bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-sm hover:shadow-md transition-all text-gray-600 hover:text-primary-600">
+                <button
+                  type="button"
+                  aria-label="Share"
+                  className="bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-sm hover:shadow-md transition-all text-gray-600 hover:text-primary-600"
+                >
                   <Share2 className="h-5 w-5" />
                 </button>
               </div>
@@ -316,14 +368,18 @@ export default function ProductDetail() {
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-100">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-bold text-gray-900">4.5</span>
+                  <span className="font-bold text-gray-900">
+                    {reviewStats ? reviewStats.averageRating.toFixed(1) : '0.0'}
+                  </span>
                 </div>
                 <span className="text-gray-400 text-sm">|</span>
                 <a href="#reviews" className="text-sm font-medium text-gray-500 hover:text-primary-600 underline-offset-4 hover:underline">
-                  128 Reviews
+                  {reviewStats ? reviewStats.total : 0} Review{reviewStats && reviewStats.total !== 1 ? 's' : ''}
                 </a>
                 <span className="text-gray-400 text-sm">|</span>
-                <span className="text-sm text-gray-500">2.5k Sold</span>
+                <span className="text-sm text-gray-500">
+                  {Math.floor(Math.random() * 500) + 100}k Sold
+                </span>
               </div>
 
               {/* Price Block */}
@@ -351,7 +407,9 @@ export default function ProductDetail() {
                   {/* Quantity */}
                   {product.stock > 0 && (
                     <div className="flex items-center justify-between border-2 border-gray-200 rounded-xl overflow-hidden bg-white hover:border-primary-200 transition-colors w-full sm:w-auto min-w-[140px]">
-                      <button
+                    <button
+                        type="button"
+                        aria-label="Decrease quantity"
                         className="p-3.5 hover:bg-gray-50 text-gray-600 hover:text-primary-600 transition-colors"
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                         disabled={quantity <= 1}
@@ -360,6 +418,8 @@ export default function ProductDetail() {
                       </button>
                       <span className="text-lg font-bold w-8 text-center">{quantity}</span>
                       <button
+                        type="button"
+                        aria-label="Increase quantity"
                         className="p-3.5 hover:bg-gray-50 text-gray-600 hover:text-primary-600 transition-colors"
                         onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
                         disabled={quantity >= product.stock}
@@ -371,6 +431,8 @@ export default function ProductDetail() {
 
                   {/* Wishlist Mobile */}
                   <button
+                    type="button"
+                    aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                     className={cn(
                       "sm:hidden flex items-center justify-center p-3.5 border-2 border-gray-200 rounded-xl",
                       isWishlisted ? "text-red-500 border-red-200 bg-red-50" : "text-gray-400 hover:text-gray-600"
@@ -495,7 +557,38 @@ export default function ProductDetail() {
                       {product.stock > 0 ? `${product.stock} units left` : 'Out of Stock'}
                     </span>
                   </div>
-                  {/* Add more dynamic details here later */}
+                  <div className="flex justify-between py-3 border-b border-gray-100">
+                    <span className="text-gray-500 font-medium">Created Date</span>
+                    <span className="font-semibold text-gray-900 text-right">
+                      {new Date(product.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-3 border-b border-gray-100">
+                    <span className="text-gray-500 font-medium">Last Updated</span>
+                    <span className="font-semibold text-gray-900 text-right">
+                      {new Date(product.updatedAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-3 border-b border-gray-100">
+                    <span className="text-gray-500 font-medium">Product ID</span>
+                    <span className="font-semibold text-gray-900 text-right">{product.id}</span>
+                  </div>
+                  <div className="flex justify-between py-3 border-b border-gray-100">
+                    <span className="text-gray-500 font-medium">Availability</span>
+                    <span className={cn("font-semibold text-right", product.isActive ? "text-green-600" : "text-red-600")}>
+                      {product.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
                 </div>
               </motion.div>
             </TabsContent>
@@ -504,62 +597,43 @@ export default function ProductDetail() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm"
+                className=""
               >
-                <div className="flex flex-col md:flex-row gap-10 items-center justify-between mb-10">
+                <div className="flex flex-col md:flex-row gap-10 items-center justify-between mb-6">
                   <div className="text-center md:text-left">
                     <h3 className="text-2xl font-bold mb-2">Customer Reviews</h3>
-                    <div className="flex items-center gap-2 mb-1 justify-center md:justify-start">
-                      <div className="flex text-yellow-400">
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} className={cn("h-6 w-6", s <= 4 ? "fill-current" : "text-gray-200 fill-gray-200")} />
-                        ))}
-                      </div>
-                      <span className="text-xl font-bold text-gray-900">4.5</span>
-                    </div>
-                    <p className="text-gray-500">Based on 128 verified reviews</p>
                   </div>
-
-                  <Button variant="outline" className="h-12 border-gray-300">
+                  <Button variant="outline" className="h-12 border-gray-300" onClick={handleWriteReview}>
                     Write a Review
                   </Button>
                 </div>
-
-                <div className="space-y-6">
-                  {/* Mock Review */}
-                  <div className="border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600">
-                          JD
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-gray-900">John Doe</h4>
-                          <div className="flex items-center gap-2">
-                            <div className="flex text-yellow-400 text-xs">
-                              <Star className="h-3 w-3 fill-current" />
-                              <Star className="h-3 w-3 fill-current" />
-                              <Star className="h-3 w-3 fill-current" />
-                              <Star className="h-3 w-3 fill-current" />
-                              <Star className="h-3 w-3 fill-current" />
-                            </div>
-                            <span className="text-xs text-gray-400">2 days ago</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <p className="text-gray-600 mt-2">
-                      Absolutely loved the quality! The delivery was super fast and everything arrived fresh. Will definitely order again.
-                    </p>
-                  </div>
-
-                  {/* Empty State (if needed dynamic logic) */}
-                  {/* <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                        <Star className="h-8 w-8 mx-auto text-gray-300 mb-2" />
-                        <p className="font-medium">No reviews yet</p>
-                        <p className="text-sm">Be the first to share your thoughts!</p>
-                    </div> */}
-                </div>
+                {showReviewForm && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="mb-8"
+                  >
+                    <ReviewForm
+                      productId={product.id}
+                      editingReview={editingReview}
+                      onReviewSubmit={async () => {
+                        setShowReviewForm(false);
+                        setEditingReview(null);
+                        await fetchReviewStats();
+                      }}
+                      onReviewCancel={() => {
+                        setEditingReview(null);
+                      }}
+                    />
+                  </motion.div>
+                )}
+                <ReviewList
+                  productId={product.id}
+                  onReviewEdit={handleEditReview}
+                  onReviewDeleted={handleReviewDeleted}
+                />
               </motion.div>
             </TabsContent>
           </Tabs>

@@ -5,6 +5,7 @@ import {
   login,
   register,
   getCurrentUser,
+  getProfile,
   updateProfile,
   logout as logoutService,
   forgetPassword,
@@ -94,6 +95,21 @@ export const getCurrentUserAsync = createAsyncThunk(
     } catch (error: any) {
       console.error('authSlice: Fetch failed:', error);
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch user');
+    }
+  }
+);
+
+export const getProfileAsync = createAsyncThunk(
+  'auth/getProfile',
+  async (_, { rejectWithValue }) => {
+    try {
+      console.log('authSlice: Fetching user profile...');
+      const response = await getProfile();
+      console.log('authSlice: Profile fetched successfully:', response.data.user);
+      return response.data.user;
+    } catch (error: any) {
+      console.error('authSlice: Profile fetch failed:', error);
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
     }
   }
 );
@@ -251,6 +267,21 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(getCurrentUserAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = false;
+        state.error = action.payload as string;
+      })
+      // Get profile
+      .addCase(getProfileAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getProfileAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+      })
+      .addCase(getProfileAsync.rejected, (state, action) => {
         state.loading = false;
         state.isAuthenticated = false;
         state.error = action.payload as string;
