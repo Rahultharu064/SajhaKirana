@@ -34,7 +34,7 @@ const Categories = () => {
     }, []);
 
     const handleCategorySelect = (category: Category) => {
-        navigate(`/category/${category.id}`);
+        navigate(`/category/${category.slug}`);
     };
 
     return (

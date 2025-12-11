@@ -197,7 +197,10 @@ export const getAllProducts = async (
     }
 
     if (category) {
-      where.categoryId = parseInt(category as string);
+      const categoryIds = (category as string).split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+      if (categoryIds.length > 0) {
+        where.categoryId = { in: categoryIds };
+      }
     }
 
     if (priceMin || priceMax) {
@@ -208,6 +211,10 @@ export const getAllProducts = async (
       if (priceMax) {
         where.price.lte = parseFloat(priceMax as string);
       }
+    }
+
+    if (req.query.inStock === 'true') {
+      where.stock = { gt: 0 };
     }
 
     // Build orderBy based on sort parameter

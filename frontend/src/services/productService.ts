@@ -3,15 +3,20 @@ import api from "./api";
 // Get all products with filters and pagination
 export const getAllProducts = (params?: {
   q?: string;
-  category?: number;
+  category?: number | number[];
   priceMin?: number;
   priceMax?: number;
   sort?: 'newest' | 'oldest' | 'priceLow' | 'priceHigh' | 'popular';
   page?: number;
   limit?: number;
   isActive?: boolean;
+  inStock?: boolean;
 }) => {
-  return api.get('/products', { params });
+  const queryParams: any = { ...params };
+  if (Array.isArray(params?.category)) {
+    queryParams.category = params.category.join(',');
+  }
+  return api.get('/products', { params: queryParams });
 }
 
 // Get product by ID

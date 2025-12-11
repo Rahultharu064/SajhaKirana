@@ -20,19 +20,8 @@ import {
 
 const router = Router();
 
-// All routes require authentication
-router.use(authMiddleware);
-
-// Create a new review
-router.post("/", validate(createReviewSchema), createReview);
-
-// Get all reviews with optional filtering (admin route)
-router.get("/", validate(searchReviewsSchema, "query"), getAllReviews);
-
-// Get reviews by current user
-router.get("/my", validate(searchReviewsSchema, "query"), getMyReviews);
-
-// Get reviews for a specific product
+// Public routes (no authentication required)
+// Get reviews for a specific product - PUBLIC
 router.get(
   "/product/:productId",
   validate(productIdParamSchema, "params"),
@@ -40,13 +29,23 @@ router.get(
   getReviewsByProduct
 );
 
-// Get specific review by ID
+// Get all reviews with optional filtering - PUBLIC (for browsing)
+router.get("/", validate(searchReviewsSchema, "query"), getAllReviews);
+
+// Get specific review by ID - PUBLIC
 router.get("/:id", validate(reviewIdParamSchema, "params"), getReviewById);
 
-// Update a review (only review owner)
-router.put("/:id", validate(reviewIdParamSchema, "params"), validate(updateReviewSchema), updateReview);
+// Protected routes (authentication required)
+// Create a new review - REQUIRES AUTH
+router.post("/", authMiddleware, validate(createReviewSchema), createReview);
 
-// Delete a review (review owner or admin)
-router.delete("/:id", validate(reviewIdParamSchema, "params"), deleteReview);
+// Get reviews by current user - REQUIRES AUTH
+router.get("/my", authMiddleware, validate(searchReviewsSchema, "query"), getMyReviews);
+
+// Update a review (only review owner) - REQUIRES AUTH
+router.put("/:id", authMiddleware, validate(reviewIdParamSchema, "params"), validate(updateReviewSchema), updateReview);
+
+// Delete a review (review owner or admin) - REQUIRES AUTH
+router.delete("/:id", authMiddleware, validate(reviewIdParamSchema, "params"), deleteReview);
 
 export default router;
