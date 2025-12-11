@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { prismaClient } from "../config/client";
+import { processEsewaInitiation, processKhaltiInitiation } from "./paymentController.js";
 
 // Create order (checkout)
 export const createOrder = async (req: Request, res: Response, next: NextFunction) => {
@@ -60,65 +61,28 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
 
     // Initiate payment based on method
     let paymentResponse = null;
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+
     if (paymentMethod === 'esewa' || paymentMethod === 'khalti') {
       try {
         console.log(`🔄 Initiating ${paymentMethod} payment for order ${order.id}...`);
 
-        // Import and call the payment controller functions directly
-        const { initiateEsewaPayment, initiateKhaltiPayment } = await import('./paymentController.js');
-
-        // Create a simple request object
-        const paymentReq = {
-          ...req,
-          params: { orderId: order.id.toString() }
-        } as any;
-
-        // Call the appropriate payment initiation function
         if (paymentMethod === 'esewa') {
-          let responseCaptured: any = null;
-          const paymentRes = {
-            status: (code: number) => ({
-              json: (data: any) => {
-                responseCaptured = data;
-                return paymentRes;
-              }
-            })
-          } as any;
-
-          await initiateEsewaPayment(paymentReq, paymentRes, (err: any) => {
-            if (err) {
-              console.error(`❌ eSewa initiation failed:`, err);
-            }
-          });
-
-          if (responseCaptured) {
-            paymentResponse = { data: responseCaptured.data };
-            console.log(`✅ eSewa payment initiated successfully:`, paymentResponse);
-          }
+          const esewaData = await processEsewaInitiation(order.id, baseUrl);
+          paymentResponse = { data: esewaData };
+          console.log(`✅ eSewa payment initiated successfully`);
         } else if (paymentMethod === 'khalti') {
-          let responseCaptured: any = null;
-          const paymentRes = {
-            status: (code: number) => ({
-              json: (data: any) => {
-                responseCaptured = data;
-                return paymentRes;
-              }
-            })
-          } as any;
-
-          await initiateKhaltiPayment(paymentReq, paymentRes, (err: any) => {
-            if (err) {
-              console.error(`❌ Khalti initiation failed:`, err);
-            }
+          const khaltiData = await processKhaltiInitiation(order.id, baseUrl, {
+            name: user.name,
+            email: user.email,
+            phone: user.phone || '9800000000'
           });
-
-          if (responseCaptured) {
-            paymentResponse = { data: responseCaptured.data };
-            console.log(`✅ Khalti payment initiated successfully:`, paymentResponse);
-          }
+          paymentResponse = { data: khaltiData };
+          console.log(`✅ Khalti payment initiated successfully`);
         }
       } catch (error) {
         console.error(`💥 ${paymentMethod} initiation error:`, error);
+        // We continue without payment data, causing frontend to show error toast
       }
     }
 

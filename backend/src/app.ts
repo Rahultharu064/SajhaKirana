@@ -62,13 +62,13 @@ app.use("/cart", cartRoutes);
 app.use("/inventory", inventoryRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/orders", orderRoutes);
-app.use("/payments", paymentRoutes);
+app.use("/payment", paymentRoutes);
 app.use("/districts", districtRoutes);
 
 // Error handling middleware
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Internal server error', error: error.message });
+  console.error('Error:', error);
+  res.status(500).json({ message: 'Internal server error', error: error.message });
 });
 
 export default app;

@@ -6,8 +6,11 @@ import Button from '../../ui/Button';
 import { ShoppingBag, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import { useNavigate } from 'react-router-dom';
+
 const Cart = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { items, total, loading, error } = useSelector((state: RootState) => state.cart);
   const { user } = useSelector((state: RootState) => state.auth);
 
@@ -103,7 +106,7 @@ const Cart = () => {
           <div className="bg-white p-6 rounded-lg shadow">
             <div className="flex justify-between items-center mb-6">
               <span className="text-xl font-bold">Total: Rs. {total}</span>
-              <Button variant="primary" size="lg">
+              <Button variant="primary" size="lg" onClick={() => navigate('/checkout')}>
                 Proceed to Checkout
               </Button>
             </div>

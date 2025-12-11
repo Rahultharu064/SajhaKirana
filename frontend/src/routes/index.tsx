@@ -3,7 +3,7 @@ import CategoryProducts from "../pages/Publicwebsite/CategoryProducts.tsx";
 import ProductDetail from "../pages/Publicwebsite/ProductDetail.tsx";
 import PublicCategories from "../pages/Publicwebsite/Categories.tsx";
 import PublicProducts from "../pages/Publicwebsite/Products.tsx";
-import Checkout from "../pages/Publicwebsite/Checkout.tsx";
+
 import Register from "../components/Auth/Register.tsx";
 import Login from "../components/Auth/Login.tsx";
 import Profile from "../components/Auth/Profile.tsx";
@@ -23,6 +23,8 @@ import CreateProduct from "../components/AdminDashboard/Forum/CreateProduct.tsx"
 import EditProduct from "../components/AdminDashboard/Forum/EditProduct.tsx";
 import PaymentSuccess from "@/pages/Publicwebsite/PaymentSuccess.tsx";
 import PaymentFailure from "@/pages/Publicwebsite/PaymentFailure.tsx";
+import Checkout from "../pages/Publicwebsite/Checkout.tsx";
+import OrderConfirmation from "../pages/Publicwebsite/OrderConfirmation.tsx";
 
 const routes = [
     {
@@ -38,7 +40,7 @@ const routes = [
         element: <PublicCategories />,
     },
     {
-        path: "/category/:id",
+        path: "/category/:name",
         element: <CategoryProducts />,
     },
     {
@@ -69,6 +71,7 @@ const routes = [
         path: "/checkout",
         element: <Checkout />,
     },
+
     {
         path: "/payment/success",
         element: <PaymentSuccess />,
@@ -76,6 +79,10 @@ const routes = [
     {
         path: "/payment/failure",
         element: <PaymentFailure />,
+    },
+    {
+        path: "/order/confirmation/:id",
+        element: <OrderConfirmation />,
     },
     // Admin Routes
     {

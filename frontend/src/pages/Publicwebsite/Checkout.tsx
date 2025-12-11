@@ -1,316 +1,328 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Check, MapPin, Truck, CreditCard, Package } from "lucide-react";
-import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
-import Layout from "../../components/layout/Layout";
-import AddressForm from "../../components/checkout/AddressForm.tsx";
-import DeliveryOptions from "../../components/checkout/DeliveryOptions.tsx";
-import PaymentMethod from "../../components/checkout/PaymentMethod.tsx";
-import OrderConfirmation from "../../components/checkout/OrderConfirmation.tsx";
-import OrderSummary from "../../components/checkout/OrderSummary.tsx";
-import { clearCart } from "../../Redux/slices/cartSlice";
-import { orderService } from "../../services/orderService";
-import type { AddressData, DeliveryOption, PaymentMethodData } from "../../types/common";
-
-const steps = [
-  { id: 1, name: "Address", icon: MapPin },
-  { id: 2, name: "Delivery", icon: Truck },
-  { id: 3, name: "Payment", icon: CreditCard },
-  { id: 4, name: "Confirm", icon: Package },
-];
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import type { RootState } from '../../Redux/store';
+import Button from '../../components/ui/Button';
+import PaymentMethod from '../../components/Publicwebsite/Checkout/PaymentMethod';
+import { orderService } from '../../services/orderService';
+import toast from 'react-hot-toast';
 
 const Checkout = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [address, setAddress] = useState<AddressData | null>(null);
-  const [delivery, setDelivery] = useState<DeliveryOption | null>(null);
-  const [payment, setPayment] = useState<PaymentMethodData | null>(null);
-  const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { items, total } = useSelector((state: RootState) => state.cart);
+    const { user } = useSelector((state: RootState) => state.auth);
 
-  // Redux hooks
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+    // Start at step 1 (Address)
+    const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
 
-  const { user, isAuthenticated } = useSelector((state: any) => state.auth);
-  const { items: cartItems } = useSelector((state: any) => state.cart);
+    // Address State matching AddressData interface
+    const [shippingAddress, setShippingAddress] = useState({
+        fullName: '',
+        phone: '',
+        email: '',
+        address: '',
+        city: '',
+        district: '',
+        landmark: '',
+    });
 
-  const handleAddressSubmit = (data: AddressData) => {
-    setAddress(data);
-    setCurrentStep(2);
-  };
+    // Payment Method State
+    const [paymentMethod, setPaymentMethod] = useState<'cod' | 'esewa' | 'khalti'>('cod');
 
-  const handleDeliverySubmit = (option: DeliveryOption) => {
-    setDelivery(option);
-    setCurrentStep(3);
-  };
-
-  const handlePaymentSubmit = (method: PaymentMethodData) => {
-    setPayment(method);
-    setCurrentStep(4);
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handlePlaceOrder = async () => {
-    // Check authentication
-    if (!isAuthenticated || !user?.userId) {
-      toast.error("Please login to place an order");
-      navigate("/login");
-      return;
-    }
-
-    // Check if all data is present
-    if (!address || !delivery || !payment || cartItems.length === 0) {
-      toast.error("Please complete all checkout steps");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // Prepare order data
-      const orderData = {
-        userId: Number(user.userId),
-        shippingAddress: address,
-        paymentMethod: payment.type === "card" ? "cod" : payment.type, // Map card to cod for now
-        items: cartItems.map((item: any) => ({
-          sku: item.sku,
-          qty: Number(item.quantity),
-          price: Number(item.price),
-        })),
-      };
-
-      console.log("Placing order... Payload:", JSON.stringify(orderData, null, 2));
-
-      // Submit order
-      const response = await orderService.createOrder({
-        ...orderData,
-        paymentMethod: orderData.paymentMethod as "cod" | "esewa" | "khalti"
-      });
-
-      if (response.data.success) {
-        const orderId = response.data.data.orderId;
-
-        console.log("🔍 Full response structure:", JSON.stringify(response.data, null, 2));
-        console.log("📋 Payment type selected:", payment.type);
-
-        // Clear cart
-        dispatch(clearCart());
-
-        // Handle payment methods
-        if (payment.type === "cod") {
-          toast.success("Order placed successfully!");
-          navigate(`/order/confirmation/${orderId}`);
-        } else if (payment.type === "esewa") {
-          // Redirect to eSewa payment page
-          alert(`DEBUG: eSewa URL=${response.data.data?.esewaURL}`);
-          if (response.data.data?.esewaURL && response.data.data.esewaURL.trim() !== '') {
-            alert(`Redirecting to eSewa: ${response.data.data.esewaURL}`);
-            window.location.href = response.data.data.esewaURL;
-          } else {
-            alert("eSewa URL not found, falling back to order confirmation");
-            toast.success("Order placed! Payment will be initiated manually.");
-            navigate(`/order/confirmation/${orderId}`);
-          }
-        } else if (payment.type === "khalti") {
-          // Redirect to Khalti payment page
-          alert(`DEBUG: Khalti URL=${response.data.data?.paymentUrl}`);
-          if (response.data.data?.paymentUrl && response.data.data.paymentUrl.trim() !== '') {
-            alert(`Redirecting to Khalti: ${response.data.data.paymentUrl}`);
-            window.location.href = response.data.data.paymentUrl;
-          } else {
-            alert("Khalti URL not found, falling back to order confirmation");
-            toast.success("Order placed! Payment will be initiated manually.");
-            navigate(`/order/confirmation/${orderId}`);
-          }
-        } else {
-          // For card, treat as COD for now
-          toast.success("Order placed successfully!");
-          navigate(`/order/confirmation/${orderId}`);
+    useEffect(() => {
+        // Redirect if not logged in
+        if (!user) {
+            navigate('/login?redirect=/checkout');
+            return;
         }
-      } else {
-        throw new Error(response.data.error?.message || "Failed to place order");
-      }
-    } catch (error: any) {
-      console.error("Order placement failed:", error);
+        // Redirect if cart is empty
+        if (items.length === 0) {
+            navigate('/cart');
+            return;
+        }
+        // Pre-fill email and name from user if available
+        if (user) {
+            setShippingAddress(prev => ({
+                ...prev,
+                email: user.email || '',
+                fullName: user.name || '',
+                phone: user.phone || ''
+            }));
+        }
+    }, [user, items, navigate]);
 
-      const errorMessage = error.response?.data?.message || error.message || "Failed to place order";
-      const validationErrors = error.response?.data?.errors;
+    const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setShippingAddress(prev => ({ ...prev, [name]: value }));
+    };
 
-      if (validationErrors && Array.isArray(validationErrors) && validationErrors.length > 0) {
-        // Construct a more detailed error message from validation errors
-        const details = validationErrors.map((err: any) => `${err.field}: ${err.message}`).join("\n");
-        console.error("Validation Errors:", details);
-        toast.error(`${errorMessage}\n${details}`, { duration: 6000 });
-      } else {
-        console.error("Full Error Response:", JSON.stringify(error.response?.data, null, 2));
-        toast.error(
-          error.response?.data?.error?.message ||
-          error.response?.data?.message ||
-          errorMessage
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handlePlaceOrder = async () => {
+        if (!user) return;
 
-  return (
-    <Layout>
-      <div className="min-h-screen bg-background py-8">
-        <div className="container max-w-7xl mx-auto px-4">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
-          >
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
-              Checkout
-            </h1>
-            <p className="text-muted-foreground">
-              Complete your order in a few simple steps
-            </p>
-          </motion.div>
+        try {
+            setLoading(true);
 
-          {/* Stepper */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8"
-          >
-            <div className="flex items-center justify-center gap-2 md:gap-4">
-              {steps.map((step, index) => (
-                <div key={step.id} className="flex items-center">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`
-                        w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center
-                        transition-all duration-300 font-medium text-sm
-                        ${currentStep > step.id
-                          ? "bg-primary text-primary-foreground shadow-glow"
-                          : currentStep === step.id
-                            ? "bg-primary text-primary-foreground shadow-lg"
-                            : "bg-muted text-muted-foreground"
-                        }
-                      `}
-                    >
-                      {currentStep > step.id ? (
-                        <Check className="w-5 h-5" />
-                      ) : (
-                        <step.icon className="w-5 h-5" />
-                      )}
+            // Validate address
+            if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.address || !shippingAddress.city || !shippingAddress.district) {
+                toast.error('Please fill in all required address fields');
+                setStep(1);
+                setLoading(false);
+                return;
+            }
+
+            const payload = {
+                userId: user.userId, // Updated to match authSlice User interface
+                shippingAddress,
+                paymentMethod,
+                items: items.map(item => ({
+                    sku: item.sku,
+                    qty: item.quantity,
+                    price: item.price
+                }))
+            };
+
+            const response = await orderService.createOrder(payload);
+            const { data } = response.data; // Response wrapper { success: true, data: { ... } }
+
+            if (response.data.success) {
+                // Determine next step based on payment method
+                if (paymentMethod === 'cod') {
+                    toast.success('Order placed successfully!');
+                    // Redirect to success page or order details
+                    navigate('/payment/success');
+                } else if (paymentMethod === 'esewa') {
+                    // eSewa specific handling
+                    const esewaData = data.data;
+
+                    if (esewaData && esewaData.esewaConfig) {
+                        // Create a hidden form and submit it to eSewa
+                        const form = document.createElement('form');
+                        form.action = esewaData.esewaURL;
+                        form.method = 'POST';
+
+                        Object.keys(esewaData.esewaConfig).forEach(key => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = esewaData.esewaConfig[key];
+                            form.appendChild(input);
+                        });
+
+                        document.body.appendChild(form);
+                        form.submit();
+                    } else {
+                        toast.error('Failed to initiate eSewa payment');
+                    }
+                } else if (paymentMethod === 'khalti') {
+                    // Khalti specific handling
+                    const khaltiData = data.data;
+
+                    if (khaltiData && khaltiData.paymentUrl) {
+                        window.location.href = khaltiData.paymentUrl;
+                    } else {
+                        toast.error('Failed to initiate Khalti payment');
+                    }
+                }
+            }
+        } catch (error: any) {
+            console.error('Checkout error:', error);
+            const msg = error.response?.data?.error?.message || 'Failed to place order';
+            toast.error(msg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (!user) return null;
+
+    return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Left Column - Forms */}
+                <div className="lg:col-span-2 space-y-8">
+
+                    {/* Step 1: Shipping Address */}
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-semibold flex items-center">
+                                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mr-3 text-sm">1</div>
+                                Shipping Address
+                            </h2>
+                            {step === 2 && (
+                                <button onClick={() => setStep(1)} className="text-emerald-600 text-sm hover:underline">Edit</button>
+                            )}
+                        </div>
+
+                        {(step === 1 || step === 2) && (
+                            <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${step === 2 ? 'opacity-50 pointer-events-none' : ''}`}>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                    <input
+                                        type="text"
+                                        name="fullName"
+                                        value={shippingAddress.fullName}
+                                        onChange={handleAddressChange}
+                                        className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                    <input
+                                        type="text"
+                                        name="phone"
+                                        value={shippingAddress.phone}
+                                        onChange={handleAddressChange}
+                                        className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={shippingAddress.email}
+                                        onChange={handleAddressChange}
+                                        className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                    <input
+                                        type="text"
+                                        name="address"
+                                        value={shippingAddress.address}
+                                        onChange={handleAddressChange}
+                                        className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                                        placeholder="District, Street"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                    <input
+                                        type="text"
+                                        name="city"
+                                        value={shippingAddress.city}
+                                        onChange={handleAddressChange}
+                                        className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                                    <input
+                                        type="text"
+                                        name="district"
+                                        value={shippingAddress.district}
+                                        onChange={handleAddressChange}
+                                        className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Landmark (Optional)</label>
+                                    <input
+                                        type="text"
+                                        name="landmark"
+                                        value={shippingAddress.landmark}
+                                        onChange={handleAddressChange}
+                                        className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {step === 1 && (
+                            <div className="mt-6 flex justify-end">
+                                <Button
+                                    onClick={() => {
+                                        if (shippingAddress.fullName && shippingAddress.phone && shippingAddress.address && shippingAddress.city && shippingAddress.district) {
+                                            setStep(2);
+                                        } else {
+                                            toast.error('Please fill in required fields');
+                                        }
+                                    }}
+                                >
+                                    Continue to Payment
+                                </Button>
+                            </div>
+                        )}
                     </div>
-                    <span
-                      className={`
-                        hidden md:block mt-2 text-sm font-medium
-                        ${currentStep >= step.id ? "text-foreground" : "text-muted-foreground"}
-                      `}
-                    >
-                      {step.name}
-                    </span>
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`
-                        w-8 md:w-16 h-0.5 mx-2 transition-colors duration-300
-                        ${currentStep > step.id ? "bg-primary" : "bg-border"}
-                      `}
-                    />
-                  )}
+
+                    {/* Step 2: Payment Method */}
+                    {step === 2 && (
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold flex items-center">
+                                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mr-3 text-sm">2</div>
+                                    Payment Method
+                                </h2>
+                            </div>
+
+                            <PaymentMethod
+                                selectedMethod={paymentMethod}
+                                onSelect={setPaymentMethod}
+                            />
+                        </div>
+                    )}
                 </div>
-              ))}
+
+                {/* Right Column - Order Summary */}
+                <div className="lg:col-span-1">
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 sticky top-24">
+                        <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+                        <div className="space-y-4 max-h-80 overflow-y-auto mb-4 custom-scrollbar">
+                            {items.map((item) => (
+                                <div key={item.id} className="flex gap-4 py-2 border-b last:border-0">
+                                    <div className="flex-1">
+                                        <p className="font-medium text-sm text-gray-900 line-clamp-2">{item.sku}</p>
+                                        {/* Ideally we should store title in cart item or fetch it. For now using SKU or if title is there */}
+                                        <p className="text-gray-500 text-xs">Qty: {item.quantity}</p>
+                                    </div>
+                                    <p className="font-medium text-sm">Rs. {item.price * item.quantity}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="border-t pt-4 space-y-2">
+                            <div className="flex justify-between text-gray-600">
+                                <span>Subtotal</span>
+                                <span>Rs. {total}</span>
+                            </div>
+                            <div className="flex justify-between text-gray-600">
+                                <span>Shipping</span>
+                                <span>Free</span>
+                            </div>
+                            <div className="flex justify-between font-bold text-lg pt-2 border-t mt-2">
+                                <span>Total</span>
+                                <span>Rs. {total}</span>
+                            </div>
+                        </div>
+
+                        {step === 2 && (
+                            <Button
+                                variant="primary"
+                                className="w-full mt-6"
+                                size="lg"
+                                onClick={handlePlaceOrder}
+                                loading={loading}
+                            >
+                                Place Order
+                            </Button>
+                        )}
+
+                        <Button
+                            variant="secondary"
+                            className="w-full mt-3"
+                            onClick={() => navigate('/cart')}
+                        >
+                            Back to Cart
+                        </Button>
+                    </div>
+                </div>
             </div>
-          </motion.div>
-
-          {/* Main Content */}
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Left: Forms */}
-            <div className="lg:col-span-2">
-              <AnimatePresence mode="wait">
-                {currentStep === 1 && (
-                  <motion.div
-                    key="address"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <AddressForm
-                      initialData={address}
-                      onSubmit={handleAddressSubmit}
-                    />
-                  </motion.div>
-                )}
-
-                {currentStep === 2 && (
-                  <motion.div
-                    key="delivery"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <DeliveryOptions
-                      selectedOption={delivery}
-                      onSubmit={handleDeliverySubmit}
-                      onBack={handleBack}
-                    />
-                  </motion.div>
-                )}
-
-                {currentStep === 3 && (
-                  <motion.div
-                    key="payment"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <PaymentMethod
-                      selectedMethod={payment}
-                      onSubmit={handlePaymentSubmit}
-                      onBack={handleBack}
-                    />
-                  </motion.div>
-                )}
-
-                {currentStep === 4 && (
-                  <motion.div
-                    key="confirmation"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <OrderConfirmation
-                      address={address!}
-                      delivery={delivery!}
-                      payment={payment!}
-                      onPlaceOrder={handlePlaceOrder}
-                      onBack={handleBack}
-                      loading={loading}
-                    />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Right: Order Summary */}
-            <div className="lg:col-span-1">
-              <OrderSummary deliveryPrice={delivery?.price || 0} />
-            </div>
-          </div>
         </div>
-      </div>
-    </Layout>
-  );
+    );
 };
 
 export default Checkout;
