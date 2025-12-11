@@ -5,7 +5,10 @@ import type { RootState } from '../../Redux/store';
 import Button from '../../components/ui/Button';
 import PaymentMethod from '../../components/Publicwebsite/Checkout/PaymentMethod';
 import { orderService } from '../../services/orderService';
+import { applyCoupon } from '../../services/couponService';
+import type { CouponWithDiscount } from '../../services/couponService';
 import toast from 'react-hot-toast';
+import { Tag, X, Check } from 'lucide-react';
 
 const Checkout = () => {
     const navigate = useNavigate();
@@ -29,6 +32,11 @@ const Checkout = () => {
 
     // Payment Method State
     const [paymentMethod, setPaymentMethod] = useState<'cod' | 'esewa' | 'khalti'>('cod');
+
+    // Coupon State
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState<CouponWithDiscount | null>(null);
+    const [couponLoading, setCouponLoading] = useState(false);
 
     useEffect(() => {
         // Redirect if not logged in
@@ -55,6 +63,40 @@ const Checkout = () => {
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setShippingAddress(prev => ({ ...prev, [name]: value }));
+    };
+
+    // Calculate total with coupon discount
+    const getTotalWithDiscount = () => {
+        return appliedCoupon ? total - appliedCoupon.calculatedDiscount : total;
+    };
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) {
+            toast.error('Please enter a coupon code');
+            return;
+        }
+
+        try {
+            setCouponLoading(true);
+            const result = await applyCoupon({
+                code: couponCode.toUpperCase(),
+                orderValue: total
+            });
+            setAppliedCoupon(result.coupon);
+            setCouponCode('');
+            toast.success(`Coupon applied! You saved Rs. ${result.discountAmount}`);
+        } catch (error: any) {
+            console.error('Coupon application error:', error);
+            const message = error.response?.data?.error?.message || 'Invalid coupon code';
+            toast.error(message);
+        } finally {
+            setCouponLoading(false);
+        }
+    };
+
+    const handleRemoveCoupon = () => {
+        setAppliedCoupon(null);
+        toast.success('Coupon removed');
     };
 
     const handlePlaceOrder = async () => {
@@ -159,32 +201,38 @@ const Checkout = () => {
                         {(step === 1 || step === 2) && (
                             <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${step === 2 ? 'opacity-50 pointer-events-none' : ''}`}>
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                    <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                                     <input
+                                        id="fullName"
                                         type="text"
                                         name="fullName"
                                         value={shippingAddress.fullName}
                                         onChange={handleAddressChange}
+                                        placeholder="Enter your full name"
                                         className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                                     <input
+                                        id="phone"
                                         type="text"
                                         name="phone"
                                         value={shippingAddress.phone}
                                         onChange={handleAddressChange}
+                                        placeholder="Enter your phone number"
                                         className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                     <input
+                                        id="email"
                                         type="email"
                                         name="email"
                                         value={shippingAddress.email}
                                         onChange={handleAddressChange}
+                                        placeholder="Enter your email address"
                                         className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
                                     />
                                 </div>
@@ -200,32 +248,38 @@ const Checkout = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                    <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">City</label>
                                     <input
+                                        id="city"
                                         type="text"
                                         name="city"
                                         value={shippingAddress.city}
                                         onChange={handleAddressChange}
+                                        placeholder="Enter your city"
                                         className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">District</label>
+                                    <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">District</label>
                                     <input
+                                        id="district"
                                         type="text"
                                         name="district"
                                         value={shippingAddress.district}
                                         onChange={handleAddressChange}
+                                        placeholder="Enter your district"
                                         className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Landmark (Optional)</label>
+                                    <label htmlFor="landmark" className="block text-sm font-medium text-gray-700 mb-1">Landmark (Optional)</label>
                                     <input
+                                        id="landmark"
                                         type="text"
                                         name="landmark"
                                         value={shippingAddress.landmark}
                                         onChange={handleAddressChange}
+                                        placeholder="Enter a nearby landmark (optional)"
                                         className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
                                     />
                                 </div>
@@ -244,6 +298,66 @@ const Checkout = () => {
                                     }}
                                 >
                                     Continue to Payment
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Step 1.5: Coupon Code */}
+                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-semibold flex items-center">
+                                <Tag size={20} className="mr-3 text-emerald-600" />
+                                Have a coupon?
+                            </h2>
+                        </div>
+
+                        {appliedCoupon ? (
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                        <Check size={20} className="text-green-600 mr-2" />
+                                        <div>
+                                            <p className="font-medium text-green-800">{appliedCoupon.code}</p>
+                                            <p className="text-sm text-green-600">
+                                                {appliedCoupon.discountType === 'percentage'
+                                                    ? `${appliedCoupon.discountValue}% off`
+                                                    : `Rs. ${appliedCoupon.discountValue} off`
+                                                } - You saved Rs. {appliedCoupon.calculatedDiscount}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={handleRemoveCoupon}
+                                        className="flex items-center gap-1"
+                                    >
+                                        <X size={16} />
+                                        Remove
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={couponCode}
+                                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                    placeholder="Enter coupon code"
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+                                    onKeyPress={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleApplyCoupon();
+                                        }
+                                    }}
+                                />
+                                <Button
+                                    onClick={handleApplyCoupon}
+                                    loading={couponLoading}
+                                    disabled={!couponCode.trim()}
+                                >
+                                    Apply
                                 </Button>
                             </div>
                         )}
@@ -289,13 +403,19 @@ const Checkout = () => {
                                 <span>Subtotal</span>
                                 <span>Rs. {total}</span>
                             </div>
+                            {appliedCoupon && (
+                                <div className="flex justify-between text-green-600">
+                                    <span>Coupon ({appliedCoupon.code})</span>
+                                    <span>-Rs. {appliedCoupon.calculatedDiscount}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between text-gray-600">
                                 <span>Shipping</span>
                                 <span>Free</span>
                             </div>
                             <div className="flex justify-between font-bold text-lg pt-2 border-t mt-2">
                                 <span>Total</span>
-                                <span>Rs. {total}</span>
+                                <span>Rs. {getTotalWithDiscount()}</span>
                             </div>
                         </div>
 

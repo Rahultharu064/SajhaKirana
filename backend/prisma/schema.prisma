@@ -166,6 +166,24 @@ model Review {
   @@unique([productId, userId])
 }
 
+model Coupon {
+  id            Int      @id @default(autoincrement())
+  code          String   @unique
+  description   String
+  discountType  String // 'percentage' or 'fixed'
+  discountValue Float
+  minOrderValue Float    @default(0)
+  maxDiscount   Float? // optional for percentage type
+  usageLimit    Int     @default(0) // 0 means unlimited
+  usageCount    Int     @default(0)
+  expiryDate    DateTime
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("coupons")
+}
+
 enum ReservationStatus {
   RESERVED
   COMMITTED
