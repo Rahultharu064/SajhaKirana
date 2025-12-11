@@ -17,8 +17,8 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
 }) => {
     const navigate = useNavigate();
 
-    const handleViewDetails = (productId: number) => {
-        navigate(`/product/${productId}`);
+    const handleViewDetails = (slug: string) => {
+        navigate(`/product/${slug}`);
     };
     return (
         <section className="py-8">
@@ -42,7 +42,7 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
                     <ProductCard
                         key={product.id}
                         product={product}
-                        onViewDetails={handleViewDetails}
+                        onViewDetails={() => handleViewDetails(product.slug)}
                     />
                 ))}
             </div>

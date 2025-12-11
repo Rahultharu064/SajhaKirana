@@ -816,3 +816,48 @@ export const bulkImportProducts = async (
     next(error);
   }
 };
+
+// Update product stock
+export const updateProductStock = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { stock } = req.body;
+
+    if (!id || isNaN(parseInt(id))) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "INVALID_ID",
+          message: "Invalid product ID",
+        },
+      });
+    }
+
+    if (stock === undefined || isNaN(parseInt(stock)) || parseInt(stock) < 0) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: "INVALID_STOCK",
+          message: "Stock must be a non-negative integer",
+        },
+      });
+    }
+
+    const updatedProduct = await prismaClient.product.update({
+      where: { id: parseInt(id) },
+      data: { stock: parseInt(stock) },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Stock updated successfully",
+      data: updatedProduct,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

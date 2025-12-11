@@ -113,3 +113,8 @@ export const getProductsByCategory = (categoryId: number, params?: { page?: numb
 export const bulkImportProducts = (products: Array<any>) => {
   return api.post('/products/bulk-import', products);
 }
+
+// Update product stock only
+export const updateProductStock = (productId: number, stock: number) => {
+  return api.patch(`/products/${productId}/stock`, { stock });
+}

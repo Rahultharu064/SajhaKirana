@@ -41,11 +41,11 @@ const routes = [
         element: <PublicCategories />,
     },
     {
-        path: "/category/:name",
+        path: "/category/:slug",
         element: <CategoryProducts />,
     },
     {
-        path: "/product/:id",
+        path: "/product/:slug",
         element: <ProductDetail />,
     },
     {

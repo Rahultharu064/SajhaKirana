@@ -18,7 +18,7 @@ import {
   Check,
   Share2,
 } from "lucide-react";
-import { getProductById, getProductsByCategory } from "../../services/productService";
+import { getProductBySlug, getProductsByCategory } from "../../services/productService";
 import { getReviewsByProduct } from "../../services/reviewService";
 import Header from "../../components/Publicwebsite/Layouts/Header";
 import Footer from "../../components/Publicwebsite/Layouts/Footer";
@@ -37,7 +37,7 @@ const features = [
 ];
 
 export default function ProductDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: any) => state.auth);
@@ -55,10 +55,9 @@ export default function ProductDetail() {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [editingReview, setEditingReview] = useState<any>(null);
 
-  const fetchReviewStats = async () => {
-    if (!id) return;
+  const fetchReviewStats = async (productId: number) => {
     try {
-      const reviewResponse = await getReviewsByProduct(parseInt(id), { limit: 0 });
+      const reviewResponse = await getReviewsByProduct(productId, { limit: 0 });
       if (reviewResponse.stats) {
         setReviewStats(reviewResponse.stats);
       }
@@ -69,20 +68,22 @@ export default function ProductDetail() {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      // Safety check for ID
-      if (!id || isNaN(parseInt(id))) {
+      // Safety check for Slug
+      if (!slug) {
         setLoading(false);
         return;
       }
 
       setLoading(true);
       try {
-        const response = await getProductById(parseInt(id));
+        const response = await getProductBySlug(slug);
         const productData = response.data?.data || response.data;
         setProduct(productData);
 
         // Fetch review stats for this product
-        await fetchReviewStats();
+        if (productData.id) {
+          await fetchReviewStats(productData.id);
+        }
 
         // Fetch related products
         if (productData.categoryId) {
@@ -106,7 +107,7 @@ export default function ProductDetail() {
     };
 
     fetchProduct();
-  }, [id]);
+  }, [slug]);
 
   const handleAddToCart = async () => {
     try {
@@ -190,7 +191,9 @@ export default function ProductDetail() {
   };
 
   const handleReviewDeleted = () => {
-    fetchReviewStats(); // Refresh stats after deletion
+    if (product?.id) {
+      fetchReviewStats(product.id); // Refresh stats after deletion
+    }
   };
 
   if (loading) {
@@ -231,13 +234,8 @@ export default function ProductDetail() {
       : 0;
 
   // Handle images array from backend
-  // Handle images array from backend with robust checks
   const getImages = () => {
     if (!product) return [];
-
-    console.log('Product data:', product);
-    console.log('Raw images type:', typeof product.images);
-    console.log('Raw images value:', product.images);
 
     if (!product.images) return ['/api/placeholder/400/400'];
 
@@ -248,12 +246,8 @@ export default function ProductDetail() {
       if (imgs.trim().startsWith('[') && imgs.trim().endsWith(']')) {
         try {
           imgs = JSON.parse(imgs);
-          console.log('Parsed JSON images:', imgs);
         } catch (e) {
           console.error("Failed to parse images JSON:", e);
-          // Fallback: treat as single image string if parse fails, or empty?
-          // If it looks like JSON but fails, it might be corrupted. 
-          // But if it's just a path string, we use it.
           return [imgs];
         }
       } else {
@@ -286,7 +280,7 @@ export default function ProductDetail() {
           <Link to="/" className="hover:text-primary-600 transition-colors">Home</Link>
           <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
           <Link
-            to={product.categoryId ? `/category/${product.categoryId}` : '/products'}
+            to={product.category?.slug ? `/category/${product.category.slug}` : '/categories'}
             className="hover:text-primary-600 transition-colors"
           >
             {product.category?.name || 'Category'}
@@ -392,7 +386,7 @@ export default function ProductDetail() {
           <div className="flex flex-col">
             <div className="mb-auto">
               <div className="flex items-center gap-2 mb-3">
-                <Link to={`/category/${product.categoryId}`} className="text-sm font-semibold text-primary-600 bg-primary-50 px-3 py-1 rounded-full hover:bg-primary-100 transition-colors">
+                <Link to={product.category?.slug ? `/category/${product.category.slug}` : '/categories'} className="text-sm font-semibold text-primary-600 bg-primary-50 px-3 py-1 rounded-full hover:bg-primary-100 transition-colors">
                   {product.category?.name}
                 </Link>
                 {product.stock > 0 ? (
@@ -453,7 +447,7 @@ export default function ProductDetail() {
                   {/* Quantity */}
                   {product.stock > 0 && (
                     <div className="flex items-center justify-between border-2 border-gray-200 rounded-xl overflow-hidden bg-white hover:border-primary-200 transition-colors w-full sm:w-auto min-w-[140px]">
-                    <button
+                      <button
                         type="button"
                         aria-label="Decrease quantity"
                         className="p-3.5 hover:bg-gray-50 text-gray-600 hover:text-primary-600 transition-colors"
@@ -667,7 +661,9 @@ export default function ProductDetail() {
                       onReviewSubmit={async () => {
                         setShowReviewForm(false);
                         setEditingReview(null);
-                        await fetchReviewStats();
+                        if (product?.id) {
+                          await fetchReviewStats(product.id);
+                        }
                       }}
                       onReviewCancel={() => {
                         setEditingReview(null);
@@ -692,7 +688,7 @@ export default function ProductDetail() {
               title="You May Also Like"
               subtitle="Curated products just for you"
               products={relatedProducts}
-              viewAllLink={product.categoryId ? `/category/${product.categoryId}` : '/products'}
+              viewAllLink={product.category?.slug ? `/category/${product.category.slug}` : '/categories'}
             />
           </div>
         )}

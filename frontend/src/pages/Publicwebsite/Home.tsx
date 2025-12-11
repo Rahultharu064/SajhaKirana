@@ -18,7 +18,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   const handleCategorySelect = (category: Category) => {
-    navigate(`/category/${category.id}`);
+    navigate(`/category/${category.slug}`);
   };
 
   return (

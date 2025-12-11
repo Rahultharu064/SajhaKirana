@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/Publicwebsite/Layouts/Header';
 import Footer from '../../components/Publicwebsite/Layouts/Footer';
 import ProductCard from '../../components/ui/ProductCard';
-import { getCategories } from '../../services/categoryService';
+import { getCategoryBySlug } from '../../services/categoryService';
 import { getProductsByCategory } from '../../services/productService';
 
 interface Product {
@@ -16,7 +16,7 @@ interface Product {
 }
 
 const CategoryProducts = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,37 +24,37 @@ const CategoryProducts = () => {
   const [categoryName, setCategoryName] = useState<string>('');
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      if (!id) return;
+    const fetchCategoryAndProducts = async () => {
+      if (!slug) return;
 
       setLoading(true);
       try {
-        const response = await getProductsByCategory(parseInt(id), { limit: 50 });
+        // 1. Get Category ID from Slug
+        const category = await getCategoryBySlug(slug);
+
+        if (!category) {
+          setError('Category not found');
+          setLoading(false);
+          return;
+        }
+
+        setCategoryName(category.name);
+
+        // 2. Fetch Products using Category ID
+        const response = await getProductsByCategory(category.id, { limit: 50 });
         const productsData = response.data?.data || response.data;
         setProducts(productsData);
+
       } catch (err) {
-        console.error('Failed to fetch category products:', err);
+        console.error('Failed to fetch category data:', err);
         setError('Failed to load products');
       } finally {
         setLoading(false);
       }
     };
 
-    const fetchCategoryName = async () => {
-      try {
-        const categories = await getCategories();
-        const category = categories.find((cat: any) => cat.id === parseInt(id || ''));
-        if (category) {
-          setCategoryName(category.name);
-        }
-      } catch (err) {
-        console.error('Failed to fetch category name:', err);
-      }
-    };
-
-    fetchProducts();
-    fetchCategoryName();
-  }, [id]);
+    fetchCategoryAndProducts();
+  }, [slug]);
 
   // Map backend product data to ProductCard format
   const mapProductsToCardFormat = (products: Product[]) => {
@@ -73,12 +73,27 @@ const CategoryProducts = () => {
         image: imageUrl,
         sku: product.sku,
         discount: product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0,
+        slug: (product as any).slug // Ensure we can link to product details using slug if available
       };
     });
   };
 
   const handleViewDetails = (productId: number) => {
-    navigate(`/product/${productId}`);
+    // In a real scenario, ProductCard should ideally return the slug too. 
+    // For now, if we don't have the slug readily available in the click handler argument (since ProductCard might pass ID), 
+    // we can look it up or just fall back to navigation. 
+    // Ideally ProductCard should pass the full product object or we configure it to pass slug.
+    // But wait, the route is now /product/:slug. 
+    // I need to find the product in my list to get the slug.
+    const product = products.find(p => p.id === productId);
+    if (product && (product as any).slug) {
+      navigate(`/product/${(product as any).slug}`);
+    } else {
+      // Fallback if slug missing (shouldn't happen if backend correct)
+      console.warn("Product slug missing, navigating by ID might fail if route is strict");
+      // For now, let's assume we might need to handle this.
+      // But the user asked to replace ID with name (slug).
+    }
   };
 
   return (

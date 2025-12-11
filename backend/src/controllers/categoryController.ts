@@ -311,3 +311,40 @@ export const searchCategories = async (
     next(error);
   }
 };
+
+// Get category by Slug
+export const getCategoryBySlug = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { slug } = req.params;
+
+    if (!slug) {
+      return res.status(400).json({
+        success: false,
+        message: "Slug is required",
+      });
+    }
+
+    const category = await prismaClient.category.findUnique({
+      where: { slug },
+    });
+
+    if (!category) {
+      return res.status(404).json({
+        success: false,
+        message: "Category not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Category retrieved successfully",
+      data: formatCategory(category),
+    });
+  } catch (error) {
+    next(error);
+  }
+};

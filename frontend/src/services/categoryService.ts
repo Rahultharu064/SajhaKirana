@@ -17,6 +17,18 @@ export const createCategory = async (data: { name: string; slug: string; image?:
   });
 };
 
+// Get category by ID (keeping for compatibility or internal use)
+export const getCategoryById = async (id: number): Promise<Category> => {
+  const response = await api.get(`/categories/${id}`);
+  return response.data.data;
+}
+
+// Get category by Slug
+export const getCategoryBySlug = async (slug: string): Promise<Category> => {
+  const response = await api.get(`/categories/slug/${slug}`);
+  return response.data.data;
+}
+
 export const getCategories = async (): Promise<Category[]> => {
   const response = await api.get('/categories');
   return response.data.data;

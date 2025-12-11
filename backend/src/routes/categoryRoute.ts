@@ -3,6 +3,7 @@ import {
     createCategory,
     getAllCategories,
     getCategoryById,
+    getCategoryBySlug,
     updateCategory,
     deleteCategory
 } from "../controllers/categoryController";
@@ -32,6 +33,12 @@ categoryRoutes.get(
     "/:id",
     validate(idParamSchema, "params"),
     getCategoryById
+);
+
+// Get category by Slug
+categoryRoutes.get(
+    "/slug/:slug",
+    getCategoryBySlug
 );
 
 // Update category with file upload and validation

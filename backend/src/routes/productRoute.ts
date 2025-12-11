@@ -9,6 +9,7 @@ import {
   searchProducts,
   getProductsByCategory,
   bulkImportProducts,
+  updateProductStock,
 } from "../controllers/productController";
 import { validate } from "../middlewares/validate";
 import {
@@ -76,6 +77,13 @@ productRoutes.delete(
   "/:id",
   validate(idParamSchema, "params"),
   deleteProduct
+);
+
+// Update product stock
+productRoutes.patch(
+  "/:id/stock",
+  validate(idParamSchema, "params"),
+  updateProductStock
 );
 
 // Bulk import products

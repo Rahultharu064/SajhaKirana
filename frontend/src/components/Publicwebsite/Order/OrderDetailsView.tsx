@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../ui/Button';
-import { CheckCircle, ShoppingBag, MapPin, CreditCard, Clock, Package, Truck, Calendar, Printer } from 'lucide-react';
+import { CheckCircle, ShoppingBag, MapPin, CreditCard, Clock, Package, Truck, Calendar, Printer, XCircle } from 'lucide-react';
 import { orderService } from '../../../services/orderService';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -110,12 +110,17 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
         weekday: 'short', month: 'short', day: 'numeric'
     });
 
-    const steps = [
+    const baseSteps = [
         { status: 'pending', label: 'Order Placed', icon: Calendar },
         { status: 'processing', label: 'Processing', icon: Package },
         { status: 'shipped', label: 'Shipped', icon: Truck },
         { status: 'delivered', label: 'Delivered', icon: CheckCircle },
     ];
+
+    const steps = (order.orderStatus || '').toLowerCase() === 'cancelled' ? [
+        { status: 'pending', label: 'Order Placed', icon: Calendar },
+        { status: 'cancelled', label: 'Cancelled', icon: XCircle }
+    ] : baseSteps;
 
     // Safely calculate status index with fallback
     const currentStepIndex = steps.findIndex(s => s.status === (order.orderStatus || '').toLowerCase()) !== -1
