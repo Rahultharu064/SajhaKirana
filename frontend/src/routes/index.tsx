@@ -25,6 +25,7 @@ import PaymentSuccess from "@/pages/Publicwebsite/PaymentSuccess.tsx";
 import PaymentFailure from "@/pages/Publicwebsite/PaymentFailure.tsx";
 import Checkout from "../pages/Publicwebsite/Checkout.tsx";
 import OrderConfirmation from "../pages/Publicwebsite/OrderConfirmation.tsx";
+import MyOrders from "../pages/Publicwebsite/MyOrders.tsx";
 
 const routes = [
     {
@@ -83,6 +84,10 @@ const routes = [
     {
         path: "/order/confirmation/:id",
         element: <OrderConfirmation />,
+    },
+    {
+        path: "/orders",
+        element: <MyOrders />,
     },
     // Admin Routes
     {

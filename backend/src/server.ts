@@ -1,11 +1,12 @@
 import app from "./app";
 import { prismaClient } from "./config/client";
 import http from "http"
+import { initSocket } from "./utils/socket";
 
 
 const server = http.createServer(app);
-// Forced restart for route update to apply /payment change
-
+// Initialize Socket.IO
+initSocket(server);
 
 const PORT = process.env.PORT || 5003;
 

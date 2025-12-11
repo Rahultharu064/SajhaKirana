@@ -201,6 +201,8 @@ export const cancelOrder = async (req: Request, res: Response, next: NextFunctio
   }
 };
 
+import { getIO } from "../utils/socket";
+
 // Update order status (admin or system)
 export const updateOrderStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -211,7 +213,7 @@ export const updateOrderStatus = async (req: Request, res: Response, next: NextF
     const id = parseInt(idStr);
     const { status } = req.body;
 
-    const validStatuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+    const validStatuses = ['pending', 'processing', 'confirmed', 'shipped', 'delivered', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ success: false, error: { code: "INVALID_STATUS", message: "Invalid order status" } });
     }
@@ -229,10 +231,17 @@ export const updateOrderStatus = async (req: Request, res: Response, next: NextF
       updateData.otp = otp;
     }
 
-    await prismaClient.order.update({
+    const updatedOrder = await prismaClient.order.update({
       where: { id },
       data: updateData,
     });
+
+    // Notify clients about the update
+    try {
+      getIO().emit("orderStatusUpdated", { orderId: id, status, updatedOrder });
+    } catch (socketError) {
+      console.error("Socket emit failed:", socketError);
+    }
 
     res.status(200).json({ success: true, message: `Order status updated to ${status}` });
   } catch (error) {

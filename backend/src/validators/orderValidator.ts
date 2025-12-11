@@ -32,9 +32,9 @@ export const createOrderSchema = Joi.object({
 
 // Update order status validation schema
 export const updateOrderStatusSchema = Joi.object({
-    status: Joi.string().valid('pending', 'confirmed', 'shipped', 'delivered', 'cancelled').required().messages({
+    status: Joi.string().valid('pending', 'processing', 'confirmed', 'shipped', 'delivered', 'cancelled').required().messages({
         "string.base": "Status must be a string",
-        "any.only": "Status must be one of: pending, confirmed, shipped, delivered, cancelled",
+        "any.only": "Status must be one of: pending, processing, confirmed, shipped, delivered, cancelled",
         "any.required": "Status is required",
     }),
 });
