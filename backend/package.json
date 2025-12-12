@@ -6,7 +6,8 @@
   "scripts": {
     "start": "tsx src/server.ts",
     "dev": "nodemon --watch \"src/**/*.ts\" --exec \"npx tsx src/server.ts\"",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "seed:admin": "tsx src/scripts/seedAdmin.ts"
   },
   "keywords": [],
   "author": "",

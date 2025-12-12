@@ -9,6 +9,8 @@ import {
   resetPassword,
   verifyEmail,
   sendVerificationEmail,
+  loginAdmin,
+  createAdmin,
 } from "../controllers/authController";
 import { validate } from "../middlewares/validate";
 import { authMiddleware } from "../middlewares/authMiddleware";
@@ -52,5 +54,11 @@ authRoutes.post("/verify-email", validate(verifyEmailSchema, "body"), verifyEmai
 
 // Send verification email (protected)
 authRoutes.post("/send-verification", authMiddleware, sendVerificationEmail);
+
+// Admin login (separate endpoint for admin users)
+authRoutes.post("/admin/login", validate(loginSchema, "body"), loginAdmin);
+
+// Create admin user (for initial setup - this could be protected in production)
+authRoutes.post("/admin/create", validate(registerSchema, "body"), createAdmin);
 
 export default authRoutes;

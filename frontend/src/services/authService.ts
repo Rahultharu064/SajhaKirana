@@ -51,3 +51,11 @@ export const verifyEmail =(token: string) =>{
 export const sendVerificationEmail =() =>{
     return api.post('/auth/send-verification');
 }
+
+export const adminLogin =(identifier: string, password: string) =>{
+    return api.post('/auth/admin/login', {identifier, password});
+}
+
+export const createAdmin =(data:{name: string, email:string , password:string, phone?:string}) =>{
+    return api.post('/auth/admin/create', data);
+}

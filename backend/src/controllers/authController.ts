@@ -116,7 +116,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
             role: (user as any).role ?? "customer" // fallback since role column may not exist yet
         },
             JWT_SECRET, {
-                expiresIn: JWT_EXPIRES_IN
+            expiresIn: JWT_EXPIRES_IN
         })
         res.status(200).json({
             message: "Login successful",
@@ -258,7 +258,7 @@ export const updateProfile = async (req: Request, res: Response, next: NextFunct
     }
 }
 
-// refresht eh token 
+// refresht eh token
 const refreshToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { refreshToken }: { refreshToken: string } = req.body;
@@ -432,3 +432,181 @@ export const sendVerificationEmail = async (req: Request, res: Response, next: N
         return;
     }
 }
+
+// Admin login function
+export const loginAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { identifier, password }: { identifier: string, password: string } = req.body;
+
+        console.log('[Admin Login] Attempting login for:', identifier);
+
+        // First, check if user exists at all
+        const userExists = await prismaClient.user.findFirst({
+            where: { email: identifier },
+            select: { id: true, email: true, role: true }
+        });
+
+        if (!userExists) {
+            console.log('[Admin Login] User not found:', identifier);
+            res.status(401).json({
+                success: false,
+                message: "Invalid credentials",
+                error: "User with this email does not exist"
+            });
+            return;
+        }
+
+        // Check if user has admin role
+        if (userExists.role !== 'admin') {
+            console.log('[Admin Login] User exists but is not an admin. Role:', userExists.role);
+            res.status(401).json({
+                success: false,
+                message: "Access denied",
+                error: "This account does not have admin privileges. Please use the regular login."
+            });
+            return;
+        }
+
+        // Find admin user with password
+        const user = await prismaClient.user.findFirst({
+            where: {
+                AND: [
+                    { email: identifier },
+                    { role: 'admin' }
+                ]
+            },
+            select: { id: true, name: true, email: true, password: true, role: true, profileImage: true, lastLogin: true }
+        });
+
+        if (!user) {
+            console.log('[Admin Login] Unexpected error: Admin user not found in second query');
+            res.status(401).json({
+                success: false,
+                message: "Invalid admin credentials"
+            });
+            return;
+        }
+
+        // Verify password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            console.log('[Admin Login] Invalid password for:', identifier);
+            res.status(401).json({
+                success: false,
+                message: "Invalid credentials",
+                error: "Incorrect password"
+            });
+            return;
+        }
+
+        console.log('[Admin Login] Login successful for:', identifier);
+
+        // Update last login timestamp
+        await prismaClient.user.update({
+            where: { id: user.id },
+            data: { lastLogin: new Date() }
+        });
+
+        // Generate JWT token with admin role
+        const token = jwt.sign({
+            userId: user.id,
+            role: user.role
+        },
+            JWT_SECRET, {
+            expiresIn: JWT_EXPIRES_IN
+        });
+
+        res.status(200).json({
+            success: true,
+            message: "Admin login successful",
+            user: {
+                userId: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                profileImage: user.profileImage,
+                lastLogin: user.lastLogin
+            },
+            token
+        });
+        return;
+    } catch (error) {
+        console.error('[Admin Login] Server error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Server error during admin login",
+            error: error
+        });
+        return;
+    }
+};
+
+// Create admin user (for initial setup)
+export const createAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+        const { name, email, password, phone } = req.body as {
+            name?: string;
+            email?: string;
+            password?: string;
+            phone?: string;
+        };
+
+        // Basic validation
+        if (!name || !email || !password) {
+            res.status(400).json({ success: false, error: { code: "INVALID_INPUT", message: "name, email and password are required" } });
+            return;
+        }
+        if (typeof password !== "string" || password.length < 6) {
+            res.status(400).json({ success: false, error: { code: "WEAK_PASSWORD", message: "Password must be at least 6 characters" } });
+            return;
+        }
+
+        // Check if admin already exists
+        const existingAdmin = await prismaClient.user.findFirst({
+            where: { role: 'admin' }
+        });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newAdmin = await prismaClient.user.create({
+            data: {
+                name,
+                email,
+                phone: phone ?? null,
+                password: hashedPassword,
+                role: 'admin',
+            },
+        });
+
+        const token = jwt.sign(
+            { userId: newAdmin.id, role: newAdmin.role },
+            JWT_SECRET,
+            { expiresIn: '24h' } // Longer expiration for initial admin setup
+        );
+
+        res.status(201).json({
+            success: true,
+            message: "Admin user created successfully",
+            isFirstAdmin: !existingAdmin,
+            user: {
+                userId: newAdmin.id,
+                name: newAdmin.name,
+                email: newAdmin.email,
+                phone: newAdmin.phone,
+                role: newAdmin.role,
+            },
+            token,
+        });
+        return;
+    } catch (error: any) {
+        // Prisma unique constraint error (duplicate)
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+            res.status(409).json({ success: false, error: { code: "USER_EXISTS", message: "User with that email already exists" } });
+            return;
+        }
+
+        console.error("Error in createAdmin:", error && (error.stack || error.message || error));
+        res.status(500).json({ success: false, error: { code: "SERVER_ERROR", message: "Internal server error" } });
+        return;
+    }
+};

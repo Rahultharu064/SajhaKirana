@@ -6,6 +6,8 @@ import PublicProducts from "../pages/Publicwebsite/Products.tsx";
 
 import Register from "../components/Auth/Register.tsx";
 import Login from "../components/Auth/Login.tsx";
+import AdminLogin from "../pages/Admin/AdminLogin.tsx";
+import CreateAdmin from "../pages/Admin/CreateAdmin.tsx";
 import Profile from "../components/Auth/Profile.tsx";
 import ProfileEdit from "../components/Auth/ProfileEdit.tsx";
 import Cart from "../components/Publicwebsite/Cart/Cart.tsx";
@@ -23,6 +25,7 @@ import CreateProduct from "../components/AdminDashboard/Forum/CreateProduct.tsx"
 import EditProduct from "../components/AdminDashboard/Forum/EditProduct.tsx";
 import PaymentSuccess from "@/pages/Publicwebsite/PaymentSuccess.tsx";
 import PaymentFailure from "@/pages/Publicwebsite/PaymentFailure.tsx";
+import ProtectedAdminRoute from "../components/Auth/ProtectedAdminRoute.tsx";
 import Checkout from "../pages/Publicwebsite/Checkout.tsx";
 import OrderConfirmation from "../pages/Publicwebsite/OrderConfirmation.tsx";
 import MyOrders from "../pages/Publicwebsite/MyOrders.tsx";
@@ -55,6 +58,14 @@ const routes = [
     {
         path: "/login",
         element: <Login />,
+    },
+    {
+        path: "/admin/login",
+        element: <AdminLogin />,
+    },
+    {
+        path: "/admin/create",
+        element: <CreateAdmin />,
     },
     {
         path: "/profile",
@@ -92,7 +103,11 @@ const routes = [
     // Admin Routes
     {
         path: "/admin",
-        element: <AdminDashboard />,
+        element: (
+            <ProtectedAdminRoute>
+                <AdminDashboard />
+            </ProtectedAdminRoute>
+        ),
         children: [
             {
                 index: true,

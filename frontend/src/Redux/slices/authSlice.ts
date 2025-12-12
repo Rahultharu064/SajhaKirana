@@ -11,7 +11,8 @@ import {
   forgetPassword,
   resetPassword,
   verifyEmail,
-  sendVerificationEmail
+  sendVerificationEmail,
+  adminLogin
 } from '../../services/authService';
 
 // Define user type based on backend response
@@ -170,6 +171,22 @@ export const sendVerificationEmailAsync = createAsyncThunk(
       return 'Verification email sent';
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to send verification email');
+    }
+  }
+);
+
+// Admin login thunk
+export const adminLoginAsync = createAsyncThunk(
+  'auth/adminLogin',
+  async ({ identifier, password }: { identifier: string; password: string }, { rejectWithValue }) => {
+    try {
+      const response = await adminLogin(identifier, password);
+      const { user } = response.data;
+      const token = response.data.token;
+      localStorage.setItem('token', token);
+      return { user, token };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Admin login failed');
     }
   }
 );
@@ -356,6 +373,23 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload as string;
         toast.error(action.payload as string || 'Failed to send verification email');
+      })
+      // Admin login
+      .addCase(adminLoginAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(adminLoginAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthenticated = true;
+        toast.success('Admin login successful!');
+      })
+      .addCase(adminLoginAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+        toast.error(action.payload as string || 'Admin login failed');
       });
   },
 });

@@ -64,7 +64,7 @@ export const authenticateAdmin = (req: Request, res: Response, next: NextFunctio
   }
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; role: string };
-    if (decoded.role !== 'ADMIN') {
+    if (decoded.role !== 'admin') {
       res.status(403).json({ message: 'Admin access required' });
       return;
     }
