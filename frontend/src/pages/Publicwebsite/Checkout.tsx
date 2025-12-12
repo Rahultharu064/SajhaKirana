@@ -7,8 +7,9 @@ import PaymentMethod from '../../components/Publicwebsite/Checkout/PaymentMethod
 import { orderService } from '../../services/orderService';
 import { applyCoupon } from '../../services/couponService';
 import type { CouponWithDiscount } from '../../services/couponService';
+import { getDistricts } from '../../services/districtService';
 import toast from 'react-hot-toast';
-import { Tag, X, Check } from 'lucide-react';
+import { Tag, X, Check, Search, ChevronDown } from 'lucide-react';
 
 const Checkout = () => {
     const navigate = useNavigate();
@@ -18,6 +19,14 @@ const Checkout = () => {
     // Start at step 1 (Address)
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [districts, setDistricts] = useState<string[]>([]);
+    const [districtsLoading, setDistrictsLoading] = useState(true);
+
+    // District search functionality
+    const [districtSearch, setDistrictSearch] = useState('');
+    const [isDistrictDropdownOpen, setIsDistrictDropdownOpen] = useState(false);
+    const [highlightedIndex, setHighlightedIndex] = useState(-1);
+    const [isDropdownItemClicked, setIsDropdownItemClicked] = useState(false);
 
     // Address State matching AddressData interface
     const [shippingAddress, setShippingAddress] = useState({
@@ -37,6 +46,24 @@ const Checkout = () => {
     const [couponCode, setCouponCode] = useState('');
     const [appliedCoupon, setAppliedCoupon] = useState<CouponWithDiscount | null>(null);
     const [couponLoading, setCouponLoading] = useState(false);
+
+    // Fetch districts on mount
+    useEffect(() => {
+        const fetchDistricts = async () => {
+            try {
+                const response = await getDistricts();
+                if (response.data.success) {
+                    setDistricts(response.data.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch districts:', error);
+                toast.error('Failed to load districts');
+            } finally {
+                setDistrictsLoading(false);
+            }
+        };
+        fetchDistricts();
+    }, []);
 
     useEffect(() => {
         // Redirect if not logged in
@@ -58,11 +85,92 @@ const Checkout = () => {
                 phone: user.phone || ''
             }));
         }
-    }, [user, items, navigate]);
+
+        // Initialize district search with selected district if it exists
+        if (shippingAddress.district && !districtSearch) {
+            setDistrictSearch(shippingAddress.district);
+        }
+    }, [user, items, navigate, shippingAddress.district]);
 
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setShippingAddress(prev => ({ ...prev, [name]: value }));
+    };
+
+    // District search handlers
+    const filteredDistricts = districts.filter(district =>
+        district.toLowerCase().includes(districtSearch.toLowerCase())
+    );
+
+    const handleDistrictSelect = (district: string) => {
+        setShippingAddress(prev => ({ ...prev, district }));
+        setDistrictSearch(district);
+        setIsDistrictDropdownOpen(false);
+        setHighlightedIndex(-1);
+    };
+
+    const handleDistrictInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setDistrictSearch(value);
+        setHighlightedIndex(-1);
+
+        // If the user is modifying an existing selected district, show dropdown
+        if (!isDistrictDropdownOpen) {
+            setIsDistrictDropdownOpen(true);
+        }
+    };
+
+    const handleDistrictInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!isDistrictDropdownOpen) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setHighlightedIndex(prev => Math.min(prev + 1, filteredDistricts.length - 1));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setHighlightedIndex(prev => Math.max(prev - 1, -1));
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (highlightedIndex >= 0 && highlightedIndex < filteredDistricts.length) {
+                handleDistrictSelect(filteredDistricts[highlightedIndex]);
+            } else if (districtSearch.trim() && !districts.includes(districtSearch.trim())) {
+                // Allow custom district entry
+                handleDistrictSelect(districtSearch.trim());
+            }
+        } else if (e.key === 'Escape') {
+            setIsDistrictDropdownOpen(false);
+            setHighlightedIndex(-1);
+        }
+    };
+
+    const handleDistrictInputFocus = () => {
+        setIsDistrictDropdownOpen(true);
+        // When focusing, if we have a selected district and search is empty, make it clear we're editing
+        if (shippingAddress.district && !districtSearch) {
+            setDistrictSearch(shippingAddress.district);
+        }
+    };
+
+    const handleDistrictInputBlur = () => {
+        // Delay closing to allow for clicks on dropdown items
+        setTimeout(() => {
+            // Don't close if we're clicking on a dropdown item
+            if (!isDropdownItemClicked) {
+                setIsDistrictDropdownOpen(false);
+                setHighlightedIndex(-1);
+                // If we typed something, save it as the district (even if it's the same - for editing flow)
+                if (districtSearch.trim()) {
+                    setShippingAddress(prev => ({ ...prev, district: districtSearch.trim() }));
+                } else if (shippingAddress.district) {
+                    // If we typed nothing but had a selection, show the selection
+                    setDistrictSearch(shippingAddress.district);
+                } else {
+                    // If we have no selection and didn't type anything, clear search
+                    setDistrictSearch('');
+                }
+            }
+            setIsDropdownItemClicked(false);
+        }, 150);
     };
 
     // Calculate total with coupon discount
@@ -131,8 +239,8 @@ const Checkout = () => {
                 // Determine next step based on payment method
                 if (paymentMethod === 'cod') {
                     toast.success('Order placed successfully!');
-                    // Redirect to success page or order details
-                    navigate('/payment/success');
+                    // Redirect to success page with order ID
+                    navigate(`/payment/success?order=${data.orderId}`);
                 } else if (paymentMethod === 'esewa') {
                     // eSewa specific handling
                     const esewaData = data.data;
@@ -259,17 +367,49 @@ const Checkout = () => {
                                         className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
                                     />
                                 </div>
-                                <div>
+                                <div className="relative">
                                     <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">District</label>
-                                    <input
-                                        id="district"
-                                        type="text"
-                                        name="district"
-                                        value={shippingAddress.district}
-                                        onChange={handleAddressChange}
-                                        placeholder="Enter your district"
-                                        className="w-full px-4 py-2 border rounded-md focus:ring-emerald-500 focus:border-emerald-500"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            id="district"
+                                            type="text"
+                                            value={districtSearch || shippingAddress.district || ''}
+                                            onChange={handleDistrictInputChange}
+                                            onKeyDown={handleDistrictInputKeyDown}
+                                            onFocus={handleDistrictInputFocus}
+                                            onBlur={handleDistrictInputBlur}
+                                            placeholder={districtsLoading ? "Loading districts..." : "Search or enter district"}
+                                            className="w-full px-4 py-2 pr-10 border rounded-md focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                                            disabled={districtsLoading}
+                                            autoComplete="off"
+                                        />
+                                        <Search size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                        <ChevronDown size={16} className="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                    </div>
+                                    {isDistrictDropdownOpen && !districtsLoading && (
+                                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                                            {filteredDistricts.length > 0 ? (
+                                                filteredDistricts.map((district, index) => (
+                                                    <div
+                                                        key={district}
+                                                        onMouseDown={() => {
+                                                            setIsDropdownItemClicked(true);
+                                                            handleDistrictSelect(district);
+                                                        }}
+                                                        className={`px-4 py-2 cursor-pointer hover:bg-emerald-50 ${
+                                                            index === highlightedIndex ? 'bg-emerald-100' : ''
+                                                        }`}
+                                                    >
+                                                        {district}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="px-4 py-2 text-gray-500 text-sm">
+                                                    No districts found. You can still enter a custom district.
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <label htmlFor="landmark" className="block text-sm font-medium text-gray-700 mb-1">Landmark (Optional)</label>

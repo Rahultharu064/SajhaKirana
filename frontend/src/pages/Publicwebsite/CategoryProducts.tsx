@@ -12,6 +12,7 @@ interface Product {
   price: number;
   mrp: number;
   sku: string;
+  slug: string;
   images: string[];
 }
 
@@ -72,27 +73,20 @@ const CategoryProducts = () => {
         rating: 4.5, // Default rating
         image: imageUrl,
         sku: product.sku,
+        slug: product.slug,
         discount: product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0,
-        slug: (product as any).slug // Ensure we can link to product details using slug if available
       };
     });
   };
 
   const handleViewDetails = (productId: number) => {
-    // In a real scenario, ProductCard should ideally return the slug too. 
-    // For now, if we don't have the slug readily available in the click handler argument (since ProductCard might pass ID), 
-    // we can look it up or just fall back to navigation. 
-    // Ideally ProductCard should pass the full product object or we configure it to pass slug.
-    // But wait, the route is now /product/:slug. 
-    // I need to find the product in my list to get the slug.
+    // Find product by ID to get its slug
     const product = products.find(p => p.id === productId);
-    if (product && (product as any).slug) {
-      navigate(`/product/${(product as any).slug}`);
+    if (product?.slug) {
+      navigate(`/product/${product.slug}`);
     } else {
-      // Fallback if slug missing (shouldn't happen if backend correct)
-      console.warn("Product slug missing, navigating by ID might fail if route is strict");
-      // For now, let's assume we might need to handle this.
-      // But the user asked to replace ID with name (slug).
+      // Fallback to ID if slug is not available
+      navigate(`/product/${productId}`);
     }
   };
 

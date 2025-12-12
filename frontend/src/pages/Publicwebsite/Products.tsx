@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight,
@@ -53,7 +53,6 @@ const getProductImage = (product: any) => {
 
 export default function ProductsPage() {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   // const { slug } = useParams(); // Note: This slug might be from a route like /category/:slug if we use this component there
 
   // State
@@ -343,7 +342,7 @@ export default function ProductsPage() {
             ) : products.length > 0 ? (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                  {products.map((product, index) => (
+                  {products.map((product, _index) => (
                     <ProductCard
                       key={product.id}
                       product={product}

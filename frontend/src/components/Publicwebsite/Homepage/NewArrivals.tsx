@@ -9,6 +9,7 @@ interface Product {
   price: number;
   mrp: number;
   sku: string;
+  slug: string;
   images: string[];
 }
 
@@ -35,7 +36,14 @@ const NewArrivals = () => {
   }, []);
 
   const handleViewDetails = (productId: number) => {
-    navigate(`/product/${productId}`);
+    // Find product by ID to get its slug
+    const product = products.find(p => p.id === productId);
+    if (product?.slug) {
+      navigate(`/product/${product.slug}`);
+    } else {
+      // Fallback to ID if slug is not available
+      navigate(`/product/${productId}`);
+    }
   };
 
   // Map backend product data to ProductCard format
@@ -54,6 +62,7 @@ const NewArrivals = () => {
         rating: 4.5, // Default rating (can be fetched from reviews later)
         image: imageUrl,
         sku: product.sku,
+        slug: product.slug,
         discount: product.mrp > product.price ? Math.round(((product.mrp - product.price) / product.mrp) * 100) : 0,
       };
     });
