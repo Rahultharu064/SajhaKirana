@@ -23,6 +23,7 @@ import Promotions from "../components/AdminDashboard/Sections/Promotions.tsx";
 import Settings from "../components/AdminDashboard/Sections/Settings.tsx";
 import Categories from "../components/AdminDashboard/Sections/Categories.tsx";
 import Users from "../components/AdminDashboard/Sections/Users.tsx";
+import ReviewModeration from "../components/AdminDashboard/ReviewModeration.tsx";
 import CreateProduct from "../components/AdminDashboard/Forum/CreateProduct.tsx";
 import EditProduct from "../components/AdminDashboard/Forum/EditProduct.tsx";
 import PaymentSuccess from "@/pages/Publicwebsite/PaymentSuccess.tsx";
@@ -142,6 +143,10 @@ const routes = [
             {
                 path: "users",
                 element: <Users />
+            },
+            {
+                path: "reviews",
+                element: <ReviewModeration />
             },
             {
                 path: "inventory",

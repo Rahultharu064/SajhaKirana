@@ -10,6 +10,7 @@ const __dirname = path.dirname(__filename);
 const categoriesUploadDir = path.join(__dirname, "../../uploads/categories");
 const productsUploadDir = path.join(__dirname, "../../uploads/products");
 const profilesUploadDir = path.join(__dirname, "../../uploads/profiles");
+const reviewsUploadDir = path.join(__dirname, "../../uploads/reviews");
 
 if (!fs.existsSync(categoriesUploadDir)) {
     fs.mkdirSync(categoriesUploadDir, { recursive: true });
@@ -22,6 +23,11 @@ if (!fs.existsSync(productsUploadDir)) {
 if (!fs.existsSync(profilesUploadDir)) {
     fs.mkdirSync(profilesUploadDir, { recursive: true });
 }
+
+if (!fs.existsSync(reviewsUploadDir)) {
+    fs.mkdirSync(reviewsUploadDir, { recursive: true });
+}
+
 
 // Configure storage for categories
 const categoriesStorage = multer.diskStorage({
@@ -62,6 +68,20 @@ const profilesStorage = multer.diskStorage({
     }
 });
 
+// Configure storage for reviews (photos and videos)
+const reviewsStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, reviewsUploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const ext = path.extname(file.originalname);
+        const name = path.basename(file.originalname, ext).replace(/\s+/g, "-");
+        const mediaType = file.mimetype.startsWith('video/') ? 'video' : 'photo';
+        cb(null, `review-${mediaType}-${uniqueSuffix}${ext}`);
+    }
+});
+
 // File filter to accept only images
 const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
     const allowedMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
@@ -70,6 +90,19 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
         cb(null, true);
     } else {
         cb(new Error("Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed."));
+    }
+};
+
+// File filter for reviews (images and videos)
+const reviewFileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    const allowedImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+    const allowedVideoTypes = ["video/mp4", "video/webm", "video/quicktime", "video/x-msvideo"];
+    const allAllowedTypes = [...allowedImageTypes, ...allowedVideoTypes];
+
+    if (allAllowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error("Invalid file type. Only JPEG, PNG, GIF, WebP images and MP4, WebM, MOV, AVI videos are allowed."));
     }
 };
 
@@ -98,8 +131,16 @@ export const uploadProfiles = multer({
     }
 });
 
+export const uploadReviews = multer({
+    storage: reviewsStorage,
+    fileFilter: reviewFileFilter,
+    limits: {
+        fileSize: 50 * 1024 * 1024 // 50MB limit for reviews (to accommodate videos)
+    }
+});
+
 // Helper function to delete image files
-export const deleteImageFile = (imagePath: string | null, folder: "categories" | "products" | "profiles" = "categories") => {
+export const deleteImageFile = (imagePath: string | null, folder: "categories" | "products" | "profiles" | "reviews" = "categories") => {
     if (!imagePath) return;
 
     try {
@@ -108,6 +149,8 @@ export const deleteImageFile = (imagePath: string | null, folder: "categories" |
             uploadDir = productsUploadDir;
         } else if (folder === "profiles") {
             uploadDir = profilesUploadDir;
+        } else if (folder === "reviews") {
+            uploadDir = reviewsUploadDir;
         } else {
             uploadDir = categoriesUploadDir;
         }
@@ -121,7 +164,7 @@ export const deleteImageFile = (imagePath: string | null, folder: "categories" |
 };
 
 // Helper function to delete multiple image files
-export const deleteImageFiles = (imagePaths: string[], folder: "categories" | "products" | "profiles" = "categories") => {
+export const deleteImageFiles = (imagePaths: string[], folder: "categories" | "products" | "profiles" | "reviews" = "categories") => {
     if (!Array.isArray(imagePaths)) return;
 
     imagePaths.forEach((imagePath) => {

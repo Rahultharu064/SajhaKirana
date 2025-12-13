@@ -90,3 +90,24 @@ export const searchReviewsSchema = Joi.object({
     "number.max": "Limit cannot exceed 100",
   }),
 });
+
+// User reviews schema (more permissive for /my route)
+export const userReviewsSchema = Joi.object({
+  sort: Joi.string()
+    .valid("newest", "oldest", "highest", "lowest")
+    .default("newest")
+    .messages({
+      "any.only": 'Sort must be one of: newest, oldest, highest, lowest',
+    }),
+  page: Joi.number().integer().min(1).default(1).messages({
+    "number.base": "Page must be a number",
+    "number.integer": "Page must be an integer",
+    "number.min": "Page must be at least 1",
+  }),
+  limit: Joi.number().integer().min(1).max(200).default(10).messages({
+    "number.base": "Limit must be a number",
+    "number.integer": "Limit must be an integer",
+    "number.min": "Limit must be at least 1",
+    "number.max": "Limit cannot exceed 200",
+  }),
+}).unknown(true); // Allow unknown fields

@@ -1,106 +1,120 @@
 import api from './api';
 
-// Types
-interface CreateReviewData {
-  productId: number;
-  rating: number;
-  comment: string;
-}
-
-interface UpdateReviewData {
-  rating?: number;
-  comment?: string;
-}
-
-interface Review {
-  id: number;
-  productId: number;
-  userId: number;
-  rating: number;
-  comment: string;
-  createdAt: string;
-  updatedAt: string;
-  user: {
+export interface Review {
     id: number;
-    name: string;
-    profileImage?: string;
-  };
-  product: {
+    productId: number;
+    userId: number;
+    rating: number;
+    comment: string;
+    approvalStatus: string;
+    createdAt: string;
+    updatedAt: string;
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        profileImage?: string;
+    };
+    product?: {
+        id: number;
+        title: string;
+        slug: string;
+        images?: string[];
+    };
+    media?: ReviewMedia[];
+}
+
+export interface ReviewMedia {
     id: number;
-    title: string;
-    slug: string;
-  };
+    mediaType: 'image' | 'video';
+    mediaUrl: string;
+    fileSize: number;
+    mimeType: string;
 }
 
-interface ReviewsResponse {
-  success: boolean;
-  message: string;
-  data: Review[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
-  };
-  stats?: {
-    total: number;
-    averageRating: number;
-    ratingDistribution: Record<number, number>;
-  };
+export interface ReviewsResponse {
+    data: Review[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        pages: number;
+    };
+    stats?: {
+        total: number;
+        averageRating: number;
+        ratingDistribution: Record<number, number>;
+    };
 }
 
-// API functions
+export interface CreateReviewData {
+    productId: number;
+    rating: number;
+    comment: string;
+    media?: File[];
+}
+
+export interface UpdateReviewData {
+    rating?: number;
+    comment?: string;
+}
+
+// Create a new review
 export const createReview = async (data: CreateReviewData): Promise<Review> => {
-  const response = await api.post('/reviews', data);
-  return response.data.data;
+    const formData = new FormData();
+    formData.append('productId', data.productId.toString());
+    formData.append('rating', data.rating.toString());
+    formData.append('comment', data.comment);
+
+    if (data.media && data.media.length > 0) {
+        data.media.forEach((file) => {
+            formData.append('media', file);
+        });
+    }
+
+    const response = await api.post('/reviews', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    });
+
+    return response.data.data;
 };
 
-export const getAllReviews = async (params?: {
-  productId?: number;
-  userId?: number;
-  rating?: number;
-  sort?: 'newest' | 'oldest' | 'highest' | 'lowest';
-  page?: number;
-  limit?: number;
-}): Promise<ReviewsResponse> => {
-  const response = await api.get('/reviews', { params });
-  return response.data;
-};
-
-export const getReviewById = async (id: number): Promise<Review> => {
-  const response = await api.get(`/reviews/${id}`);
-  return response.data.data;
-};
-
+// Get reviews for a product
 export const getReviewsByProduct = async (
-  productId: number,
-  params?: {
-    sort?: 'newest' | 'oldest' | 'highest' | 'lowest';
+    productId: number,
+    params?: {
+        page?: number;
+        limit?: number;
+        sort?: 'newest' | 'oldest' | 'highest' | 'lowest';
+        rating?: number;
+    }
+): Promise<ReviewsResponse> => {
+    const response = await api.get(`/reviews/product/${productId}`, { params });
+    return response.data;
+};
+
+// Get user's own reviews
+export const getMyReviews = async (params?: {
     page?: number;
     limit?: number;
-  }
-): Promise<ReviewsResponse> => {
-  const response = await api.get(`/reviews/product/${productId}`, { params });
-  return response.data;
-};
-
-export const getMyReviews = async (params?: {
-  sort?: 'newest' | 'oldest' | 'highest' | 'lowest';
-  page?: number;
-  limit?: number;
+    sort?: 'newest' | 'oldest' | 'highest' | 'lowest';
 }): Promise<ReviewsResponse> => {
-  const response = await api.get('/reviews/my', { params });
-  return response.data;
+    const response = await api.get('/reviews/my', { params });
+    return response.data;
 };
 
+// Update a review
 export const updateReview = async (
-  id: number,
-  data: UpdateReviewData
+    reviewId: number,
+    data: UpdateReviewData
 ): Promise<Review> => {
-  const response = await api.put(`/reviews/${id}`, data);
-  return response.data.data;
+    const response = await api.put(`/reviews/${reviewId}`, data);
+    return response.data.data;
 };
 
-export const deleteReview = async (id: number): Promise<void> => {
-  await api.delete(`/reviews/${id}`);
+// Delete a review
+export const deleteReview = async (reviewId: number): Promise<void> => {
+    await api.delete(`/reviews/${reviewId}`);
 };

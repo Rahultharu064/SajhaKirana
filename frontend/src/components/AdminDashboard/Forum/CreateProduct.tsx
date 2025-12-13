@@ -3,9 +3,10 @@ import type { ChangeEvent, FormEvent } from "react";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createProduct } from "../../../services/productService";
-import { getCategories } from "../../../services/categoryService";
+import { getCategories, createCategory } from "../../../services/categoryService";
 import toast, { Toaster } from "react-hot-toast";
 import Button from "../../ui/Button";
+import Modal from "../../ui/Modal";
 
 const CreateProduct: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +22,13 @@ const CreateProduct: React.FC = () => {
   const [isActive, setIsActive] = useState(true);
   const [images, setImages] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Modal state for create category
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [categoryName, setCategoryName] = useState("");
+  const [categorySlug, setCategorySlug] = useState("");
+  const [categoryImage, setCategoryImage] = useState<File | null>(null);
+  const [categoryLoading, setCategoryLoading] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -80,6 +88,50 @@ const CreateProduct: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCategoryImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setCategoryImage(e.target.files[0]);
+    }
+  };
+
+  const handleCategorySubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setCategoryLoading(true);
+
+    try {
+      await createCategory({
+        name: categoryName,
+        slug: categorySlug,
+        image: categoryImage || undefined,
+      });
+
+      toast.success("Category created successfully!");
+      // Reset modal form
+      setCategoryName("");
+      setCategorySlug("");
+      setCategoryImage(null);
+      // Close modal
+      setIsModalOpen(false);
+      // Refresh categories
+      const data = await getCategories();
+      setCategories(data);
+    } catch (err: any) {
+      const message = err?.response?.data?.error?.message || "Something went wrong";
+      toast.error(message);
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    // Reset form when closing
+    setCategoryName("");
+    setCategorySlug("");
+    setCategoryImage(null);
   };
 
   return (
@@ -167,7 +219,7 @@ const CreateProduct: React.FC = () => {
               type="button"
               variant="ghost"
               size="xs"
-              onClick={() => navigate('/admin/categories')}
+              onClick={openModal}
               title="Add new category"
               startIcon={<Plus size={18} />}
             />
@@ -230,6 +282,62 @@ const CreateProduct: React.FC = () => {
           {loading ? "Creating..." : "Create Product"}
         </Button>
       </form>
+
+      <Modal isOpen={isModalOpen} onClose={closeModal} title="Create New Category">
+        <form onSubmit={handleCategorySubmit} className="space-y-4">
+          <div>
+            <label className="block font-medium">Name</label>
+            <input
+              type="text"
+              value={categoryName}
+              onChange={(e) => setCategoryName(e.target.value)}
+              required
+              placeholder="Enter category name"
+              className="mt-1 w-full border rounded p-2"
+            />
+          </div>
+          <div>
+            <label htmlFor="category-slug" className="block font-medium">Slug</label>
+            <input
+              id="category-slug"
+              type="text"
+              value={categorySlug}
+              onChange={(e) => setCategorySlug(e.target.value)}
+              required
+              placeholder="Enter category slug"
+              className="mt-1 w-full border rounded p-2"
+            />
+          </div>
+          <div>
+            <label htmlFor="category-image" className="block font-medium">Image</label>
+            <input
+              id="category-image"
+              type="file"
+              accept="image/*"
+              onChange={handleCategoryImageChange}
+              className="mt-1"
+            />
+          </div>
+          <div className="flex gap-4">
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              onClick={closeModal}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              loading={categoryLoading}
+            >
+              {categoryLoading ? "Creating..." : "Create Category"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

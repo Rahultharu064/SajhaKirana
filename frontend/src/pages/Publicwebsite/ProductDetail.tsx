@@ -17,9 +17,11 @@ import {
   ChevronLeft,
   Check,
   Share2,
+  Edit,
+  MessageSquarePlus,
 } from "lucide-react";
 import { getProductBySlug, getProductsByCategory } from "../../services/productService";
-import { getReviewsByProduct } from "../../services/reviewService";
+import { getReviewsByProduct, getMyReviews } from "../../services/reviewService";
 import Header from "../../components/Publicwebsite/Layouts/Header";
 import Footer from "../../components/Publicwebsite/Layouts/Footer";
 import { ProductCarousel } from "../../components/products/ProductCarousel";
@@ -55,21 +57,35 @@ export default function ProductDetail() {
   const [isZoomed, setIsZoomed] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [editingReview, setEditingReview] = useState<any>(null);
+  const [reviewRefreshTrigger, setReviewRefreshTrigger] = useState(0); // Add this to trigger review list refresh
+  const [userHasReviewed, setUserHasReviewed] = useState(false);
+  const [userReview, setUserReview] = useState<any>(null);
 
   const fetchReviewStats = async (productId: number) => {
     try {
-      const reviewResponse = await getReviewsByProduct(productId, { limit: 0 });
+      const reviewResponse = await getReviewsByProduct(productId, { limit: 10 });
       if (reviewResponse.stats) {
         setReviewStats(reviewResponse.stats);
+      } else {
+        setReviewStats({
+          total: 0,
+          averageRating: 0,
+          ratingDistribution: {}
+        });
       }
     } catch (err) {
       console.error("Failed to fetch review stats:", err);
+      setReviewStats({
+        total: 0,
+        averageRating: 0,
+        ratingDistribution: {}
+      });
     }
   };
 
   useEffect(() => {
     const fetchProduct = async () => {
-      // Safety check for Slug
+      // Safety check for slug
       if (!slug) {
         setLoading(false);
         return;
@@ -77,7 +93,7 @@ export default function ProductDetail() {
 
       setLoading(true);
       try {
-        const response = await getProductBySlug(slug);
+        const response = await getProductBySlug(slug!);
         const productData = response.data?.data || response.data;
         setProduct(productData);
 
@@ -109,6 +125,29 @@ export default function ProductDetail() {
 
     fetchProduct();
   }, [slug]);
+
+  // Check if user has already reviewed this product
+  useEffect(() => {
+    const checkUserReview = async () => {
+      if (!isAuthenticated || !product?.id) return;
+
+      try {
+        const response = await getMyReviews({ limit: 100 });
+        // response is ReviewsResponse type: { data: Review[], ... }
+        const reviews = response.data || [];
+        const existingReview = reviews.find((review: any) => review.productId === product.id);
+        setUserHasReviewed(!!existingReview);
+        setUserReview(existingReview || null);
+      } catch (err: any) {
+        console.error("Failed to check user review:", err);
+        // Don't show error to user, just assume no review exists
+        setUserHasReviewed(false);
+        setUserReview(null);
+      }
+    };
+
+    checkUserReview();
+  }, [isAuthenticated, product?.id]);
 
   const handleAddToCart = async () => {
     try {
@@ -178,7 +217,15 @@ export default function ProductDetail() {
       navigate('/login');
       return;
     }
-    setShowReviewForm(!showReviewForm);
+    if (userHasReviewed && userReview) {
+      // Open existing review for editing
+      setEditingReview(userReview);
+      setShowReviewForm(true);
+    } else {
+      // Open new review form
+      setShowReviewForm(!showReviewForm);
+      setEditingReview(null); // Clear any editing state when opening new review form
+    }
   };
 
   const handleEditReview = (review: any) => {
@@ -194,6 +241,9 @@ export default function ProductDetail() {
   const handleReviewDeleted = () => {
     if (product?.id) {
       fetchReviewStats(product.id); // Refresh stats after deletion
+      setReviewRefreshTrigger(prev => prev + 1); // Trigger review list refresh
+      setUserHasReviewed(false); // Reset user review status
+      setUserReview(null);
     }
   };
 
@@ -674,8 +724,17 @@ export default function ProductDetail() {
                   <div className="text-center md:text-left">
                     <h3 className="text-2xl font-bold mb-2">Customer Reviews</h3>
                   </div>
-                  <Button variant="outline" className="h-12 border-gray-300" onClick={handleWriteReview}>
-                    Write a Review
+                  <Button
+                    variant="outline"
+                    className="h-12 px-4 border-gray-300 hover:border-primary-500 hover:bg-primary-50 transition-all"
+                    onClick={handleWriteReview}
+                    title={userHasReviewed ? 'Edit Your Review' : 'Write a Review'}
+                  >
+                    {userHasReviewed ? (
+                      <Edit className="h-5 w-5" />
+                    ) : (
+                      <MessageSquarePlus className="h-5 w-5" />
+                    )}
                   </Button>
                 </div>
                 {showReviewForm && (
@@ -689,11 +748,17 @@ export default function ProductDetail() {
                     <ReviewForm
                       productId={product.id}
                       editingReview={editingReview}
-                      onReviewSubmit={async () => {
+                    onReviewSubmit={async () => {
+                        console.log('ProductDetail: onReviewSubmit called');
                         setShowReviewForm(false);
                         setEditingReview(null);
                         if (product?.id) {
                           await fetchReviewStats(product.id);
+                          setReviewRefreshTrigger(prev => {
+                            const newValue = prev + 1;
+                            console.log('ProductDetail: reviewRefreshTrigger updated to:', newValue);
+                            return newValue;
+                          }); // Trigger review list refresh
                         }
                       }}
                       onReviewCancel={() => {
@@ -706,6 +771,7 @@ export default function ProductDetail() {
                   productId={product.id}
                   onReviewEdit={handleEditReview}
                   onReviewDeleted={handleReviewDeleted}
+                  refreshTrigger={reviewRefreshTrigger}
                 />
               </motion.div>
             </TabsContent>

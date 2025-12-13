@@ -1,592 +1,568 @@
-import type { Request, Response, NextFunction } from "express";
-import { prismaClient } from "../config/client";
+import type { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+import { deleteImageFile } from '../config/multer';
+import jwt from 'jsonwebtoken';
+
+const prisma = new PrismaClient();
 
 // Create a new review
-export const createReview = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { productId, rating, comment } = req.body;
-    const userId = (req as any).user.id;
+export const createReview = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.userId;
+        const { productId, rating, comment } = req.body;
 
-    // Convert string inputs to numbers
-    const parsedProductId = parseInt(productId);
-    const parsedRating = parseInt(rating);
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
 
-    if (isNaN(parsedProductId) || isNaN(parsedRating)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: "INVALID_INPUT",
-          message: "Invalid numeric values for productId or rating",
-        },
-      });
+        // Check if product exists
+        const product = await prisma.product.findUnique({
+            where: { id: parseInt(productId) }
+        });
+
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Check if user already reviewed this product
+        const existingReview = await prisma.review.findFirst({
+            where: {
+                userId,
+                productId: parseInt(productId)
+            }
+        });
+
+        if (existingReview) {
+            return res.status(409).json({ message: 'You have already reviewed this product' });
+        }
+
+        // Create review
+        const review = await prisma.review.create({
+            data: {
+                userId,
+                productId: parseInt(productId),
+                rating: parseInt(rating),
+                comment,
+                approvalStatus: 'pending'
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        profileImage: true
+                    }
+                },
+                product: {
+                    select: {
+                        id: true,
+                        title: true,
+                        slug: true
+                    }
+                }
+            }
+        });
+
+        // Handle media uploads if any
+        if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+            const mediaFiles = req.files as Express.Multer.File[];
+
+            for (const file of mediaFiles) {
+                const mediaType = file.mimetype.startsWith('video/') ? 'video' : 'image';
+
+                await prisma.reviewMedia.create({
+                    data: {
+                        reviewId: review.id,
+                        mediaType,
+                        mediaUrl: file.filename,
+                        fileSize: file.size,
+                        mimeType: file.mimetype
+                    }
+                });
+            }
+        }
+
+        // Fetch the complete review with media
+        const completeReview = await prisma.review.findUnique({
+            where: { id: review.id },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        profileImage: true
+                    }
+                },
+                product: {
+                    select: {
+                        id: true,
+                        title: true,
+                        slug: true
+                    }
+                },
+                media: true
+            }
+        });
+
+        res.status(201).json({
+            message: 'Review submitted successfully and is pending approval',
+            data: completeReview
+        });
+    } catch (error: any) {
+        console.error('Create review error:', error);
+        if (error.code === 'P2002') {
+            return res.status(409).json({ message: 'You have already reviewed this product' });
+        }
+        res.status(500).json({ message: 'Failed to create review', error: error.message });
     }
-
-    // Check if product exists and is active
-    const product = await prismaClient.product.findFirst({
-      where: {
-        id: parsedProductId,
-        isActive: true,
-      },
-    });
-
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: "PRODUCT_NOT_FOUND",
-          message: "Product not found or inactive",
-        },
-      });
-    }
-
-    // Check if user has already reviewed this product
-    const existingReview = await prismaClient.review.findUnique({
-      where: {
-        productId_userId: {
-          productId: parsedProductId,
-          userId: userId,
-        },
-      },
-    });
-
-    if (existingReview) {
-      return res.status(409).json({
-        success: false,
-        error: {
-          code: "REVIEW_EXISTS",
-          message: "You have already reviewed this product",
-        },
-      });
-    }
-
-    // Create the review
-    const review = await prismaClient.review.create({
-      data: {
-        productId: parsedProductId,
-        userId: userId,
-        rating: parsedRating,
-        comment: comment.trim(),
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            profileImage: true,
-          },
-        },
-        product: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-          },
-        },
-      },
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "Review created successfully",
-      data: review,
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
-// Get all reviews with filters and pagination
-export const getAllReviews = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const {
-      productId,
-      userId,
-      rating,
-      sort = "newest",
-      page = 1,
-      limit = 10,
-    } = req.query;
+// Get reviews for a product
+export const getReviewsByProduct = async (req: Request, res: Response) => {
+    try {
+        const { productId } = req.params;
+        const productIdNum = parseInt(productId!);
+        const page = parseInt((req.query.page as string) || '1');
+        const limit = parseInt((req.query.limit as string) || '10');
+        const sort = (req.query.sort as string) || 'newest';
+        const ratingStr = req.query.rating as string | null;
 
-    // Build where clause
-    const where: any = {};
+        const skip = (page - 1) * limit;
+        const take = limit;
 
-    if (productId) {
-      where.productId = parseInt(productId as string);
-    }
+        // Check for optional authentication to show user's own non-approved reviews
+        let currentUserId: number | null = null;
+        const authHeader = req.headers.authorization;
+        if (typeof authHeader === 'string' && authHeader.startsWith("Bearer ")) {
+            try {
+                const token = authHeader.split(" ")[1];
+                const secret = process.env.JWT_SECRET || "your_jwt_secret_key";
+                const decoded = jwt.verify(token, secret) as any;
+                currentUserId = decoded.userId;
+            } catch (err) {
+                // Ignore invalid tokens for public route
+            }
+        }
 
-    if (userId) {
-      where.userId = parseInt(userId as string);
-    }
+        // Build where clause
+        const where: any = {
+            productId: productIdNum,
+            OR: [
+                { approvalStatus: 'approved' },
+                ...(currentUserId ? [{ userId: currentUserId, approvalStatus: 'pending' }] : [])
+            ]
+        };
 
-    if (rating) {
-      where.rating = parseInt(rating as string);
-    }
+        if (ratingStr) {
+            where.rating = parseInt(ratingStr);
+        }
 
-    // Build orderBy
-    const orderByMap: any = {
-      newest: { createdAt: "desc" },
-      oldest: { createdAt: "asc" },
-      highest: { rating: "desc" },
-      lowest: { rating: "asc" },
-    };
+        // Build orderBy clause
+        let orderBy: any = {};
+        switch (sort) {
+            case 'oldest':
+                orderBy = { createdAt: 'asc' };
+                break;
+            case 'highest':
+                orderBy = { rating: 'desc' };
+                break;
+            case 'lowest':
+                orderBy = { rating: 'asc' };
+                break;
+            case 'newest':
+            default:
+                orderBy = { createdAt: 'desc' };
+        }
 
-    const orderBy = orderByMap[sort as string] || { createdAt: "desc" };
+        const [reviews, total] = await Promise.all([
+            prisma.review.findMany({
+                where,
+                skip,
+                take,
+                orderBy,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            profileImage: true
+                        }
+                    },
+                    media: true
+                }
+            }),
+            prisma.review.count({ where })
+        ]);
 
-    // Pagination
-    const pageNum = Math.max(1, parseInt(page as string) || 1);
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 10));
-    const skip = (pageNum - 1) * limitNum;
-
-    // Get reviews and count
-    const [reviews, total] = await Promise.all([
-      prismaClient.review.findMany({
-        where,
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              profileImage: true,
+        // Calculate stats
+        const allReviews = await prisma.review.findMany({
+            where: {
+                productId: productIdNum,
+                approvalStatus: 'approved'
             },
-          },
-          product: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-            },
-          },
-        },
-        orderBy,
-        skip,
-        take: limitNum,
-      }),
-      prismaClient.review.count({ where }),
-    ]);
+            select: { rating: true }
+        });
 
-    return res.status(200).json({
-      success: true,
-      message: "Reviews retrieved successfully",
-      data: reviews,
-      pagination: {
-        total,
-        page: pageNum,
-        limit: limitNum,
-        pages: Math.ceil(total / limitNum),
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
+        const totalReviews = allReviews.length;
+        const averageRating = totalReviews > 0
+            ? allReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+            : 0;
+
+        const ratingDistribution = allReviews.reduce((acc, r) => {
+            acc[r.rating] = (acc[r.rating] || 0) + 1;
+            return acc;
+        }, {} as Record<number, number>);
+
+        res.json({
+            data: reviews,
+            pagination: {
+                total,
+                page,
+                limit,
+                pages: Math.ceil(total / limit)
+            },
+            stats: {
+                total: totalReviews,
+                averageRating,
+                ratingDistribution
+            }
+        });
+    } catch (error: any) {
+        console.error('Get reviews error:', error);
+        res.status(500).json({ message: 'Failed to fetch reviews', error: error.message });
+    }
 };
 
-// Get review by ID
-export const getReviewById = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { id } = req.params as { id: string };
+// Get user's reviews
+export const getMyReviews = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.userId;
+        const page = parseInt((req.query.page as string) || '1');
+        const limit = parseInt((req.query.limit as string) || '10');
+        const sort = (req.query.sort as string) || 'newest';
 
-    const reviewId = parseInt(id);
-    if (isNaN(reviewId)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: "INVALID_ID",
-          message: "Invalid review ID",
-        },
-      });
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        const skip = (page - 1) * limit;
+        const take = limit;
+
+        let orderBy: any = {};
+        switch (sort) {
+            case 'oldest':
+                orderBy = { createdAt: 'asc' };
+                break;
+            case 'highest':
+                orderBy = { rating: 'desc' };
+                break;
+            case 'lowest':
+                orderBy = { rating: 'asc' };
+                break;
+            case 'newest':
+            default:
+                orderBy = { createdAt: 'desc' };
+        }
+
+        const [reviews, total] = await Promise.all([
+            prisma.review.findMany({
+                where: { userId },
+                skip,
+                take,
+                orderBy,
+                include: {
+                    product: {
+                        select: {
+                            id: true,
+                            title: true,
+                            slug: true,
+                            images: true
+                        }
+                    },
+                    media: true
+                }
+            }),
+            prisma.review.count({ where: { userId } })
+        ]);
+
+        res.json({
+            data: reviews,
+            pagination: {
+                total,
+                page,
+                limit,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error: any) {
+        console.error('Get my reviews error:', error);
+        res.status(500).json({ message: 'Failed to fetch reviews', error: error.message });
     }
-
-    const review = await prismaClient.review.findUnique({
-      where: { id: reviewId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            profileImage: true,
-          },
-        },
-        product: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-          },
-        },
-      },
-    });
-
-    if (!review) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: "REVIEW_NOT_FOUND",
-          message: "Review not found",
-        },
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Review retrieved successfully",
-      data: review,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Get reviews by product
-export const getReviewsByProduct = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { productId } = req.params as { productId: string };
-    const { sort = "newest", page = 1, limit = 10 } = req.query;
-
-    const parsedProductId = parseInt(productId);
-    if (isNaN(parsedProductId)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: "INVALID_PRODUCT_ID",
-          message: "Invalid product ID",
-        },
-      });
-    }
-
-    // Check if product exists
-    const product = await prismaClient.product.findFirst({
-      where: {
-        id: parsedProductId,
-        isActive: true,
-      },
-    });
-
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: "PRODUCT_NOT_FOUND",
-          message: "Product not found or inactive",
-        },
-      });
-    }
-
-    // Build orderBy
-    const orderByMap: any = {
-      newest: { createdAt: "desc" },
-      oldest: { createdAt: "asc" },
-      highest: { rating: "desc" },
-      lowest: { rating: "asc" },
-    };
-
-    const orderBy = orderByMap[sort as string] || { createdAt: "desc" };
-
-    // Pagination
-    const pageNum = Math.max(1, parseInt(page as string) || 1);
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 10));
-    const skip = (pageNum - 1) * limitNum;
-
-    // Get reviews and count
-    const [reviews, total] = await Promise.all([
-      prismaClient.review.findMany({
-        where: { productId: parsedProductId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              profileImage: true,
-            },
-          },
-          product: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-            },
-          },
-        },
-        orderBy,
-        skip,
-        take: limitNum,
-      }),
-      prismaClient.review.count({
-        where: { productId: parsedProductId },
-      }),
-    ]);
-
-    // Calculate average rating
-    const ratingStats = await prismaClient.review.aggregate({
-      where: { productId: parsedProductId },
-      _avg: { rating: true },
-      _count: { id: true },
-    });
-
-    const distribution = await prismaClient.review.groupBy({
-      by: ["rating"],
-      where: { productId: parsedProductId },
-      _count: { id: true },
-    });
-
-    const ratingDistribution: Record<number, number> = {};
-    distribution.forEach((item) => {
-      ratingDistribution[item.rating] = item._count.id;
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Product reviews retrieved successfully",
-      data: reviews,
-      stats: {
-        total: total,
-        averageRating: ratingStats._avg.rating || 0,
-        ratingDistribution,
-      },
-      pagination: {
-        total,
-        page: pageNum,
-        limit: limitNum,
-        pages: Math.ceil(total / limitNum),
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// Get reviews by current user
-export const getMyReviews = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = (req as any).user.id;
-    const { sort = "newest", page = 1, limit = 10 } = req.query;
-
-    // Build orderBy
-    const orderByMap: any = {
-      newest: { createdAt: "desc" },
-      oldest: { createdAt: "asc" },
-      highest: { rating: "desc" },
-      lowest: { rating: "asc" },
-    };
-
-    const orderBy = orderByMap[sort as string] || { createdAt: "desc" };
-
-    // Pagination
-    const pageNum = Math.max(1, parseInt(page as string) || 1);
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 10));
-    const skip = (pageNum - 1) * limitNum;
-
-    // Get user's reviews and count
-    const [reviews, total] = await Promise.all([
-      prismaClient.review.findMany({
-        where: { userId },
-        include: {
-          product: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              images: true,
-            },
-          },
-        },
-        orderBy,
-        skip,
-        take: limitNum,
-      }),
-      prismaClient.review.count({ where: { userId } }),
-    ]);
-
-    // Parse product images for all reviews
-    const reviewsResponse = reviews.map((review: any) => ({
-      ...review,
-      product: {
-        ...review.product,
-        images: JSON.parse(review.product.images),
-      },
-    }));
-
-    return res.status(200).json({
-      success: true,
-      message: "Your reviews retrieved successfully",
-      data: reviewsResponse,
-      pagination: {
-        total,
-        page: pageNum,
-        limit: limitNum,
-        pages: Math.ceil(total / limitNum),
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
 // Update review
-export const updateReview = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { id } = req.params as { id: string };
-    const { rating, comment } = req.body;
-    const userId = (req as any).user.id;
+export const updateReview = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.userId;
+        const { id } = req.params;
+        const { rating, comment } = req.body;
 
-    const reviewId = parseInt(id);
-    if (isNaN(reviewId)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: "INVALID_ID",
-          message: "Invalid review ID",
-        },
-      });
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        // Check if review exists and belongs to user
+        const review = await prisma.review.findUnique({
+            where: { id: parseInt(id!) }
+        });
+
+        if (!review) {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+
+        if (review.userId !== userId) {
+            return res.status(403).json({ message: 'You can only update your own reviews' });
+        }
+
+        // Update review
+        const updatedReview = await prisma.review.update({
+            where: { id: parseInt(id!) },
+            data: {
+                ...(rating !== undefined && { rating: parseInt(rating) }),
+                ...(comment !== undefined && { comment }),
+                approvalStatus: 'pending' // Reset to pending after edit
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        profileImage: true
+                    }
+                },
+                product: {
+                    select: {
+                        id: true,
+                        title: true,
+                        slug: true
+                    }
+                },
+                media: true
+            }
+        });
+
+        res.json({
+            message: 'Review updated successfully and is pending approval',
+            data: updatedReview
+        });
+    } catch (error: any) {
+        console.error('Update review error:', error);
+        res.status(500).json({ message: 'Failed to update review', error: error.message });
     }
-
-    // Check if review exists and belongs to user
-    const existingReview = await prismaClient.review.findUnique({
-      where: { id: reviewId },
-    });
-
-    if (!existingReview) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: "REVIEW_NOT_FOUND",
-          message: "Review not found",
-        },
-      });
-    }
-
-    if (existingReview.userId !== userId) {
-      return res.status(403).json({
-        success: false,
-        error: {
-          code: "FORBIDDEN",
-          message: "You can only update your own reviews",
-        },
-      });
-    }
-
-    // Build update data
-    const updateData: any = {};
-    if (rating !== undefined) {
-      updateData.rating = parseInt(rating);
-    }
-    if (comment !== undefined) {
-      updateData.comment = comment.trim();
-    }
-
-    // Update review
-    const updatedReview = await prismaClient.review.update({
-      where: { id: reviewId },
-      data: updateData,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            profileImage: true,
-          },
-        },
-        product: {
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-          },
-        },
-      },
-    });
-
-    return res.status(200).json({
-      success: true,
-      message: "Review updated successfully",
-      data: updatedReview,
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
 // Delete review
-export const deleteReview = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { id } = req.params as { id: string };
-    const userId = (req as any).user.id;
-    const isAdmin = (req as any).user.role === "admin";
+export const deleteReview = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.userId;
+        const { id } = req.params;
 
-    const reviewId = parseInt(id);
-    if (isNaN(reviewId)) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: "INVALID_ID",
-          message: "Invalid review ID",
-        },
-      });
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        // Check if review exists and belongs to user
+        const review = await prisma.review.findUnique({
+            where: { id: parseInt(id!) },
+            include: { media: true }
+        });
+
+        if (!review) {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+
+        if (review.userId !== userId) {
+            return res.status(403).json({ message: 'You can only delete your own reviews' });
+        }
+
+        // Delete associated media files
+        for (const media of review.media) {
+            deleteImageFile(media.mediaUrl, 'reviews');
+        }
+
+        // Delete review (will cascade delete media records)
+        await prisma.review.delete({
+            where: { id: parseInt(id!) }
+        });
+
+        res.json({ message: 'Review deleted successfully' });
+    } catch (error: any) {
+        console.error('Delete review error:', error);
+        res.status(500).json({ message: 'Failed to delete review', error: error.message });
     }
+};
 
-    // Check if review exists
-    const existingReview = await prismaClient.review.findUnique({
-      where: { id: reviewId },
-    });
+// Admin: Get pending reviews
+export const getPendingReviews = async (req: Request, res: Response) => {
+    try {
+        const page = parseInt((req.query.page as string) || '1');
+        const limit = parseInt((req.query.limit as string) || '10');
 
-    if (!existingReview) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          code: "REVIEW_NOT_FOUND",
-          message: "Review not found",
-        },
-      });
+        const skip = (page - 1) * limit;
+        const take = limit;
+
+        const [reviews, total] = await Promise.all([
+            prisma.review.findMany({
+                where: { approvalStatus: 'pending' },
+                skip,
+                take,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            profileImage: true
+                        }
+                    },
+                    product: {
+                        select: {
+                            id: true,
+                            title: true,
+                            slug: true,
+                            images: true
+                        }
+                    },
+                    media: true
+                }
+            }),
+            prisma.review.count({ where: { approvalStatus: 'pending' } })
+        ]);
+
+        res.json({
+            data: reviews,
+            pagination: {
+                total,
+                page,
+                limit,
+                pages: Math.ceil(total / limit)
+            }
+        });
+    } catch (error: any) {
+        console.error('Get pending reviews error:', error);
+        res.status(500).json({ message: 'Failed to fetch pending reviews', error: error.message });
     }
+};
 
-    // Check if user owns the review or is admin
-    if (existingReview.userId !== userId && !isAdmin) {
-      return res.status(403).json({
-        success: false,
-        error: {
-          code: "FORBIDDEN",
-          message: "You can only delete your own reviews",
-        },
-      });
+// Admin: Approve review
+export const approveReview = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const review = await prisma.review.update({
+            where: { id: parseInt(id!) },
+            data: { approvalStatus: 'approved' },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                },
+                product: {
+                    select: {
+                        id: true,
+                        title: true
+                    }
+                }
+            }
+        });
+
+        res.json({
+            message: 'Review approved successfully',
+            data: review
+        });
+    } catch (error: any) {
+        console.error('Approve review error:', error);
+        res.status(500).json({ message: 'Failed to approve review', error: error.message });
     }
+};
 
-    // Delete review
-    await prismaClient.review.delete({
-      where: { id: reviewId },
-    });
+// Admin: Reject review
+export const rejectReview = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { reason } = req.body;
 
-    return res.status(200).json({
-      success: true,
-      message: "Review deleted successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
+        const review = await prisma.review.update({
+            where: { id: parseInt(id!) },
+            data: {
+                approvalStatus: 'rejected',
+                ...(reason && { rejectionReason: reason })
+            }
+        });
+
+        res.json({
+            message: 'Review rejected successfully',
+            data: review
+        });
+    } catch (error: any) {
+        console.error('Reject review error:', error);
+        res.status(500).json({ message: 'Failed to reject review', error: error.message });
+    }
+};
+
+// Admin: Bulk approve reviews
+export const bulkApproveReviews = async (req: Request, res: Response) => {
+    try {
+        const { reviewIds } = req.body;
+
+        if (!Array.isArray(reviewIds) || reviewIds.length === 0) {
+            return res.status(400).json({ message: 'Invalid review IDs' });
+        }
+
+        await prisma.review.updateMany({
+            where: {
+                id: { in: reviewIds.map((id: any) => parseInt(String(id))) }
+            },
+            data: { approvalStatus: 'approved' }
+        });
+
+        res.json({ message: `${reviewIds.length} reviews approved successfully` });
+    } catch (error: any) {
+        console.error('Bulk approve error:', error);
+        res.status(500).json({ message: 'Failed to approve reviews', error: error.message });
+    }
+};
+
+// Admin: Bulk reject reviews
+export const bulkRejectReviews = async (req: Request, res: Response) => {
+    try {
+        const { reviewIds, reason } = req.body;
+
+        if (!Array.isArray(reviewIds) || reviewIds.length === 0) {
+            return res.status(400).json({ message: 'Invalid review IDs' });
+        }
+
+        await prisma.review.updateMany({
+            where: {
+                id: { in: reviewIds.map((id: any) => parseInt(String(id))) }
+            },
+            data: {
+                approvalStatus: 'rejected',
+                rejectionReason: reason || null
+            }
+        });
+
+        res.json({ message: `${reviewIds.length} reviews rejected successfully` });
+    } catch (error: any) {
+        console.error('Bulk reject error:', error);
+        res.status(500).json({ message: 'Failed to reject reviews', error: error.message });
+    }
 };

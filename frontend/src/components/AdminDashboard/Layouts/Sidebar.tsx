@@ -1,5 +1,5 @@
 
-import { Home, Box, ShoppingCart, Layers, Gift, Settings, Users } from "lucide-react";
+import { Home, Box, ShoppingCart, Layers, Gift, Settings, Users, MessageSquare } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Sidebar() {
@@ -11,6 +11,7 @@ export default function Sidebar() {
     { name: "Products", icon: <Box size={18} />, path: "/admin/products" },
     { name: "Orders", icon: <ShoppingCart size={18} />, path: "/admin/orders" },
     { name: "Users", icon: <Users size={18} />, path: "/admin/users" },
+    { name: "Review Moderation", icon: <MessageSquare size={18} />, path: "/admin/reviews" },
     { name: "Inventory", icon: <Layers size={18} />, path: "/admin/inventory" },
     { name: "Categories", icon: <Layers size={18} />, path: "/admin/categories" },
     { name: "Coupons", icon: <Gift size={18} />, path: "/admin/coupons" },
@@ -30,9 +31,8 @@ export default function Sidebar() {
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
-            className={`flex items-center gap-3 w-full p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${
-              isActive(item.path) ? "bg-emerald-500 text-white hover:bg-emerald-600" : ""
-            }`}
+            className={`flex items-center gap-3 w-full p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 ${isActive(item.path) ? "bg-emerald-500 text-white hover:bg-emerald-600" : ""
+              }`}
           >
             {item.icon}
             {item.name}

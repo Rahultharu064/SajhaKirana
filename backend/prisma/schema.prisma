@@ -29,6 +29,7 @@ model User {
   carts  CartItem[]
   orders Order[]
   reviews Review[]
+  moderatedReviews Review[] @relation("ReviewModerator")
 }
 
 model Category {
@@ -155,15 +156,40 @@ model Review {
   userId    Int
   rating    Int
   comment   String   @db.LongText
+  
+  // Media review fields
+  hasMedia       Boolean  @default(false)
+  approvalStatus String   @default("approved") // approved, pending, rejected
+  rejectionReason String? @db.Text
+  adminId        Int?     // Admin who approved/rejected
+  reviewedAt     DateTime?
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media   ReviewMedia[]
+  admin   User?   @relation("ReviewModerator", fields: [adminId], references: [id])
 
   @@index([productId])
   @@index([userId])
+  @@index([approvalStatus])
   @@unique([productId, userId])
+}
+
+model ReviewMedia {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int
+  mediaType String   // 'image' or 'video'
+  mediaUrl  String   // relative path to file
+  fileSize  Int      // in bytes
+  mimeType  String
+  createdAt DateTime @default(now())
+  
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  
+  @@index([reviewId])
 }
 
 model Coupon {

@@ -36,6 +36,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     // Attach user object to request
     (req as any).user = {
       id: decoded.userId,
+      userId: decoded.userId,
       role: decoded.role,
     };
 

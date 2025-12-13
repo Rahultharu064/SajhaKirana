@@ -1,51 +1,65 @@
-import { Router } from "express";
+import express from 'express';
 import {
-  createReview,
-  getAllReviews,
-  getReviewById,
-  getReviewsByProduct,
-  getMyReviews,
-  updateReview,
-  deleteReview,
-} from "../controllers/reviewController";
-import { authMiddleware } from "../middlewares/authMiddleware";
-import { validate } from "../middlewares/validate";
+    createReview,
+    getReviewsByProduct,
+    getMyReviews,
+    updateReview,
+    deleteReview
+} from '../controllers/reviewController';
+import { authMiddleware } from '../middlewares/authMiddleware';
+import { validate as validateRequest } from '../middlewares/validate';
 import {
-  createReviewSchema,
-  updateReviewSchema,
-  reviewIdParamSchema,
-  productIdParamSchema,
-  searchReviewsSchema,
-} from "../validators/reviewValidator";
+    createReviewSchema,
+    updateReviewSchema,
+    reviewIdParamSchema,
+    productIdParamSchema,
+    searchReviewsSchema,
+    userReviewsSchema
+} from '../validators/reviewValidator';
+import { uploadReviews } from '../config/multer';
 
-const router = Router();
+const router = express.Router();
 
-// Public routes (no authentication required)
-// Get reviews for a specific product - PUBLIC
+// Public routes
 router.get(
-  "/product/:productId",
-  validate(productIdParamSchema, "params"),
-  validate(searchReviewsSchema, "query"),
-  getReviewsByProduct
+    '/product/:productId',
+    validateRequest(productIdParamSchema, 'params'),
+    validateRequest(searchReviewsSchema, 'query'),
+    getReviewsByProduct
 );
 
-// Get all reviews with optional filtering - PUBLIC (for browsing)
-router.get("/", validate(searchReviewsSchema, "query"), getAllReviews);
 
-// Get specific review by ID - PUBLIC
-router.get("/:id", validate(reviewIdParamSchema, "params"), getReviewById);
+// Protected routes (require authentication)
+router.post(
+    '/',
+    authMiddleware,
+    uploadReviews.array('media', 5),
+    validateRequest(createReviewSchema, 'body'),
+    createReview
+);
 
-// Protected routes (authentication required)
-// Create a new review - REQUIRES AUTH
-router.post("/", authMiddleware, validate(createReviewSchema), createReview);
+router.get(
+    '/my',
+    authMiddleware,
+    validateRequest(userReviewsSchema, 'query'),
+    getMyReviews
+);
 
-// Get reviews by current user - REQUIRES AUTH
-router.get("/my", authMiddleware, validate(searchReviewsSchema, "query"), getMyReviews);
+router.put(
+    '/:id',
+    authMiddleware,
+    validateRequest(reviewIdParamSchema, 'params'),
+    validateRequest(updateReviewSchema, 'body'),
+    updateReview
+);
 
-// Update a review (only review owner) - REQUIRES AUTH
-router.put("/:id", authMiddleware, validate(reviewIdParamSchema, "params"), validate(updateReviewSchema), updateReview);
+router.delete(
+    '/:id',
+    authMiddleware,
+    validateRequest(reviewIdParamSchema, 'params'),
+    deleteReview
+);
 
-// Delete a review (review owner or admin) - REQUIRES AUTH
-router.delete("/:id", authMiddleware, validate(reviewIdParamSchema, "params"), deleteReview);
+
 
 export default router;
