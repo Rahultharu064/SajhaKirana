@@ -10,6 +10,9 @@ import {
   getProductsByCategory,
   bulkImportProducts,
   updateProductStock,
+  getAutocompleteSuggestions,
+  getFacets,
+  searchByImage,
 } from "../controllers/productController";
 import { validate } from "../middlewares/validate";
 import {
@@ -92,5 +95,14 @@ productRoutes.post(
   validate(createProductSchema, "body"),
   bulkImportProducts
 );
+
+// Get autocomplete suggestions
+productRoutes.get("/autocomplete", getAutocompleteSuggestions);
+
+// Get facets for advanced filtering
+productRoutes.get("/facets", getFacets);
+
+// Search by image
+productRoutes.post("/search/image", searchByImage);
 
 export default productRoutes;

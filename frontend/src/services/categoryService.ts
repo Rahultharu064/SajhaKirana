@@ -34,6 +34,11 @@ export const getCategories = async (): Promise<Category[]> => {
   return response.data.data;
 };
 
+export const searchCategories = async (query: string): Promise<Category[]> => {
+  const response = await api.get(`/categories/search?search=${encodeURIComponent(query)}`);
+  return response.data.data;
+};
+
 export const updateCategory = async (id: number, data: { name: string; slug: string; image?: File }) => {
   const formData = new FormData();
   formData.append('name', data.name);

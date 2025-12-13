@@ -3,6 +3,7 @@ import CategoryProducts from "../pages/Publicwebsite/CategoryProducts.tsx";
 import ProductDetail from "../pages/Publicwebsite/ProductDetail.tsx";
 import PublicCategories from "../pages/Publicwebsite/Categories.tsx";
 import PublicProducts from "../pages/Publicwebsite/Products.tsx";
+import SearchResults from "../pages/Publicwebsite/SearchResults.tsx";
 
 import Register from "../components/Auth/Register.tsx";
 import Login from "../components/Auth/Login.tsx";
@@ -21,6 +22,7 @@ import Coupons from "../components/AdminDashboard/Sections/Coupons.tsx";
 import Promotions from "../components/AdminDashboard/Sections/Promotions.tsx";
 import Settings from "../components/AdminDashboard/Sections/Settings.tsx";
 import Categories from "../components/AdminDashboard/Sections/Categories.tsx";
+import Users from "../components/AdminDashboard/Sections/Users.tsx";
 import CreateProduct from "../components/AdminDashboard/Forum/CreateProduct.tsx";
 import EditProduct from "../components/AdminDashboard/Forum/EditProduct.tsx";
 import PaymentSuccess from "@/pages/Publicwebsite/PaymentSuccess.tsx";
@@ -38,6 +40,10 @@ const routes = [
     {
         path: "/products",
         element: <PublicProducts />,
+    },
+    {
+        path: "/search",
+        element: <SearchResults />,
     },
     {
         path: "/category",
@@ -132,6 +138,10 @@ const routes = [
             {
                 path: "orders",
                 element: <Orders />
+            },
+            {
+                path: "users",
+                element: <Users />
             },
             {
                 path: "inventory",

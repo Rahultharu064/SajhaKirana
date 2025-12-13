@@ -105,8 +105,20 @@ export const deleteProduct = (productId: number) => {
 }
 
 // Search products
-export const searchProducts = (params: { search: string; categoryId?: number }) => {
-  return api.get('/products/search', { params });
+export const searchProducts = (params?: {
+  q?: string;
+  category?: number | number[];
+  priceMin?: number;
+  priceMax?: number;
+  sort?: 'newest' | 'oldest' | 'priceLow' | 'priceHigh' | 'popular';
+  page?: number;
+  limit?: number;
+}) => {
+  const queryParams: any = { ...params };
+  if (Array.isArray(params?.category)) {
+    queryParams.category = params.category.join(',');
+  }
+  return api.get('/products/search', { params: queryParams });
 }
 
 // Get products by category
@@ -122,4 +134,31 @@ export const bulkImportProducts = (products: Array<any>) => {
 // Update product stock only
 export const updateProductStock = (productId: number, stock: number) => {
   return api.patch(`/products/${productId}/stock`, { stock });
+}
+
+// Get autocomplete suggestions
+export const getAutocompleteSuggestions = (q: string) => {
+  return api.get('/products/autocomplete', { params: { q } });
+}
+
+// Get facets for advanced filtering
+export const getFacets = (category?: number[]) => {
+  const params: any = {};
+  if (category && category.length > 0) {
+    params.category = category.join(',');
+  }
+  return api.get('/products/facets', { params });
+}
+
+// Search by image (placeholder - would typically accept FormData with image)
+export const searchByImage = (imageFile?: File) => {
+  const formData = new FormData();
+  if (imageFile) {
+    formData.append('image', imageFile);
+  }
+  return api.post('/products/search/image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
 }

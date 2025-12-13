@@ -46,6 +46,7 @@ export default function ProductDetail() {
   const [reviewStats, setReviewStats] = useState<{
     total: number;
     averageRating: number;
+    ratingDistribution: Record<number, number>;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -405,21 +406,51 @@ export default function ProductDetail() {
               </h1>
 
               {/* Rating Summary */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-100">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-bold text-gray-900">
-                    {reviewStats ? reviewStats.averageRating.toFixed(1) : '0.0'}
+              <div className="mb-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-100">
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                    <span className="font-bold text-gray-900">
+                      {reviewStats ? reviewStats.averageRating.toFixed(1) : '0.0'}
+                    </span>
+                  </div>
+                  <span className="text-gray-400 text-sm">|</span>
+                  <a href="#reviews" className="text-sm font-medium text-gray-500 hover:text-primary-600 underline-offset-4 hover:underline">
+                    {reviewStats ? reviewStats.total : 0} Review{reviewStats && reviewStats.total !== 1 ? 's' : ''}
+                  </a>
+                  <span className="text-gray-400 text-sm">|</span>
+                  <span className="text-sm text-gray-500">
+                    {Math.floor(Math.random() * 500) + 100}k Sold
                   </span>
                 </div>
-                <span className="text-gray-400 text-sm">|</span>
-                <a href="#reviews" className="text-sm font-medium text-gray-500 hover:text-primary-600 underline-offset-4 hover:underline">
-                  {reviewStats ? reviewStats.total : 0} Review{reviewStats && reviewStats.total !== 1 ? 's' : ''}
-                </a>
-                <span className="text-gray-400 text-sm">|</span>
-                <span className="text-sm text-gray-500">
-                  {Math.floor(Math.random() * 500) + 100}k Sold
-                </span>
+
+                {/* Star Distribution */}
+                {reviewStats && reviewStats.total > 0 && (
+                  <div className="space-y-2">
+                    {[5, 4, 3, 2, 1].map((star) => {
+                      const starCount = reviewStats.ratingDistribution?.[star] || 0;
+                      const percentage = (starCount / reviewStats.total) * 100;
+
+                      return (
+                        <div key={star} className="flex items-center gap-3 text-sm">
+                          <div className="flex items-center gap-1 min-w-[60px]">
+                            <span className="text-gray-600 text-sm">{star}</span>
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          </div>
+                          <div className="flex-1 bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${percentage}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-gray-600 min-w-[50px] text-right">
+                            {starCount}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {/* Price Block */}

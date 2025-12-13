@@ -14,6 +14,7 @@ import reviewRoutes from "./routes/reviewRoute";
 import paymentRoutes from "./routes/paymentRoute";
 import districtRoutes from "./routes/districtRoute";
 import couponRoutes from "./routes/couponRoute";
+import userRoutes from "./routes/userRoute";
 
 dotenv.config();
 
@@ -66,6 +67,7 @@ app.use("/orders", orderRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/districts", districtRoutes);
 app.use("/coupons", couponRoutes);
+app.use("/users", userRoutes);
 
 // Error handling middleware
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

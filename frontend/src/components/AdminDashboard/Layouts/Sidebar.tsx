@@ -1,5 +1,5 @@
 
-import { Home, Box, ShoppingCart, Layers, Gift, Settings } from "lucide-react";
+import { Home, Box, ShoppingCart, Layers, Gift, Settings, Users } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Sidebar() {
@@ -10,6 +10,7 @@ export default function Sidebar() {
     { name: "Dashboard", icon: <Home size={18} />, path: "/admin/dashboard" },
     { name: "Products", icon: <Box size={18} />, path: "/admin/products" },
     { name: "Orders", icon: <ShoppingCart size={18} />, path: "/admin/orders" },
+    { name: "Users", icon: <Users size={18} />, path: "/admin/users" },
     { name: "Inventory", icon: <Layers size={18} />, path: "/admin/inventory" },
     { name: "Categories", icon: <Layers size={18} />, path: "/admin/categories" },
     { name: "Coupons", icon: <Gift size={18} />, path: "/admin/coupons" },

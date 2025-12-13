@@ -14,3 +14,11 @@
     }
   }
 }
+
+.progress-bar-fill {
+  background-color: #fbbf24;
+  height: 12px;
+  border-radius: 9999px;
+  transition: all 0.5s;
+  width: var(--bar-width);
+}

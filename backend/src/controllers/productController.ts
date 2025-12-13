@@ -178,6 +178,8 @@ export const getAllProducts = async (
       page = 1,
       limit = 10,
       isActive = true,
+      inStock,
+      ratingMin,
     } = req.query;
 
     // Build where clause for filtering
@@ -213,8 +215,25 @@ export const getAllProducts = async (
       }
     }
 
-    if (req.query.inStock === 'true') {
+    if (inStock === 'true') {
       where.stock = { gt: 0 };
+    }
+
+    if (ratingMin) {
+      const minRating = parseFloat(ratingMin as string);
+      if (!isNaN(minRating)) {
+        // For products with average rating
+        // We'll need to join with reviews to get average rating
+        // For now, using a simple approach
+        where.id = {
+          in: await prismaClient.$queryRaw`
+            SELECT productId
+            FROM (SELECT productId, AVG(rating) as avgRating
+                  FROM Review GROUP BY productId) r
+            WHERE r.avgRating >= ${minRating}
+          `,
+        };
+      }
     }
 
     // Build orderBy based on sort parameter
@@ -223,7 +242,8 @@ export const getAllProducts = async (
       oldest: { createdAt: "asc" },
       priceLow: { price: "asc" },
       priceHigh: { price: "desc" },
-      popular: { createdAt: "desc" }, // You can update this based on your popularity metric
+      popular: { _count: { reviews: "desc" } }, // Sort by review count as popularity
+      rating: [{ reviews: { _count: "desc" } }], // Sort by rating count
     };
 
     const orderBy = orderByMap[sort as string] || { createdAt: "desc" };
@@ -239,6 +259,9 @@ export const getAllProducts = async (
         where,
         include: {
           category: true,
+          _count: {
+            select: { reviews: true }
+          }
         },
         orderBy,
         skip,
@@ -247,10 +270,24 @@ export const getAllProducts = async (
       prismaClient.product.count({ where }),
     ]);
 
-    // Parse images for all products
-    const productsResponse = products.map((product: any) => ({
-      ...product,
-      images: JSON.parse(product.images),
+    // Parse images and calculate average rating for all products
+    const productsResponse = await Promise.all(products.map(async (product: any) => {
+      // Get average rating for this product
+      const ratingResult = await prismaClient.$queryRaw`
+        SELECT AVG(rating) as avgRating, COUNT(*) as reviewCount
+        FROM Review
+        WHERE productId = ${product.id}
+      ` as any;
+
+      const avgRating = ratingResult[0]?.avgRating || 0;
+      const reviewCount = ratingResult[0]?.reviewCount || 0;
+
+      return {
+        ...product,
+        images: JSON.parse(product.images),
+        avgRating: parseFloat(avgRating.toString()) || 0,
+        reviewCount: parseInt(reviewCount.toString()) || 0,
+      };
     }));
 
     return res.status(200).json({
@@ -600,16 +637,24 @@ export const deleteProduct = async (
   }
 };
 
-// Search products (simplified version)
+// Search products
 export const searchProducts = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { search, categoryId } = req.query;
+    const {
+      q,
+      category,
+      priceMin,
+      priceMax,
+      sort = "newest",
+      page = 1,
+      limit = 10,
+    } = req.query;
 
-    if (!search || typeof search !== "string") {
+    if (!q || typeof q !== "string") {
       return res.status(400).json({
         success: false,
         error: {
@@ -619,26 +664,62 @@ export const searchProducts = async (
       });
     }
 
+    // Build where clause for filtering
     const where: any = {
       isActive: true,
       OR: [
-        { title: { contains: search } },
-        { description: { contains: search } },
-        { slug: { contains: search } },
+        { title: { contains: q } },
+        { description: { contains: q } },
+        { slug: { contains: q } },
       ],
     };
 
-    if (categoryId) {
-      where.categoryId = parseInt(categoryId as string);
+    if (category) {
+      const categoryIds = (category as string).split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+      if (categoryIds.length > 0) {
+        where.categoryId = { in: categoryIds };
+      }
     }
 
-    const products = await prismaClient.product.findMany({
-      where,
-      include: {
-        category: true,
-      },
-      take: 20,
-    });
+    if (priceMin || priceMax) {
+      where.price = {};
+      if (priceMin) {
+        where.price.gte = parseFloat(priceMin as string);
+      }
+      if (priceMax) {
+        where.price.lte = parseFloat(priceMax as string);
+      }
+    }
+
+    // Build orderBy based on sort parameter
+    const orderByMap: any = {
+      newest: { createdAt: "desc" },
+      oldest: { createdAt: "asc" },
+      priceLow: { price: "asc" },
+      priceHigh: { price: "desc" },
+      popular: { createdAt: "desc" },
+    };
+
+    const orderBy = orderByMap[sort as string] || { createdAt: "desc" };
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page as string) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 10));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Get products and total count
+    const [products, total] = await Promise.all([
+      prismaClient.product.findMany({
+        where,
+        include: {
+          category: true,
+        },
+        orderBy,
+        skip,
+        take: limitNum,
+      }),
+      prismaClient.product.count({ where }),
+    ]);
 
     // Parse images for all products
     const productsResponse = products.map((product: any) => ({
@@ -650,6 +731,12 @@ export const searchProducts = async (
       success: true,
       message: "Products retrieved successfully",
       data: productsResponse,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(total / limitNum),
+      },
     });
   } catch (error) {
     next(error);
@@ -863,6 +950,248 @@ export const updateProductStock = async (
       success: true,
       message: "Stock updated successfully",
       data: updatedProduct,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Autocomplete search suggestions
+export const getAutocompleteSuggestions = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || typeof q !== "string" || q.length < 2) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        total: 0,
+      });
+    }
+
+    // Get product titles and categories that match the query
+    const products = await prismaClient.product.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { title: { contains: q } },
+          { category: { name: { contains: q } } },
+        ],
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+      take: 10, // Limit suggestions
+    });
+
+    const categories = await prismaClient.category.findMany({
+      where: {
+        name: { contains: q },
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+      take: 5,
+    });
+
+    // Combine and deduplicate suggestions
+    const suggestions = [
+      ...products.map((p: any) => ({
+        type: "product",
+        id: p.id,
+        text: p.title,
+        category: p.category.name,
+        url: `/products/${p.category.slug}/${p.id}`,
+      })),
+      ...categories
+        .filter((cat) => !products.some((p: any) => p.category.name === cat.name))
+        .map((cat) => ({
+          type: "category",
+          id: cat.id,
+          text: cat.name,
+          url: `/categories/${cat.slug}`,
+        })),
+    ];
+
+    return res.status(200).json({
+      success: true,
+      data: suggestions,
+      total: suggestions.length,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get facets for advanced filtering
+export const getFacets = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { category } = req.query;
+
+    const where: any = { isActive: true };
+    if (category) {
+      const categoryIds = (category as string).split(',').map(id => parseInt(id)).filter(id => !isNaN(id));
+      if (categoryIds.length > 0) {
+        where.categoryId = { in: categoryIds };
+      }
+    }
+
+    // Get price range
+    const priceStats = await prismaClient.product.aggregate({
+      where,
+      _min: { price: true },
+      _max: { price: true },
+    });
+
+    // Get categories with product counts
+    const categoryFacets = await prismaClient.category.findMany({
+      where: {
+        products: {
+          some: {
+            isActive: true,
+            ...category ? {} : {},
+          },
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        _count: {
+          select: {
+            products: {
+              where: where,
+            },
+          },
+        },
+      },
+    });
+
+    // Get availability stats
+    const inStockCount = await prismaClient.product.count({
+      where: {
+        ...where,
+        stock: { gt: 0 },
+      },
+    });
+
+    const outOfStockCount = await prismaClient.product.count({
+      where: {
+        ...where,
+        stock: { lte: 0 },
+      },
+    });
+
+    // Get rating distribution
+    const ratingStats = await prismaClient.$queryRaw`
+      SELECT
+        FLOOR(avgRating) as rating,
+        COUNT(*) as count
+      FROM (
+        SELECT
+          productId,
+          AVG(rating) as avgRating
+        FROM Review
+        WHERE productId IN (SELECT id FROM Product WHERE ${where.isActive ? "isActive = 1" : "1=1"})
+        GROUP BY productId
+      ) r
+      GROUP BY FLOOR(avgRating)
+    ` as any[];
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        priceRange: {
+          min: priceStats._min.price || 0,
+          max: priceStats._max.price || 0,
+        },
+        categories: categoryFacets.map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          slug: cat.slug,
+          count: cat._count.products,
+        })),
+        availability: {
+          inStock: inStockCount,
+          outOfStock: outOfStockCount,
+        },
+        ratings: ratingStats.map((stat: any) => ({
+          rating: parseInt(stat.rating),
+          count: parseInt(stat.count),
+        })),
+        sortOptions: [
+          { value: "newest", label: "Newest First" },
+          { value: "oldest", label: "Oldest First" },
+          { value: "priceLow", label: "Price: Low to High" },
+          { value: "priceHigh", label: "Price: High to Low" },
+          { value: "popular", label: "Most Popular" },
+          { value: "rating", label: "Highest Rated" },
+        ],
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Image search - placeholder for AI integration
+export const searchByImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    // For now, return a placeholder response
+    // In a real implementation, this would use an AI vision API
+    // like Google Vision AI, Azure Computer Vision, etc.
+
+    // Simulate some delay as if processing image
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Return some random products as "similar"
+    const products = await prismaClient.product.findMany({
+      where: { isActive: true },
+      include: { category: true },
+      take: 20,
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Parse images and add similarity scores
+    const productsResponse = products.map((product: any, index) => ({
+      ...product,
+      images: JSON.parse(product.images),
+      similarityScore: Math.random(), // placeholder similarity score
+    }));
+
+    // Sort by similarity score (descending)
+    productsResponse.sort((a, b) => b.similarityScore - a.similarityScore);
+
+    return res.status(200).json({
+      success: true,
+      message: "Image search completed (placeholder implementation)",
+      data: productsResponse.slice(0, 10),
+      pagination: {
+        total: productsResponse.length,
+        page: 1,
+        limit: 10,
+        pages: 1,
+      },
     });
   } catch (error) {
     next(error);

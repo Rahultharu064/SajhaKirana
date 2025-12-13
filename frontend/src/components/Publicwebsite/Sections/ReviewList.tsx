@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import StarRating from '../../ui/StarRating';
 import { getReviewsByProduct, deleteReview } from '../../../services/reviewService';
 import { useSelector } from 'react-redux';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Review {
@@ -114,16 +114,75 @@ const ReviewList: React.FC<ReviewListProps> = ({ productId, onReviewEdit, onRevi
       <h3 className="text-lg font-semibold mb-4">Customer Reviews</h3>
 
       {stats && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <div className="flex items-center mb-2">
-            <StarRating rating={Math.round(stats.averageRating)} readonly />
-            <span className="ml-2 text-lg font-semibold">
-              {stats.averageRating.toFixed(1)} out of 5
-            </span>
+        <div className="mb-8 p-6 bg-gray-50 rounded-xl border border-gray-100">
+          {/* Overall Rating */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <StarRating rating={Math.round(stats.averageRating)} readonly />
+                <span className="text-2xl font-bold text-gray-900">
+                  {stats.averageRating.toFixed(1)}
+                </span>
+              </div>
+              <div className="text-gray-500">out of 5</div>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+              <div className="text-sm text-gray-600">
+                {stats.total === 1 ? 'Review' : 'Reviews'}
+              </div>
+            </div>
           </div>
-          <p className="text-sm text-gray-600">
-            Based on {stats.total} review{stats.total !== 1 ? 's' : ''}
-          </p>
+
+          {/* Star Distribution Bars */}
+          <div className="space-y-3">
+            {[5, 4, 3, 2, 1].map((star) => {
+              const count = stats.ratingDistribution?.[star] || 0;
+              const percentage = stats.total > 0 ? (count / stats.total) * 100 : 0;
+
+              return (
+                <div key={star} className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 min-w-[40px]">
+                    <span className="text-sm font-medium text-gray-700">{star}</span>
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  </div>
+
+                  <div className="flex-1 bg-gray-200 rounded-full h-3">
+                    <div
+                      className="progress-bar-fill"
+                      style={{ '--bar-width': `${percentage}%` } as React.CSSProperties}
+                    ></div>
+                  </div>
+
+                  <div className="min-w-[40px] text-right">
+                    <span className="text-sm font-medium text-gray-900">{count}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Rating Insight */}
+          {stats.total > 0 && (
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div>
+                  <div className="text-lg font-bold text-green-600">
+                    {((Object.entries(stats.ratingDistribution || {}).reduce((acc, [stars, count]) =>
+                      parseInt(stars) >= 4 ? acc + count : acc, 0) / stats.total) * 100).toFixed(0)}%
+                  </div>
+                  <div className="text-xs text-gray-600">Positive (4-5 stars)</div>
+                </div>
+                <div>
+                  <div className="text-lg font-bold text-orange-600">
+                    {((Object.entries(stats.ratingDistribution || {}).reduce((acc, [stars, count]) =>
+                      parseInt(stars) >= 3 ? acc + count : acc, 0) / stats.total) * 100).toFixed(0)}%
+                  </div>
+                  <div className="text-xs text-gray-600">Good (3+ stars)</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
