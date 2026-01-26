@@ -2,6 +2,7 @@ import app from "./app";
 import { prismaClient } from "./config/client";
 import http from "http"
 import { initSocket } from "./utils/socket";
+import { initializeQdrantCollection } from "../src/config/qdrant";
 
 
 const server = http.createServer(app);
@@ -9,6 +10,15 @@ const server = http.createServer(app);
 initSocket(server);
 
 const PORT = process.env.PORT || 5003;
+async function initializeServices() {
+  try {
+    await initializeQdrantCollection();
+    console.log('✅ Qdrant initialized');
+  } catch (error) {
+    console.error('❌ Failed to initialize services:', error);
+  }
+}
+
 
 
 server.listen(PORT, async () => {

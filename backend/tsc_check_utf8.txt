@@ -1,0 +1,2 @@
+﻿src/controllers/chatbotController.ts(5,10): error TS2300: Duplicate identifier 'prismaClient'.
+src/controllers/chatbotController.ts(5,24): error TS2300: Duplicate identifier 'prismaClient'.

@@ -30,6 +30,7 @@ model User {
   orders Order[]
   reviews Review[]
   moderatedReviews Review[] @relation("ReviewModerator")
+  conversations Conversation[]
 }
 
 model Category {
@@ -208,6 +209,21 @@ model Coupon {
   updatedAt     DateTime @updatedAt
 
   @@map("coupons")
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  userId    Int?
+  message   String   @db.Text
+  response  String   @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([createdAt])
 }
 
 enum ReservationStatus {

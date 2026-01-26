@@ -137,7 +137,7 @@ export const getReviewsByProduct = async (req: Request, res: Response) => {
         const authHeader = req.headers.authorization;
         if (typeof authHeader === 'string' && authHeader.startsWith("Bearer ")) {
             try {
-                const token = authHeader.split(" ")[1];
+                const token = authHeader.split(" ")[1] || "";
                 const secret = process.env.JWT_SECRET || "your_jwt_secret_key";
                 const decoded = jwt.verify(token, secret) as any;
                 currentUserId = decoded.userId;
