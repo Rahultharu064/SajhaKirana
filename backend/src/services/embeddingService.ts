@@ -1,7 +1,9 @@
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { qdrantClient, COLLECTION_NAME } from '../config/qdrant';
 import { v4 as uuidv4 } from 'uuid';
-import type { Filter } from '@qdrant/js-client-rest';
+import type { Schemas } from '@qdrant/js-client-rest';
+
+type QdrantFilter = Schemas['Filter'];
 
 export class EmbeddingService {
   private embeddings: OpenAIEmbeddings;
@@ -13,9 +15,6 @@ export class EmbeddingService {
     });
   }
 
-  // ===============================
-  // Generate Embedding
-  // ===============================
   async generateEmbedding(text: string): Promise<number[]> {
     try {
       return await this.embeddings.embedQuery(text);
@@ -25,9 +24,6 @@ export class EmbeddingService {
     }
   }
 
-  // ===============================
-  // Store Single Document
-  // ===============================
   async storeDocument(
     text: string,
     metadata: Record<string, any>
@@ -57,51 +53,60 @@ export class EmbeddingService {
     }
   }
 
-  // ===============================
-  // Search Similar Documents (FIXED)
-  // ===============================
-  async searchSimilar(
-    query: string,
-    limit: number = 5,
-    filter?: Filter
-  ): Promise<
-    Array<{
-      id: string | number;
-      score: number;
-      text?: string;
-      metadata?: Record<string, any>;
-    }>
-  > {
-    try {
-      const queryEmbedding = await this.generateEmbedding(query);
+ async searchSimilar(
+  query: string,
+  limit: number = 5,
+  filter?: QdrantFilter
+): Promise<
+  Array<{
+    id: string | number;
+    score: number;
+    text?: string;
+    metadata?: Record<string, any>;
+  }>
+> {
+  try {
+    const queryEmbedding = await this.generateEmbedding(query);
 
-      const searchParams = {
-        vector: queryEmbedding,
-        limit,
-        with_payload: true,
-        ...(filter ? { filter } : {}),
-      };
+    const searchParams = {
+      vector: queryEmbedding,
+      limit,
+      with_payload: true,
+      ...(filter ? { filter } : {}),
+    };
 
-      const searchResult = await qdrantClient.search(
-        COLLECTION_NAME,
-        searchParams
-      );
+    const searchResult = await qdrantClient.search(
+      COLLECTION_NAME,
+      searchParams
+    );
 
-      return searchResult.map((result) => ({
+    return searchResult.map((result) => {
+      const response: {
+        id: string | number;
+        score: number;
+        text?: string;
+        metadata?: Record<string, any>;
+      } = {
         id: result.id,
         score: result.score,
-        text: result.payload?.text as string | undefined,
-        metadata: result.payload as Record<string, any> | undefined,
-      }));
-    } catch (error) {
-      console.error('Error searching similar documents:', error);
-      throw error;
-    }
-  }
+      };
 
-  // ===============================
-  // Batch Store Documents
-  // ===============================
+      if (typeof result.payload?.text === 'string') {
+        response.text = result.payload.text;
+      }
+
+      if (result.payload) {
+        response.metadata = result.payload as Record<string, any>;
+      }
+
+      return response;
+    });
+  } catch (error) {
+    console.error('Error searching similar documents:', error);
+    throw error;
+  }
+}
+
   async batchStoreDocuments(
     documents: Array<{ text: string; metadata: Record<string, any> }>
   ): Promise<string[]> {
@@ -132,10 +137,7 @@ export class EmbeddingService {
     }
   }
 
-  // ===============================
-  // Delete Documents
-  // ===============================
-  async deleteDocuments(filter: Filter): Promise<void> {
+  async deleteDocuments(filter: QdrantFilter): Promise<void> {
     try {
       await qdrantClient.delete(COLLECTION_NAME, { filter });
     } catch (error) {

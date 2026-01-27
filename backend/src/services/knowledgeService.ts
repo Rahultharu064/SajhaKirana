@@ -4,30 +4,44 @@ import { embeddingService } from './embeddingService';
 const prisma = new PrismaClient();
 
 export class KnowledgeService {
-    // Index all products
     async indexProducts() {
         try {
             console.log('🔄 Indexing products...');
             const products = await prisma.product.findMany({
                 include: {
                     category: true,
+                    reviews: {
+                        select: {
+                            rating: true,
+                        },
+                    },
                 },
             });
 
-            const documents = products.map((product) => ({
-                text: `Product: ${product.title}. Description: ${product.description || 'No description'}. Price: Rs ${product.price}. Category: ${product.category?.name || 'Uncategorized'}. SKU: ${product.sku}. Stock: ${product.stock > 0 ? 'Available' : 'Out of stock'}.`,
-                metadata: {
-                    type: 'product',
-                    productId: product.id,
-                    name: product.title,
-                    price: product.price,
-                    categoryId: product.categoryId,
-                    categoryName: product.category?.name,
-                    sku: product.sku,
-                    stock: product.stock,
-                    slug: product.slug,
-                },
-            }));
+            const documents = products.map((product) => {
+                const avgRating =
+                    product.reviews.length > 0
+                        ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
+                        : 0;
+
+                return {
+                    text: `Product: ${product.title}. Description: ${product.description || 'No description'}. Price: Rs ${product.price}. MRP: Rs ${product.mrp || product.price}. Category: ${product.category?.name || 'Uncategorized'}. SKU: ${product.sku}. Stock: ${product.stock > 0 ? `${product.stock} units available` : 'Out of stock'}. Rating: ${avgRating.toFixed(1)} stars. ${product.stock > 10 ? 'Popular item.' : ''}`,
+                    metadata: {
+                        type: 'product',
+                        productId: product.id,
+                        name: product.title,
+                        price: product.price,
+                        mrp: product.mrp,
+                        categoryId: product.categoryId,
+                        categoryName: product.category?.name,
+                        sku: product.sku,
+                        stock: product.stock,
+                        slug: product.slug,
+                        avgRating,
+                        isAvailable: product.stock > 0,
+                    },
+                };
+            });
 
             await embeddingService.batchStoreDocuments(documents);
             console.log(`✅ Indexed ${documents.length} products`);
@@ -37,14 +51,13 @@ export class KnowledgeService {
         }
     }
 
-    // Index all categories
     async indexCategories() {
         try {
             console.log('🔄 Indexing categories...');
             const categories = await prisma.category.findMany();
 
             const documents = categories.map((category) => ({
-                text: `Category: ${category.name}. Slug: ${category.slug || 'No slug'}.`,
+                text: `Category: ${category.name}. Slug: ${category.slug}.`,
                 metadata: {
                     type: 'category',
                     categoryId: category.id,
@@ -61,70 +74,41 @@ export class KnowledgeService {
         }
     }
 
-    // Index platform features and documentation
     async indexPlatformKnowledge() {
         try {
             console.log('🔄 Indexing platform knowledge...');
             const knowledgeDocs = [
                 {
-                    text: 'Sajha Kirana is a comprehensive e-commerce platform for grocery shopping built with React 19, TypeScript, Node.js, Express, Prisma ORM, and MySQL database.',
+                    text: 'Sajha Kirana (साझा किराना) is a comprehensive e-commerce platform for grocery shopping in Nepal. Built with React 19, TypeScript, Node.js, Express, Prisma ORM, and MySQL database. We offer a wide range of groceries, household items, and daily essentials.',
                     metadata: { type: 'platform', category: 'overview' },
                 },
                 {
-                    text: 'Frontend Tech Stack: React 19, TypeScript, Vite, Tailwind CSS, Redux Toolkit, React Router, Framer Motion, Lucide React, Socket.io Client',
-                    metadata: { type: 'platform', category: 'frontend_tech' },
+                    text: 'We offer personalized product recommendations based on your purchase history, browsing behavior, and price preferences. Our AI chatbot can suggest products within your budget and favorite categories.',
+                    metadata: { type: 'platform', category: 'recommendations' },
                 },
                 {
-                    text: 'Backend Tech Stack: Node.js, Express, TypeScript, Prisma ORM, MySQL, JWT for authentication, Socket.io for real-time, Multer for file uploads, Nodemailer for emails, Joi for validation',
-                    metadata: { type: 'platform', category: 'backend_tech' },
-                },
-                {
-                    text: 'Payment Integration: eSewa and Khalti payment gateways with webhook handling for payment verification',
+                    text: 'Payment methods: We accept eSewa and Khalti digital payments. Both are secure and instant. No credit card required. Cash on delivery is also available.',
                     metadata: { type: 'platform', category: 'payments' },
                 },
                 {
-                    text: 'User Features: Registration and login, email verification, profile management with photo upload, role-based access (Customer/Admin), shopping cart, order tracking, product reviews',
-                    metadata: { type: 'platform', category: 'user_features' },
+                    text: 'Delivery information: We deliver within Kathmandu valley within 24 hours. Outside valley delivery takes 2-3 days. Minimum order: Rs 500. Free delivery on orders above Rs 2000.',
+                    metadata: { type: 'platform', category: 'delivery' },
                 },
                 {
-                    text: 'Advanced Search Features: Text search with autocomplete, voice search using speech-to-text, image search with machine learning, real-time suggestions, price filters, category filters',
-                    metadata: { type: 'platform', category: 'search_features' },
+                    text: 'Return policy: You can return products within 7 days if unopened and in original packaging. Perishable items cannot be returned. Contact support for returns.',
+                    metadata: { type: 'platform', category: 'returns' },
                 },
                 {
-                    text: 'Admin Dashboard Features: Product CRUD operations, bulk import via CSV, inventory management with stock tracking, order management with status updates, user management, coupon system, analytics and reporting',
-                    metadata: { type: 'platform', category: 'admin_features' },
+                    text: 'Customer support: Available 9 AM to 6 PM, 7 days a week. You can track your orders in real-time from your account dashboard.',
+                    metadata: { type: 'platform', category: 'support' },
                 },
                 {
-                    text: 'API Endpoints - Authentication: POST /api/auth/register for user registration, POST /api/auth/login for login, POST /api/auth/refresh for token refresh',
-                    metadata: { type: 'platform', category: 'api_auth' },
+                    text: 'Special features: Voice search, image search, advanced filters, real-time order tracking, product reviews and ratings, coupon codes, and personalized recommendations.',
+                    metadata: { type: 'platform', category: 'features' },
                 },
                 {
-                    text: 'API Endpoints - Products: GET /api/products to list products with filters, GET /api/products/:slug for product details, GET /api/categories for categories, POST /api/products for creating products (admin)',
-                    metadata: { type: 'platform', category: 'api_products' },
-                },
-                {
-                    text: 'API Endpoints - Cart & Orders: GET /api/cart for user cart, POST /api/cart to add items, POST /api/orders to create order, GET /api/orders for order list, GET /api/orders/:id for order details',
-                    metadata: { type: 'platform', category: 'api_cart_orders' },
-                },
-                {
-                    text: 'API Endpoints - Payments: POST /api/payments/initiate to initialize payment, POST /api/payments/webhook/:gateway for payment webhooks',
-                    metadata: { type: 'platform', category: 'api_payments' },
-                },
-                {
-                    text: 'API Endpoints - Admin: GET /api/admin/dashboard for statistics, GET /api/admin/products for product management, GET /api/admin/orders for order management, GET /api/admin/users for user management, GET /api/admin/inventory for inventory',
-                    metadata: { type: 'platform', category: 'api_admin' },
-                },
-                {
-                    text: 'Security Features: JWT-based authentication with refresh tokens, role-based access control, comprehensive Joi validation schemas, rate limiting for API protection, file upload security with type and size validation, password hashing with bcrypt',
-                    metadata: { type: 'platform', category: 'security' },
-                },
-                {
-                    text: 'Real-time Features: Order status updates via Socket.io, low inventory alerts, live chat support, real-time dashboard updates for admins',
-                    metadata: { type: 'platform', category: 'realtime' },
-                },
-                {
-                    text: 'Database Schema: User (customers and admins), Product (items for sale), Category (product categorization), CartItem (shopping cart), Order and OrderItem (purchases), Payment (payment records), Review (customer feedback), Coupon (discounts), Inventory (stock management), Reservation (stock reservation)',
-                    metadata: { type: 'platform', category: 'database' },
+                    text: 'Budget shopping: We have a wide range of budget-friendly products. You can filter by price range, sort by lowest price first, and get recommendations based on your spending habits.',
+                    metadata: { type: 'platform', category: 'budget_shopping' },
                 },
             ];
 
@@ -136,7 +120,6 @@ export class KnowledgeService {
         }
     }
 
-    // Index everything
     async indexAll() {
         try {
             console.log('🚀 Starting full knowledge base indexing...');
@@ -150,13 +133,20 @@ export class KnowledgeService {
         }
     }
 
-    // Update single product
+    // Webhook: Update single product
     async updateProduct(productId: string | number) {
         try {
-            const id = Number(productId);
+            const id = typeof productId === 'string' ? parseInt(productId) : productId;
             const product = await prisma.product.findUnique({
                 where: { id },
-                include: { category: true },
+                include: {
+                    category: true,
+                    reviews: {
+                        select: {
+                            rating: true,
+                        },
+                    },
+                },
             });
 
             if (!product) {
@@ -168,25 +158,47 @@ export class KnowledgeService {
                 must: [{ key: 'productId', match: { value: productId } }],
             });
 
+            const avgRating =
+                product.reviews.length > 0
+                    ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
+                    : 0;
+
             // Add new version
             await embeddingService.storeDocument(
-                `Product: ${product.title}. Description: ${product.description || 'No description'}. Price: Rs ${product.price}. Category: ${product.category?.name || 'Uncategorized'}. SKU: ${product.sku}. Stock: ${product.stock > 0 ? 'Available' : 'Out of stock'}.`,
+                `Product: ${product.title}. Description: ${product.description || 'No description'}. Price: Rs ${product.price}. MRP: Rs ${product.mrp || product.price}. Category: ${product.category?.name || 'Uncategorized'}. SKU: ${product.sku}. Stock: ${product.stock > 0 ? `${product.stock} units available` : 'Out of stock'}. Rating: ${avgRating.toFixed(1)} stars.`,
                 {
                     type: 'product',
                     productId: product.id,
                     name: product.title,
                     price: product.price,
+                    mrp: product.mrp,
                     categoryId: product.categoryId,
                     categoryName: product.category?.name,
                     sku: product.sku,
                     stock: product.stock,
                     slug: product.slug,
+                    avgRating,
+                    isAvailable: product.stock > 0,
                 }
             );
 
-            console.log(`✅ Updated product: ${product.title}`);
+            console.log(`✅ Updated product in vector DB: ${product.title}`);
         } catch (error) {
             console.error('❌ Error updating product:', error);
+            throw error;
+        }
+    }
+
+    // Webhook: Delete product
+    async deleteProduct(productId: string | number) {
+        try {
+            const id = typeof productId === 'string' ? parseInt(productId) : productId;
+            await embeddingService.deleteDocuments({
+                must: [{ key: 'productId', match: { value: id } }],
+            });
+            console.log(`✅ Deleted product from vector DB: ${productId}`);
+        } catch (error) {
+            console.error('❌ Error deleting product:', error);
             throw error;
         }
     }

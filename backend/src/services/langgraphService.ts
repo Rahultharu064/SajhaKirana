@@ -1,7 +1,12 @@
-import { StateGraph, END, START } from '@langchain/langgraph';
+// backend/src/services/langgraph.service.ts
+import { StateGraph, END, START, Annotation } from '@langchain/langgraph';
 import { ChatGroq } from '@langchain/groq';
 import { embeddingService } from './embeddingService';
-import { prismaClient } from '../config/client';
+import { recommendationService } from './recommendationService';
+import { conversationMemoryService } from './conversation-memoryService';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 interface ChatState {
     messages: Array<{ role: string; content: string }>;
@@ -9,192 +14,576 @@ interface ChatState {
     intent: string;
     context: string;
     retrievedDocs: any[];
+    recommendations: any[];
+    userPreferences: any;
+    priceFilter: { min?: number; max?: number } | null;
     response: string;
-    userId?: string;
+    userId: string | undefined;
+    sessionId: string;
+    suggestedQuestions: string[];
 }
 
+// Define the state schema using Annotation for the latest LangGraph version
+const ChatStateAnnotation = Annotation.Root({
+    messages: Annotation<Array<{ role: string; content: string }>>({
+        reducer: (x, y) => (y ? [...x, ...y] : x),
+        default: () => [],
+    }),
+    query: Annotation<string>({
+        reducer: (x, y) => y ?? x,
+        default: () => '',
+    }),
+    intent: Annotation<string>({
+        reducer: (x, y) => y ?? x,
+        default: () => '',
+    }),
+    context: Annotation<string>({
+        reducer: (x, y) => y ?? x,
+        default: () => '',
+    }),
+    retrievedDocs: Annotation<any[]>({
+        reducer: (x, y) => y ?? x,
+        default: () => [],
+    }),
+    recommendations: Annotation<any[]>({
+        reducer: (x, y) => y ?? x,
+        default: () => [],
+    }),
+    userPreferences: Annotation<any>({
+        reducer: (x, y) => y ?? x,
+        default: () => null,
+    }),
+    priceFilter: Annotation<{ min?: number; max?: number } | null>({
+        reducer: (x, y) => y ?? x,
+        default: () => null,
+    }),
+    response: Annotation<string>({
+        reducer: (x, y) => y ?? x,
+        default: () => '',
+    }),
+    userId: Annotation<string | undefined>({
+        reducer: (x, y) => y ?? x,
+        default: () => undefined,
+    }),
+    sessionId: Annotation<string>({
+        reducer: (x, y) => y ?? x,
+        default: () => '',
+    }),
+    suggestedQuestions: Annotation<string[]>({
+        reducer: (x, y) => y ?? x,
+        default: () => [],
+    }),
+});
+
 export class LangGraphChatbot {
-    private graph: any; // Using any for the compiled graph to avoid complex typing issues
+    private graph: any;
     private llm: ChatGroq;
 
     constructor() {
-        if (!process.env.GROQ_API_KEY) {
-            throw new Error('GROQ_API_KEY is missing');
-        }
-
         this.llm = new ChatGroq({
             apiKey: process.env.GROQ_API_KEY,
-            model: 'llama-3.1-70b-versatile',
-            temperature: 0.2,
+            modelName: 'llama-3.3-70b-versatile' ,
+            temperature: 0.7,
         });
 
         this.initializeGraph();
     }
 
     private initializeGraph() {
-        const workflow = new StateGraph<ChatState>({
-            channels: {
-                messages: {
-                    value: (x: any[], y: any[]) => (y ? [...x, ...y] : x),
-                    default: () => [],
-                },
-                query: {
-                    value: (_: string, y: string) => y,
-                    default: () => '',
-                },
-                intent: {
-                    value: (_: string, y: string) => y,
-                    default: () => '',
-                },
-                context: {
-                    value: (_: string, y: string) => y,
-                    default: () => '',
-                },
-                retrievedDocs: {
-                    value: (_: any[], y: any[]) => y,
-                    default: () => [],
-                },
-                response: {
-                    value: (_: string, y: string) => y,
-                    default: () => '',
-                },
-                userId: {
-                    value: (_: string | undefined, y: string | undefined) => y,
-                    default: () => undefined,
-                },
-            },
-        });
+        const workflow = new StateGraph(ChatStateAnnotation);
 
+        // Add nodes
         workflow.addNode('extract_query', this.extractQuery.bind(this));
         workflow.addNode('classify_intent', this.classifyIntent.bind(this));
+        workflow.addNode('extract_preferences', this.extractPreferences.bind(this));
         workflow.addNode('retrieve_context', this.retrieveContext.bind(this));
         workflow.addNode('enrich_user_context', this.enrichUserContext.bind(this));
+        workflow.addNode('get_recommendations', this.getRecommendations.bind(this));
         workflow.addNode('generate_response', this.generateResponse.bind(this));
+        workflow.addNode('generate_suggestions', this.generateSuggestions.bind(this));
 
-        // ✅ Correct LangGraph entry point
+        // Define workflow
         workflow.addEdge(START, 'extract_query' as any);
-
         workflow.addEdge('extract_query' as any, 'classify_intent' as any);
-        workflow.addEdge('classify_intent' as any, 'retrieve_context' as any);
+        workflow.addEdge('classify_intent' as any, 'extract_preferences' as any);
+        workflow.addEdge('extract_preferences' as any, 'retrieve_context' as any);
         workflow.addEdge('retrieve_context' as any, 'enrich_user_context' as any);
-        workflow.addEdge('enrich_user_context' as any, 'generate_response' as any);
-        workflow.addEdge('generate_response' as any, END as any);
+        workflow.addEdge('enrich_user_context' as any, 'get_recommendations' as any);
+        workflow.addEdge('get_recommendations' as any, 'generate_response' as any);
+        workflow.addEdge('generate_response' as any, 'generate_suggestions' as any);
+        workflow.addEdge('generate_suggestions' as any, END as any);
 
         this.graph = workflow.compile();
     }
 
+    // Step 1: Extract query
     private async extractQuery(state: ChatState): Promise<Partial<ChatState>> {
         const lastMessage = state.messages[state.messages.length - 1];
-        return { query: lastMessage?.content || '' };
+        return { query: lastMessage.content };
     }
 
+    // Step 2: Classify intent
     private async classifyIntent(state: ChatState): Promise<Partial<ChatState>> {
         const query = state.query.toLowerCase();
+
         let intent = 'general';
 
-        if (query.includes('product') || query.includes('item') || query.includes('buy')) {
+        if (
+            query.includes('product') ||
+            query.includes('item') ||
+            query.includes('buy') ||
+            query.includes('shop') ||
+            query.includes('show me') ||
+            query.includes('looking for')
+        ) {
             intent = 'product_search';
-        } else if (query.includes('order') || query.includes('track')) {
+        } else if (
+            query.includes('recommend') ||
+            query.includes('suggest') ||
+            query.includes('what should i') ||
+            query.includes('best')
+        ) {
+            intent = 'recommendation';
+        } else if (
+            query.includes('cheap') ||
+            query.includes('budget') ||
+            query.includes('under rs') ||
+            query.includes('affordable') ||
+            query.includes('price')
+        ) {
+            intent = 'budget_search';
+        } else if (
+            query.includes('order') ||
+            query.includes('track') ||
+            query.includes('delivery')
+        ) {
             intent = 'order_query';
         } else if (query.includes('cart') || query.includes('checkout')) {
             intent = 'cart_query';
         } else if (query.includes('payment') || query.includes('pay')) {
             intent = 'payment_query';
-        } else if (query.includes('category')) {
+        } else if (query.includes('category') || query.includes('categories')) {
             intent = 'category_query';
-        } else if (query.includes('api') || query.includes('tech')) {
-            intent = 'technical_query';
+        } else if (
+            query.includes('popular') ||
+            query.includes('trending') ||
+            query.includes('bestseller')
+        ) {
+            intent = 'trending';
         }
 
+        console.log(`🎯 Classified intent: ${intent}`);
         return { intent };
     }
 
+    // Step 3: Extract price preferences
+    private async extractPreferences(state: ChatState): Promise<Partial<ChatState>> {
+        const query = state.query.toLowerCase();
+        let priceFilter = null;
+
+        // Extract price from query
+        const priceMatch = query.match(/under\s+rs\.?\s*(\d+)/i) ||
+            query.match(/below\s+(\d+)/i) ||
+            query.match(/less than\s+(\d+)/i);
+
+        if (priceMatch) {
+            priceFilter = { max: parseInt(priceMatch[1]) };
+        }
+
+        const rangeMatch = query.match(/between\s+rs\.?\s*(\d+)\s+and\s+rs\.?\s*(\d+)/i) ||
+            query.match(/(\d+)\s*-\s*(\d+)/);
+
+        if (rangeMatch) {
+            priceFilter = {
+                min: parseInt(rangeMatch[1]),
+                max: parseInt(rangeMatch[2]),
+            };
+        }
+
+        return { priceFilter };
+    }
+
+    // Step 4: Retrieve context from vector DB
     private async retrieveContext(state: ChatState): Promise<Partial<ChatState>> {
         try {
-            const retrievedDocs = await embeddingService.searchSimilar(state.query, 5);
+            const filter: any = {
+                must: [],
+            };
 
-            const context = retrievedDocs.length
-                ? 'Relevant Information:\n\n' +
-                retrievedDocs.map((d, i) => `${i + 1}. ${d.text}`).join('\n')
-                : '';
+            // Add type filter based on intent
+            if (
+                state.intent === 'product_search' ||
+                state.intent === 'budget_search' ||
+                state.intent === 'recommendation'
+            ) {
+                filter.must.push({ key: 'type', match: { value: 'product' } });
 
+                // Add availability filter
+                filter.must.push({ key: 'isAvailable', match: { value: true } });
+
+                // Add price filter if specified
+                if (state.priceFilter) {
+                    if (state.priceFilter.max) {
+                        filter.must.push({
+                            key: 'price',
+                            range: { lte: state.priceFilter.max },
+                        });
+                    }
+                    if (state.priceFilter.min) {
+                        filter.must.push({
+                            key: 'price',
+                            range: { gte: state.priceFilter.min },
+                        });
+                    }
+                }
+            }
+
+            const retrievedDocs = await embeddingService.searchSimilar(
+                state.query,
+                10,
+                filter.must.length > 0 ? filter : undefined
+            );
+
+            let context = '';
+            if (retrievedDocs.length > 0) {
+                context = 'Relevant Information:\n\n';
+                retrievedDocs.forEach((doc, idx) => {
+                    context += `${idx + 1}. ${doc.text}\n`;
+                });
+            }
+
+            console.log(`📚 Retrieved ${retrievedDocs.length} documents`);
             return { retrievedDocs, context };
-        } catch (err) {
-            console.error(err);
+        } catch (error) {
+            console.error('Error retrieving context:', error);
             return { retrievedDocs: [], context: '' };
         }
     }
 
+    // Step 5: Enrich with user context
     private async enrichUserContext(state: ChatState): Promise<Partial<ChatState>> {
-        if (!state.userId) return {};
-
-        let userContext = '';
-
-        if (state.intent === 'order_query') {
-            const orders = await prismaClient.order.findMany({
-                where: { userId: Number(state.userId) },
-                take: 3,
-                orderBy: { createdAt: 'desc' },
-            });
-
-            if (orders.length) {
-                userContext += '\n\nYour Recent Orders:\n';
-                orders.forEach(o => {
-                    userContext += `- Order #${o.id}: ${o.orderStatus} (Rs ${o.total})\n`;
-                });
-            }
+        if (!state.userId) {
+            return {};
         }
 
-        if (state.intent === 'cart_query') {
-            const cart = await prismaClient.cartItem.findMany({
-                where: { userId: Number(state.userId) },
-            });
+        try {
+            let userContext = '';
+            const uid = parseInt(state.userId);
 
-            if (cart.length) {
-                userContext += '\n\nYour Cart:\n';
-                cart.forEach(i => {
-                    userContext += `- SKU ${i.sku} x${i.quantity} (Rs ${i.price * i.quantity})\n`;
-                });
+            // Get user preferences
+            const preferences = await recommendationService.getUserPreferences(uid);
+
+            userContext += `\n\nUser Profile:`;
+            if (preferences.priceRange) {
+                userContext += `\n- Average spending: Rs ${Math.round(preferences.priceRange.min)} - Rs ${Math.round(preferences.priceRange.max)}`;
             }
+            if (preferences.favoriteCategories && preferences.favoriteCategories.length > 0) {
+                userContext += `\n- Favorite categories: ${preferences.favoriteCategories.join(', ')}`;
+            }
+
+            // Order-specific context
+            if (state.intent === 'order_query') {
+                const orders = await prisma.order.findMany({
+                    where: { userId: uid },
+                    take: 3,
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        orderItems: {
+                            include: { product: true },
+                        },
+                    },
+                });
+
+                if (orders.length > 0) {
+                    userContext += '\n\nYour Recent Orders:\n';
+                    orders.forEach((order) => {
+                        userContext += `- Order #${order.id}: ${order.orderStatus} (Rs ${order.total}) - ${new Date(order.createdAt).toLocaleDateString()}\n`;
+                    });
+                }
+            }
+
+            // Cart-specific context
+            if (state.intent === 'cart_query') {
+                const cartItems = await prisma.cartItem.findMany({
+                    where: { userId: uid },
+                });
+
+                const skus = cartItems.map(item => item.sku);
+                const products = await prisma.product.findMany({
+                    where: { sku: { in: skus } }
+                });
+
+                if (cartItems.length > 0) {
+                    userContext += '\n\nYour Cart:\n';
+                    let total = 0;
+                    cartItems.forEach((item) => {
+                        const product = products.find(p => p.sku === item.sku);
+                        const itemTotal = (product?.price || item.price) * item.quantity;
+                        total += itemTotal;
+                        userContext += `- ${product?.title || item.sku} x${item.quantity} (Rs ${itemTotal})\n`;
+                    });
+                    userContext += `Total: Rs ${total}\n`;
+                }
+            }
+
+            if (userContext) {
+                return {
+                    context: state.context + userContext,
+                    userPreferences: preferences,
+                };
+            }
+        } catch (error) {
+            console.error('Error enriching user context:', error);
         }
 
-        return userContext ? { context: state.context + userContext } : {};
+        return {};
     }
 
-    private async generateResponse(state: ChatState): Promise<Partial<ChatState>> {
-        const systemPrompt = `
-You are an AI assistant for Sajha Kirana (साझा किराना).
-Be helpful, concise, and accurate.
+    // Step 6: Get recommendations
+    private async getRecommendations(state: ChatState): Promise<Partial<ChatState>> {
+        try {
+            let recommendations = [];
+            const uid = state.userId ? parseInt(state.userId) : undefined;
 
-Context:
+            if (state.intent === 'recommendation' && uid) {
+                // Personalized recommendations
+                recommendations = await recommendationService.recommendProducts(
+                    uid,
+                    5
+                );
+            } else if (state.intent === 'trending') {
+                // Trending products
+                recommendations = await recommendationService.getTrendingProducts(5);
+            } else if (state.intent === 'budget_search' && state.priceFilter?.max) {
+                // Budget products
+                recommendations = await recommendationService.getBudgetProducts(
+                    state.priceFilter.max,
+                    8
+                );
+            } else if (state.intent === 'product_search' && state.retrievedDocs.length > 0) {
+                // Similar products
+                const firstProductId = state.retrievedDocs[0]?.metadata?.productId;
+                if (firstProductId) {
+                    const similar = await recommendationService.getSimilarProducts(
+                        firstProductId,
+                        3
+                    );
+                    recommendations = similar;
+                }
+            }
+
+            // Add recommendations to context
+            if (recommendations.length > 0) {
+                let recContext = '\n\nRecommended Products:\n';
+                recommendations.forEach((rec: any, idx: number) => {
+                    if (rec.metadata) {
+                        // From vector search
+                        recContext += `${idx + 1}. ${rec.metadata.name} - Rs ${rec.metadata.price}\n`;
+                    } else {
+                        // From database
+                        recContext += `${idx + 1}. ${rec.title} - Rs ${rec.price}`;
+                        if (rec.avgRating) {
+                            recContext += ` (${rec.avgRating.toFixed(1)}⭐)`;
+                        }
+                        recContext += '\n';
+                    }
+                });
+
+                return {
+                    recommendations,
+                    context: state.context + recContext,
+                };
+            }
+        } catch (error) {
+            console.error('Error getting recommendations:', error);
+        }
+
+        return {};
+    }
+
+    // Step 7: Generate response
+    private async generateResponse(state: ChatState): Promise<Partial<ChatState>> {
+        try {
+            const systemPrompt = `You are a helpful AI shopping assistant for Sajha Kirana (साझा किराना), Nepal's premier grocery e-commerce platform.
+
+Your role:
+- Help users find products within their budget and preferences
+- Provide personalized product recommendations
+- Answer questions about orders, delivery, and payments
+- Be friendly, helpful, and use Nepali greetings (नमस्ते, धन्यवाद)
+- Always mention prices in Nepali Rupees (Rs)
+- Highlight deals, ratings, and availability
+
+Context Information:
 ${state.context}
 
 User Intent: ${state.intent}
-`;
+Price Filter: ${state.priceFilter ? `Rs ${state.priceFilter.min || 0} - Rs ${state.priceFilter.max || 'unlimited'}` : 'None'}
 
-        const response = await this.llm.invoke([
-            { role: 'system', content: systemPrompt },
-            ...state.messages,
-        ]);
+Guidelines:
+- Be concise but informative
+- Suggest 2-3 products when relevant
+- Mention if products are in stock
+- Include ratings if available
+- Suggest similar or complementary products
+- Help with budget-friendly options
+- Guide users through checkout if needed`;
 
-        return { response: response.content as string };
+            const response = await this.llm.invoke([
+                { role: 'system', content: systemPrompt },
+                ...state.messages,
+            ]);
+
+            console.log('✅ Generated response');
+            return { response: response.content as string };
+        } catch (error) {
+            console.error('Error generating response:', error);
+            return {
+                response: 'I apologize, but I encountered an error. Please try again.',
+            };
+        }
     }
 
+    // Step 8: Generate suggested questions
+    private async generateSuggestions(state: ChatState): Promise<Partial<ChatState>> {
+        try {
+            let suggestedQuestions: string[] = [];
+
+            switch (state.intent) {
+                case 'product_search':
+                case 'recommendation':
+                    suggestedQuestions = [
+                        'Show me similar products',
+                        'What are budget alternatives?',
+                        'Show trending products',
+                        'Add to cart',
+                    ];
+                    break;
+                case 'budget_search':
+                    suggestedQuestions = [
+                        'Show products under Rs 200',
+                        'What are the best deals today?',
+                        'Show more budget items',
+                        'Recommend based on my history',
+                    ];
+                    break;
+                case 'order_query':
+                    suggestedQuestions = [
+                        'Track my latest order',
+                        'View all my orders',
+                        'Cancel an order',
+                        'When will it arrive?',
+                    ];
+                    break;
+                case 'cart_query':
+                    suggestedQuestions = [
+                        'Proceed to checkout',
+                        'Apply coupon code',
+                        'Show recommended products',
+                        'Clear my cart',
+                    ];
+                    break;
+                case 'trending':
+                    suggestedQuestions = [
+                        'Show today\'s deals',
+                        'What\'s new this week?',
+                        'Show bestsellers',
+                        'Recommend for me',
+                    ];
+                    break;
+                default:
+                    suggestedQuestions = [
+                        'What products do you have?',
+                        'Show trending items',
+                        'Products under Rs 500',
+                        'Track my order',
+                    ];
+            }
+
+            // Save to conversation memory
+            if (state.sessionId) {
+                const context = await conversationMemoryService.getContext(
+                    state.sessionId,
+                    state.userId
+                );
+                if (context) {
+                    context.currentIntent = state.intent;
+                    context.suggestedProducts = state.recommendations.map((r: any) =>
+                        r.metadata?.productId || r.id
+                    );
+                    await conversationMemoryService.saveContext(context);
+                }
+            }
+
+            return { suggestedQuestions };
+        } catch (error) {
+            console.error('Error generating suggestions:', error);
+            return { suggestedQuestions: [] };
+        }
+    }
+
+    // Execute the graph
     async chat(
         messages: Array<{ role: string; content: string }>,
-        userId?: string
-    ): Promise<string> {
-        const result = await this.graph.invoke({
-            messages,
-            query: '',
-            intent: '',
-            context: '',
-            retrievedDocs: [],
-            response: '',
-            userId,
-        });
+        userId?: string,
+        sessionId?: string
+    ): Promise<{ response: string; suggestions: string[]; recommendations: any[] }> {
+        try {
+            // Generate session ID if not provided
+            const sid = sessionId || `session_${Date.now()}`;
 
-        return result.response;
+            // Get conversation memory
+            const memory = await conversationMemoryService.getContext(sid, userId);
+            const conversationMessages = memory?.messages || [];
+
+            // Combine memory with new messages
+            const allMessages = [
+                ...conversationMessages.map((m) => ({ role: m.role, content: m.content })),
+                ...messages,
+            ];
+
+            const initialState: ChatState = {
+                messages: allMessages,
+                query: '',
+                intent: '',
+                context: '',
+                retrievedDocs: [],
+                recommendations: [],
+                userPreferences: null,
+                priceFilter: null,
+                response: '',
+                userId,
+                sessionId: sid,
+                suggestedQuestions: [],
+            };
+
+            const result = await this.graph.invoke(initialState);
+
+            // Save to conversation memory
+            const lastMessage = messages[messages.length - 1];
+            const uid = userId ? parseInt(userId) : 0;
+            await conversationMemoryService.addMessage(
+                sid,
+                lastMessage.role,
+                lastMessage.content,
+                uid
+            );
+            await conversationMemoryService.addMessage(
+                sid,
+                'assistant',
+                result.response,
+                uid
+            );
+
+            return {
+                response: result.response,
+                suggestions: result.suggestedQuestions || [],
+                recommendations: result.recommendations || [],
+            };
+        } catch (error) {
+            console.error('Error in chat:', error);
+            throw error;
+        }
     }
 }
 

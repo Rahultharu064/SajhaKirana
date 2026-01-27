@@ -4,7 +4,7 @@ import type { JwtPayload } from "jsonwebtoken";  // ✅ correct type-only import
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   let token: string | undefined;
 
   // Extract token from Authorization header
@@ -50,6 +50,8 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     return res.status(401).json({ error: "Invalid token", details: errorMessage });
   }
 };
+
+export const authMiddleware = authenticate;
 
 export const authenticateAdmin = (req: Request, res: Response, next: NextFunction): void => {
   let token;
