@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../../components/AdminDashboard/Layouts/Sidebar';
 import AdminHeader from '../../components/AdminDashboard/Layouts/AdminHeader';
+import ChatFloatingButton from '../../components/chatbot/ChatFloatingButton';
 
 export default function AdminDashboard() {
   const [dark, setDark] = useState(false);
@@ -22,6 +23,7 @@ export default function AdminDashboard() {
           <Outlet />
         </main>
       </div>
+      <ChatFloatingButton />
     </div>
   );
 }

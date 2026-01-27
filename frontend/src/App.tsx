@@ -36,20 +36,25 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
   }
 }
 
+import { ChatbotProvider } from './context/ChatbotContext';
+
 function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
         <Provider store={store}>
-          <Toaster position="top-right" />
+          <ChatbotProvider>
+            <Toaster position="top-right" />
 
-          <AppContent />
-
+            <AppContent />
+          </ChatbotProvider>
         </Provider>
       </ErrorBoundary>
     </BrowserRouter>
   );
 }
+
+import ChatFloatingButton from "./components/chatbot/ChatFloatingButton.tsx";
 
 function AppContent() {
   const element = useRoutes(routes);
@@ -67,7 +72,12 @@ function AppContent() {
     }
   }, [dispatch]);
 
-  return element;
+  return (
+    <>
+      {element}
+      <ChatFloatingButton />
+    </>
+  );
 }
 
 export default App;

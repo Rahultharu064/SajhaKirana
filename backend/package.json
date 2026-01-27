@@ -7,7 +7,11 @@
     "start": "tsx src/server.ts",
     "dev": "nodemon --watch \"src/**/*.ts\" --exec \"npx tsx src/server.ts\"",
     "prisma:generate": "prisma generate",
+    "seed": "tsx prisma/seed.ts",
     "seed:admin": "tsx src/scripts/seedAdmin.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "keywords": [],
   "author": "",

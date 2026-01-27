@@ -2,12 +2,19 @@
 
 @theme {
   --animate-fadeIn: fadeIn 0.5s ease-out forwards;
+  --color-primary: #4f46e5;
+  /* indigo-600 */
+  --color-secondary: #4b5563;
+  /* gray-600 */
+  --color-accent: #10b981;
+  /* emerald-500 */
 
   @keyframes fadeIn {
     from {
       opacity: 0;
       transform: translateY(20px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);

@@ -25,7 +25,7 @@ export class KnowledgeService {
                         : 0;
 
                 return {
-                    text: `Product: ${product.title}. Description: ${product.description || 'No description'}. Price: Rs ${product.price}. MRP: Rs ${product.mrp || product.price}. Category: ${product.category?.name || 'Uncategorized'}. SKU: ${product.sku}. Stock: ${product.stock > 0 ? `${product.stock} units available` : 'Out of stock'}. Rating: ${avgRating.toFixed(1)} stars. ${product.stock > 10 ? 'Popular item.' : ''}`,
+                    text: `Product: ${product.title}. Description: ${product.description || 'No description'}. Price: Rs ${product.price}. MRP: Rs ${product.mrp || product.price}. ${product.mrp > product.price ? `Save Rs ${product.mrp - product.price}! ` : ''}Category: ${product.category?.name || 'Uncategorized'}. SKU: ${product.sku}. Stock: ${product.stock > 0 ? `${product.stock} units available` : 'Out of stock'}. Rating: ${avgRating.toFixed(1)} stars. ${product.stock > 10 ? 'Popular item.' : ''}`,
                     metadata: {
                         type: 'product',
                         productId: product.id,
@@ -39,6 +39,7 @@ export class KnowledgeService {
                         slug: product.slug,
                         avgRating,
                         isAvailable: product.stock > 0,
+                        isActive: product.isActive,
                     },
                 };
             });
@@ -179,6 +180,7 @@ export class KnowledgeService {
                     slug: product.slug,
                     avgRating,
                     isAvailable: product.stock > 0,
+                    isActive: product.isActive,
                 }
             );
 

@@ -82,7 +82,7 @@ export class LangGraphChatbot {
     constructor() {
         this.llm = new ChatGroq({
             apiKey: process.env.GROQ_API_KEY,
-            modelName: 'llama-3.3-70b-versatile' ,
+            model: 'llama-3.3-70b-versatile',
             temperature: 0.7,
         });
 
@@ -186,14 +186,14 @@ export class LangGraphChatbot {
             query.match(/below\s+(\d+)/i) ||
             query.match(/less than\s+(\d+)/i);
 
-        if (priceMatch) {
+        if (priceMatch && priceMatch[1]) {
             priceFilter = { max: parseInt(priceMatch[1]) };
         }
 
         const rangeMatch = query.match(/between\s+rs\.?\s*(\d+)\s+and\s+rs\.?\s*(\d+)/i) ||
             query.match(/(\d+)\s*-\s*(\d+)/);
 
-        if (rangeMatch) {
+        if (rangeMatch && rangeMatch[1] && rangeMatch[2]) {
             priceFilter = {
                 min: parseInt(rangeMatch[1]),
                 max: parseInt(rangeMatch[2]),
@@ -220,6 +220,7 @@ export class LangGraphChatbot {
 
                 // Add availability filter
                 filter.must.push({ key: 'isAvailable', match: { value: true } });
+                filter.must.push({ key: 'isActive', match: { value: true } });
 
                 // Add price filter if specified
                 if (state.priceFilter) {
@@ -268,7 +269,7 @@ export class LangGraphChatbot {
 
         try {
             let userContext = '';
-            const uid = parseInt(state.userId);
+            const uid = parseInt(state.userId as string);
 
             // Get user preferences
             const preferences = await recommendationService.getUserPreferences(uid);
@@ -378,10 +379,17 @@ export class LangGraphChatbot {
                 recommendations.forEach((rec: any, idx: number) => {
                     if (rec.metadata) {
                         // From vector search
-                        recContext += `${idx + 1}. ${rec.metadata.name} - Rs ${rec.metadata.price}\n`;
+                        recContext += `${idx + 1}. ${rec.metadata.name} - Rs ${rec.metadata.price}`;
+                        if (rec.metadata.mrp && rec.metadata.mrp > rec.metadata.price) {
+                            recContext += ` (MRP: Rs ${rec.metadata.mrp}, Save Rs ${rec.metadata.mrp - rec.metadata.price}!)`;
+                        }
+                        recContext += '\n';
                     } else {
                         // From database
                         recContext += `${idx + 1}. ${rec.title} - Rs ${rec.price}`;
+                        if (rec.mrp && rec.mrp > rec.price) {
+                            recContext += ` (MRP: Rs ${rec.mrp}, Save Rs ${rec.mrp - rec.price}!)`;
+                        }
                         if (rec.avgRating) {
                             recContext += ` (${rec.avgRating.toFixed(1)}⭐)`;
                         }
@@ -412,7 +420,9 @@ Your role:
 - Answer questions about orders, delivery, and payments
 - Be friendly, helpful, and use Nepali greetings (नमस्ते, धन्यवाद)
 - Always mention prices in Nepali Rupees (Rs)
-- Highlight deals, ratings, and availability
+- Highlight deals, discounts (MRP vs Price), ratings, and availability
+- If a product is on sale (MRP > Price), emphasize the savings
+- Use product descriptions to explain why a product is a good choice
 
 Context Information:
 ${state.context}

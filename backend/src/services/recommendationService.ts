@@ -83,6 +83,7 @@ export class RecommendationService {
             // Build query for recommendations
             const whereConditions: any = {
                 stock: { gt: 0 },
+                isActive: true,
             };
 
             if (preferences.priceRange) {
@@ -197,6 +198,7 @@ export class RecommendationService {
                 where: {
                     id: { in: productIds },
                     stock: { gt: 0 },
+                    isActive: true,
                 },
                 include: {
                     category: true,
@@ -217,6 +219,7 @@ export class RecommendationService {
                 where: {
                     price: { lte: maxPrice },
                     stock: { gt: 0 },
+                    isActive: true,
                 },
                 include: {
                     category: true,

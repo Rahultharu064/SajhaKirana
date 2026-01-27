@@ -32,6 +32,7 @@ import ProtectedAdminRoute from "../components/Auth/ProtectedAdminRoute.tsx";
 import Checkout from "../pages/Publicwebsite/Checkout.tsx";
 import OrderConfirmation from "../pages/Publicwebsite/OrderConfirmation.tsx";
 import MyOrders from "../pages/Publicwebsite/MyOrders.tsx";
+import SajhaKiranaChatbot from "../pages/chatbot/SajhaKiranaChatbot.tsx";
 
 const routes = [
     {
@@ -106,6 +107,10 @@ const routes = [
     {
         path: "/orders",
         element: <MyOrders />,
+    },
+    {
+        path: "/chatbot",
+        element: <SajhaKiranaChatbot />,
     },
     // Admin Routes
     {

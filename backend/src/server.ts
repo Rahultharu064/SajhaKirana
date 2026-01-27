@@ -61,8 +61,11 @@ server.listen(PORT, async () => {
     }
 
     // 3. Service Initializations
-    // We run this after the server starts listening to avoid blocking the port
-    await initializeServices();
+    // We run this in the background so a Qdrant/Knowledge sync failure 
+    // doesn't take down the entire API server.
+    initializeServices().catch(err => {
+      console.error('⚠️ Background service initialization failed:', err.message);
+    });
 
     console.log('---------------------');
     console.log(`🚀 Server is running on port ${PORT}`);
