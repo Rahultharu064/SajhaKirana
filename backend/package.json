@@ -41,6 +41,7 @@
     "groq-sdk": "^0.37.0",
     "http": "^0.0.1-security",
     "http-proxy-middleware": "^3.0.5",
+    "ioredis": "^5.9.2",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",

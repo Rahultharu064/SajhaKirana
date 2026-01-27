@@ -1,16 +1,12 @@
 import { QdrantClient } from '@qdrant/js-client-rest';
 
 const QDRANT_URL = process.env.QDRANT_URL || 'http://localhost:6333';
-const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
-
-if (!QDRANT_URL) {
-  throw new Error('QDRANT_URL is not defined in the environment');
-}   
+const QDRANT_API_KEY = process.env.QDRANT_API_KEY || '';
 
 export const qdrantClient = new QdrantClient({
   url: QDRANT_URL,
   apiKey: QDRANT_API_KEY,
-} as any);
+});
 
 export const COLLECTION_NAME = 'sajha_kirana_knowledge';
 
@@ -25,7 +21,7 @@ export async function initializeQdrantCollection() {
     if (!collectionExists) {
       await qdrantClient.createCollection(COLLECTION_NAME, {
         vectors: {
-          size: 1536, // OpenAI embedding size
+          size: 1536,
           distance: 'Cosine',
         },
       });

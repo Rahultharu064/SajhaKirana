@@ -111,7 +111,9 @@ function Inventory() {
 
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Filter className="text-gray-400 h-4 w-4" />
+          <label htmlFor="statusFilter">Filter by stock status:</label>
           <select
+            id="statusFilter"
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
@@ -136,7 +138,9 @@ function Inventory() {
               <div className="flex items-center gap-2">
                 {editingId === row.id ? (
                   <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
+                    <label htmlFor={`editStock-${row.id}`}>Edit Stock:</label>
                     <input
+                      id={`editStock-${row.id}`}
                       type="number"
                       className="w-20 px-2 py-1 border border-primary-300 rounded focus:outline-none focus:ring-2 focus:ring-primary-100"
                       value={editStockValue}
@@ -218,7 +222,9 @@ function Inventory() {
                         <div className="flex justify-end">
                           {editingId === product.id ? (
                             <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2">
+                                <label htmlFor={`editStock-${product.id}`}>Edit Stock:</label>
                               <input
+                                id={`editStock-${product.id}`}
                                 type="number"
                                 className="w-20 px-2 py-1 border border-primary-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-100 text-right"
                                 value={editStockValue}

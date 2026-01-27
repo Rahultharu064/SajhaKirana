@@ -217,7 +217,9 @@ const ReviewModeration: React.FC = () => {
                 <div className="space-y-4">
                     {/* Select All */}
                     <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                        <label htmlFor="selectAll">Select All</label>
                         <input
+                            id="selectAll"
                             type="checkbox"
                             checked={selectedIds.length === pendingReviews.length}
                             onChange={toggleSelectAll}
@@ -231,7 +233,9 @@ const ReviewModeration: React.FC = () => {
                         <div key={review.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                             <div className="flex items-start gap-4">
                                 {/* Checkbox */}
+                                <label htmlFor={`review-${review.id}`}>Select</label>
                                 <input
+                                    id={`review-${review.id}`}
                                     type="checkbox"
                                     checked={selectedIds.includes(review.id)}
                                     onChange={() => toggleSelect(review.id)}
