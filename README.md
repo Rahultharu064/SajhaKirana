@@ -17,35 +17,52 @@
 ### Backend
 - **Node.js** with Express and TypeScript
 - **Prisma ORM** with MySQL database
+- **LangGraph** for AI orchestration and stateful agents
+- **Qdrant** Vector Database for RAG and semantic search
+- **Groq & OpenAI** for high-performance LLM integration
 - **JWT** for authentication
 - **Socket.io** for real-time communication
 - **Multer** for file uploads
 - **Nodemailer** for email notifications
 - **Joi** for request validation
+- **IoRedis** for caching and state management
 
 ### Payment Integration
 - **eSewa** payment gateway
 - **Khalti** payment gateway
 - Webhook handling for payment verification
 
-## 🚀 Features
+### 🤖 AI-Powered Features (Sajha Kirana Assistant)
+
+#### Intelligent Assistant
+- **LangGraph Orchestration**: Complex, multi-turn conversation logic with state persistence.
+- **RAG System**: Retrieval-Augmented Generation using project-specific knowledge bases.
+- **Vector Search**: High-precision product discovery powered by Qdrant embeddings.
+- **Real-time Suggestions**: Context-aware suggested questions and quick actions.
+- **Hybrid Search**: Combining traditional text search with semantic visual search capabilities.
+
+#### Smart Recommendations
+- **Personalized Discovery**: Product suggestions based on user behavior and preferences.
+- **Trending Analysis**: Dynamically updated trending product showcases.
+- **Budget-Friendly Filters**: AI-driven discovery for items within specific price ranges.
+- **Visual Similarity**: Finding products that look similar to user interests.
 
 ### 👤 User Features
 
 #### Authentication & User Management
-- User registration and login
-- Email verification system
-- Profile management with photo upload
-- Role-based access (Customer/Admin)
+- Secure registration and login with JWT
+- Email verification and password recovery
+- Profile management with encrypted photo storage
+- Role-based Access Control (RBAC): Customer, Staff, and Admin roles
 
 #### Shopping Experience
-- **Advanced Search**: Text search with autocomplete, voice search, image search
-- **Categorization**: Browse by categories and subcategories
-- **Product Details**: Rich product descriptions, image galleries, variants
-- **Shopping Cart**: Add/remove items, quantity management, cart persistence
-- **Checkout Process**: Multiple delivery options, address management
-- **Order Tracking**: Real-time order status updates
-- **Product Reviews**: Rate and review purchased products
+- **Advanced Search**: Autocomplete, voice-to-text search, and semantic discovery.
+- **Categorization**: Multi-level category hierarchy with rich attributes.
+- **Product Details**: 360° galleries, rich descriptions, and related product carousels.
+- **Shopping Cart**: Real-time updates, persistence across devices, and minimum order rules.
+- **Checkout Process**: Multi-step flow with delivery slot selection and address management.
+- **Order Tracking**: Live status updates with real-time map tracking (extensible).
+- **Product Reviews**: Verified purchase reviews with photo uploads and ratings.
 
 #### Account Management
 - Order history and tracking
@@ -78,53 +95,42 @@
 
 ### 📱 Admin Dashboard
 
-#### Product Management
-- CRUD operations for products
-- Bulk import via CSV
-- Image upload and management
-- Category assignment
-- SEO optimization fields
+#### Dashboard & Analytics
+- **KPI Tracking**: Real-time monitoring of revenue, order volume, and customer growth.
+- **Visual Analytics**: Interactive sales trend charts and top product performance metrics.
+- **Inventory Health**: Automated alerts for low-stock items and out-of-stock products.
+- **User Activity**: Monitoring system for customer engagement and administrative actions.
 
-#### Inventory Management
-- Real-time stock tracking
-- Stock reservation system
-- Low stock alerts
-- Inventory adjustments
-- Reservation lifecycle (reserved → committed → released)
+#### Product & Catalog Management
+- **Full Lifecycle CRUD**: Comprehensive management of products, variants, and categories.
+- **Bulk Data Operations**: Fast product importing and exporting via CSV files.
+- **Image Management**: Automated optimization and hosting of product visual assets.
+- **SEO Optimization**: Custom metadata, slug management, and descriptive fields for better search ranking.
 
-#### Order Management
-- Order overview and details
-- Status updates (pending → processing → shipped → delivered)
-- Payment reconciliation
-- Delivery tracking with OTP verification
-- Order cancellation and refunds
-
-#### User Management
-- Customer list and details
-- Admin user creation
-- User activity monitoring
-- Profile management
+#### Inventory & Order Management
+- **Advanced Stock Control**: Real-time reservation system (Reserved → Committed → Released).
+- **Order Processing**: Centralized interface for status updates, from pending to delivery.
+- **OTP Verification**: Secure delivery confirmation system using recipient-side OTP.
+- **Payment Reconciliation**: Automated tools for matching gateway payouts with internal orders.
 
 #### Marketing & Promotions
-- **Coupon System**: Percentage and fixed amount discounts
-- Usage limits and expiration dates
-- Minimum order values
-- Automatic coupon validation
+- **Dynamic Coupon System**: Create percentage or fixed-amount discounts with usage limits.
+- **Promotion Management**: Plan and execute store-wide or category-specific sales.
+- **Review Moderation**: Tools to manage customer feedback and maintain service quality.
+- **Customer Segmentation**: Analytics-driven insights into customer buying patterns.
 
 #### Analytics & Reporting
-- Sales statistics and trends
-- Top products and categories
-- Revenue tracking
-- Customer analytics
-- Performance metrics
+- **In-depth Sales Reports**: Detailed breakdowns of revenue by category and period.
+- **Performance Audits**: Track business growth and identify improvement areas.
+- **Exportable Data**: Generate CSV/PDF reports for external accounting and analysis.
 
 ### 🔧 Technical Features
 
-#### Real-time Updates
-- Order status notifications
-- Low inventory alerts
-- Live chat support (extensible)
-- Real-time dashboard updates
+#### Real-time Updates & Notifications
+- **Status Pushes**: Live order updates pushed via WebSockets.
+- **Inventory Alerts**: Instant low-stock notifications for admins.
+- **Global Chatbot**: Persistent AI assistant available on every page.
+- **System-wide Toasts**: Real-time feedback for user actions.
 
 #### File Management
 - Product image galleries

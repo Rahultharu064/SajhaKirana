@@ -95,6 +95,7 @@ export class LangGraphChatbot {
         // Add nodes
         workflow.addNode('extract_query', this.extractQuery.bind(this));
         workflow.addNode('classify_intent', this.classifyIntent.bind(this));
+        workflow.addNode('process_actions', this.handleOrderActions.bind(this));
         workflow.addNode('extract_preferences', this.extractPreferences.bind(this));
         workflow.addNode('retrieve_context', this.retrieveContext.bind(this));
         workflow.addNode('enrich_user_context', this.enrichUserContext.bind(this));
@@ -105,7 +106,8 @@ export class LangGraphChatbot {
         // Define workflow
         workflow.addEdge(START, 'extract_query' as any);
         workflow.addEdge('extract_query' as any, 'classify_intent' as any);
-        workflow.addEdge('classify_intent' as any, 'extract_preferences' as any);
+        workflow.addEdge('classify_intent' as any, 'process_actions' as any);
+        workflow.addEdge('process_actions' as any, 'extract_preferences' as any);
         workflow.addEdge('extract_preferences' as any, 'retrieve_context' as any);
         workflow.addEdge('retrieve_context' as any, 'enrich_user_context' as any);
         workflow.addEdge('enrich_user_context' as any, 'get_recommendations' as any);
@@ -119,6 +121,7 @@ export class LangGraphChatbot {
     // Step 1: Extract query
     private async extractQuery(state: ChatState): Promise<Partial<ChatState>> {
         const lastMessage = state.messages[state.messages.length - 1];
+        if (!lastMessage) return { query: '' };
         return { query: lastMessage.content };
     }
 
@@ -157,7 +160,11 @@ export class LangGraphChatbot {
             query.includes('track') ||
             query.includes('delivery')
         ) {
-            intent = 'order_query';
+            if (query.includes('cancel') || query.includes('stop') || query.includes('delete') || query.includes('remove order')) {
+                intent = 'order_cancellation';
+            } else {
+                intent = 'order_query';
+            }
         } else if (query.includes('cart') || query.includes('checkout')) {
             intent = 'cart_query';
         } else if (query.includes('payment') || query.includes('pay')) {
@@ -174,6 +181,60 @@ export class LangGraphChatbot {
 
         console.log(`🎯 Classified intent: ${intent}`);
         return { intent };
+    }
+
+    // Step 2.5: Handle mutations/actions (like order cancellation)
+    private async handleOrderActions(state: ChatState): Promise<Partial<ChatState>> {
+        if (state.intent !== 'order_cancellation' || !state.userId) {
+            return {};
+        }
+
+        try {
+            const query = state.query.toLowerCase();
+            const uid = parseInt(state.userId);
+            let actionContext = '';
+
+            // Look for order ID
+            const orderIdMatch = query.match(/(?:#|order\s+|no\.?\s*)(\d+)/i);
+            let orderId: number | null = null;
+
+            if (orderIdMatch && orderIdMatch[1]) {
+                orderId = parseInt(orderIdMatch[1]);
+            } else {
+                // Find latest pending order if no ID specified
+                const latestOrder = await prisma.order.findFirst({
+                    where: { userId: uid, orderStatus: 'pending' },
+                    orderBy: { createdAt: 'desc' }
+                });
+                if (latestOrder) orderId = latestOrder.id;
+            }
+
+            if (orderId) {
+                const order = await prisma.order.findUnique({
+                    where: { id: orderId, userId: uid }
+                });
+
+                if (order && order.orderStatus === 'pending') {
+                    // Only cancel if they are being specific or confirmed
+                    // For now, let's assume they want it cancelled if they reached here with 'order_cancellation' intent
+                    await prisma.order.update({
+                        where: { id: orderId },
+                        data: { orderStatus: 'cancelled' }
+                    });
+
+                    actionContext = `\n\n[IMPORTANT]: I have successfully cancelled your Order #${orderId} as requested.`;
+                    console.log(`🗑️ Chatbot cancelled order ${orderId} for user ${uid}`);
+                }
+            }
+
+            if (actionContext) {
+                return { context: state.context + actionContext };
+            }
+        } catch (error) {
+            console.error('Error in handleOrderActions:', error);
+        }
+
+        return {};
     }
 
     // Step 3: Extract price preferences
@@ -270,6 +331,7 @@ export class LangGraphChatbot {
         try {
             let userContext = '';
             const uid = parseInt(state.userId as string);
+            const query = state.query.toLowerCase();
 
             // Get user preferences
             const preferences = await recommendationService.getUserPreferences(uid);
@@ -283,23 +345,73 @@ export class LangGraphChatbot {
             }
 
             // Order-specific context
-            if (state.intent === 'order_query') {
-                const orders = await prisma.order.findMany({
-                    where: { userId: uid },
-                    take: 3,
-                    orderBy: { createdAt: 'desc' },
-                    include: {
-                        orderItems: {
-                            include: { product: true },
-                        },
-                    },
-                });
+            if (state.intent === 'order_query' || state.intent === 'order_cancellation') {
+                // Check for order ID in query (e.g., #105, order 105, etc.)
+                const orderIdMatch = query.match(/(?:#|order\s+|no\.?\s*)(\d+)/i);
 
-                if (orders.length > 0) {
-                    userContext += '\n\nYour Recent Orders:\n';
-                    orders.forEach((order) => {
-                        userContext += `- Order #${order.id}: ${order.orderStatus} (Rs ${order.total}) - ${new Date(order.createdAt).toLocaleDateString()}\n`;
+                if (orderIdMatch && orderIdMatch[1]) {
+                    const orderId = parseInt(orderIdMatch[1]);
+                    const order = await prisma.order.findUnique({
+                        where: { id: orderId, userId: uid },
+                        include: {
+                            orderItems: { include: { product: true } },
+                            payments: true
+                        }
                     });
+
+                    if (order) {
+                        userContext += `\n\nDetailed Info for Order #${order.id}:`;
+                        userContext += `\n- Current Status: ${order.orderStatus.toUpperCase()}`;
+                        userContext += `\n- Placed On: ${new Date(order.createdAt).toLocaleString()}`;
+                        userContext += `\n- Total Amount: Rs ${order.total}`;
+                        userContext += `\n- Items: ${order.orderItems.map(item => `${item.product.title} (x${item.quantity})`).join(', ')}`;
+
+                        if (order.payments && order.payments.length > 0) {
+                            const lastPayment = order.payments[order.payments.length - 1];
+                            if (lastPayment) {
+                                userContext += `\n- Payment Status: ${lastPayment.status.toUpperCase()} (${lastPayment.gateway})`;
+                            }
+                        }
+
+                        if (order.orderStatus === 'shipped') {
+                            userContext += `\n- Note: Your order is out for delivery! Please have the OTP ready for the delivery partner.`;
+                        } else if (order.orderStatus === 'pending') {
+                            userContext += `\n- Note: This order is currently pending and can be cancelled if needed.`;
+                        }
+
+                        // Extra hint for cancellation intent
+                        if (state.intent === 'order_cancellation') {
+                            if (order.orderStatus === 'pending') {
+                                userContext += `\n- ACTION: This order IS eligible for cancellation.`;
+                            } else {
+                                userContext += `\n- ACTION: This order CANNOT be cancelled because its status is ${order.orderStatus}.`;
+                            }
+                        }
+                    } else {
+                        userContext += `\n\nI couldn't find an order with ID #${orderId} associated with your account. Could you please double-check the number?`;
+                    }
+                } else {
+                    // Fetch recent orders if no specific ID mentioned
+                    const orders = await prisma.order.findMany({
+                        where: { userId: uid },
+                        take: 5,
+                        orderBy: { createdAt: 'desc' },
+                        include: {
+                            orderItems: { include: { product: true } },
+                        }
+                    });
+
+                    if (orders.length > 0) {
+                        userContext += '\n\nYour Recent Order History:\n';
+                        orders.forEach((order) => {
+                            const itemSummary = order.orderItems.slice(0, 2).map(i => i.product.title).join(', ');
+                            const moreItems = order.orderItems.length > 2 ? ` (+${order.orderItems.length - 2} more)` : '';
+                            userContext += `- Order #${order.id}: ${order.orderStatus.toUpperCase()} (Rs ${order.total}) - ${new Date(order.createdAt).toLocaleDateString()} [Items: ${itemSummary}${moreItems}]\n`;
+                        });
+                        userContext += `\nYou can ask "Where is order #[ID]?" for more specific details about any of these.`;
+                    } else {
+                        userContext += '\n\nYou haven\'t placed any orders yet. Ready to start shopping?';
+                    }
                 }
             }
 
@@ -480,9 +592,17 @@ Guidelines:
                 case 'order_query':
                     suggestedQuestions = [
                         'Track my latest order',
-                        'View all my orders',
-                        'Cancel an order',
-                        'When will it arrive?',
+                        'Where is my order #',
+                        'Show my last 5 orders',
+                        'Cancel my pending order',
+                    ];
+                    break;
+                case 'order_cancellation':
+                    suggestedQuestions = [
+                        'Show my recent orders',
+                        'How do I get a refund?',
+                        'Talk to human support',
+                        'Shop for something else',
                     ];
                     break;
                 case 'cart_query':
@@ -548,9 +668,11 @@ Guidelines:
 
             // Combine memory with new messages
             const allMessages = [
-                ...conversationMessages.map((m) => ({ role: m.role, content: m.content })),
-                ...messages,
+                ...(conversationMessages || []).map((m) => ({ role: m.role, content: m.content })),
+                ...(messages || []),
             ];
+
+            const uid = userId ? parseInt(userId) : 0;
 
             const initialState: ChatState = {
                 messages: allMessages,
@@ -570,14 +692,18 @@ Guidelines:
             const result = await this.graph.invoke(initialState);
 
             // Save to conversation memory
-            const lastMessage = messages[messages.length - 1];
-            const uid = userId ? parseInt(userId) : 0;
-            await conversationMemoryService.addMessage(
-                sid,
-                lastMessage.role,
-                lastMessage.content,
-                uid
-            );
+            if (messages && messages.length > 0) {
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage) {
+                    await conversationMemoryService.addMessage(
+                        sid,
+                        lastMessage.role,
+                        lastMessage.content,
+                        uid
+                    );
+                }
+            }
+
             await conversationMemoryService.addMessage(
                 sid,
                 'assistant',

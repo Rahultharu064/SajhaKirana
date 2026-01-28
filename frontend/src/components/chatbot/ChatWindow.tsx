@@ -5,6 +5,7 @@ import ProductRecommendation from './ProductRecommendation';
 import SuggestedQuestions from './SuggestedQuestions';
 import ChatbotInput from '../ui/ChatbotInput';
 import { getTimeBasedGreeting } from '../../utils/chatbot.utils';
+import { Bot, RefreshCw, X, Maximize2 } from 'lucide-react';
 
 interface ChatWindowProps {
     isFloating?: boolean;
@@ -30,75 +31,79 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
     }, [messages, isLoading]);
 
     const containerClasses = isFloating
-        ? "flex flex-col h-[500px] w-[380px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5 duration-300"
-        : "flex flex-col h-[calc(100vh-120px)] max-w-4xl mx-auto bg-white/50 backdrop-blur-xl rounded-3xl border border-white shadow-2xl overflow-hidden mt-8 mb-8";
+        ? "flex flex-col h-[550px] w-[400px] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5 duration-500"
+        : "flex flex-col h-[750px] max-w-5xl mx-auto bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-2xl overflow-hidden mt-4 mb-4";
 
     return (
         <div className={containerClasses}>
             {/* Header */}
-            <div className={`flex items-center justify-between ${isFloating ? 'px-4 py-3' : 'px-8 py-6'} bg-white border-b border-gray-100`}>
-                <div className="flex items-center gap-3">
-                    <div className={`${isFloating ? 'w-10 h-10' : 'w-12 h-12'} bg-primary/10 rounded-xl flex items-center justify-center text-primary relative`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className={`${isFloating ? 'h-6 w-6' : 'h-7 w-7'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></span>
+            <div className={`flex items-center justify-between ${isFloating ? 'px-5 py-4' : 'px-10 py-7'} bg-gradient-to-r from-primary to-primary-dark text-white shadow-md relative overflow-hidden`}>
+                {/* Decorative Pattern */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+
+                <div className="flex items-center gap-4 relative z-10">
+                    <div className={`${isFloating ? 'w-11 h-11' : 'w-14 h-14'} bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center relative shadow-inner`}>
+                        <Bot size={isFloating ? 24 : 32} className="text-white" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 border-2 border-primary rounded-full animate-pulse shadow-sm"></span>
                     </div>
                     <div>
-                        <h1 className={`${isFloating ? 'text-sm' : 'text-xl'} font-bold text-gray-900 tracking-tight`}>Sajha Assistant</h1>
-                        <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] font-medium text-green-600 uppercase">Online</span>
+                        <h1 className={`${isFloating ? 'text-base' : 'text-2xl'} font-bold tracking-tight text-white shadow-sm`}>
+                            Sajha Assistant
+                        </h1>
+                        <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                            <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Always Active</span>
                         </div>
                     </div>
                 </div>
-                <div className="flex items-center gap-1">
+
+                <div className="flex items-center gap-2 relative z-10">
                     {isFloating && (
                         <button
                             onClick={() => {
                                 onClose?.();
                                 window.location.href = '/chatbot';
                             }}
-                            className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all"
+                            className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300"
                             title="Open Full Screen"
-                            aria-label="Open Full Screen"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
+                            <Maximize2 size={18} />
                         </button>
                     )}
                     <button
                         onClick={clearChat}
-                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300"
                         title="Clear Conversation"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                        <RefreshCw size={18} />
                     </button>
                     {isFloating && onClose && (
                         <button
                             onClick={onClose}
-                            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
+                            className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300"
                             title="Close Chat"
-                            aria-label="Close Chat"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            <X size={20} />
                         </button>
                     )}
                 </div>
             </div>
 
             {/* Chat Area */}
-            <div className={`flex-1 overflow-y-auto ${isFloating ? 'px-4 py-4' : 'px-8 py-8'} space-y-2 scrollbar-thin`}>
+            <div className={`flex-1 overflow-y-auto ${isFloating ? 'px-5 py-6' : 'px-10 py-10'} space-y-2 scrollbar-hide bg-[#F9FAFB]/50`}>
                 {messages.length === 0 && (
-                    <div className="flex flex-col items-center justify-center h-full text-center space-y-3 animate-in fade-in zoom-in">
-                        <h2 className={`${isFloating ? 'text-lg' : 'text-2xl'} font-bold text-gray-800`}>{getTimeBasedGreeting()}!</h2>
-                        <p className="text-xs text-gray-500 max-w-[250px]">
-                            How can I help you shop today?
-                        </p>
+                    <div className="flex flex-col items-center justify-center h-full text-center space-y-6 animate-in fade-in zoom-in duration-700">
+                        <div className="w-24 h-24 bg-primary/5 rounded-[2rem] flex items-center justify-center text-primary-light">
+                            <Bot size={48} />
+                        </div>
+                        <div className="space-y-2">
+                            <h2 className={`${isFloating ? 'text-xl' : 'text-3xl'} font-black text-gray-900`}>
+                                {getTimeBasedGreeting()}!
+                            </h2>
+                            <p className="text-sm text-gray-500 max-w-[280px] mx-auto leading-relaxed">
+                                I'm your official Sajha Kirana shopping guide. How can I help you today?
+                            </p>
+                        </div>
                     </div>
                 )}
 
@@ -107,11 +112,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
                 ))}
 
                 {isLoading && (
-                    <div className="flex justify-start mb-4">
-                        <div className="bg-white border border-gray-100 p-3 rounded-xl rounded-tl-none shadow-sm flex gap-1">
-                            <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></div>
-                            <div className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce delay-75"></div>
-                            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce delay-150"></div>
+                    <div className="flex justify-start mb-6 animate-in fade-in slide-in-from-left-2 duration-300">
+                        <div className="bg-white border border-gray-100 py-4 px-6 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5 overflow-hidden relative">
+                            <div className="w-2 h-2 bg-primary/30 rounded-full animate-bounce"></div>
+                            <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary/5">
+                                <div className="h-full bg-primary/20 animate-loading-bar"></div>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -124,15 +132,22 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
             </div>
 
             {/* Footer */}
-            <div className={`${isFloating ? 'px-4 py-4' : 'px-8 py-6'} bg-white border-t border-gray-100`}>
+            <div className={`${isFloating ? 'px-5 py-5' : 'px-10 py-8'} bg-white border-t border-gray-50 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]`}>
                 {error && (
-                    <div className="mb-3 text-[10px] text-red-500 bg-red-50 p-2 rounded-lg border border-red-100">
+                    <div className="mb-4 text-xs text-red-600 bg-red-50 py-3 px-4 rounded-xl border border-red-100 flex items-center gap-3">
+                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
                         {error}
                     </div>
                 )}
 
                 <SuggestedQuestions questions={suggestions} onSelect={sendMessage} />
                 <ChatbotInput onSend={sendMessage} isLoading={isLoading} />
+
+                {!isFloating && (
+                    <p className="mt-4 text-[10px] text-center text-gray-400 font-medium tracking-wide uppercase">
+                        Powered by Sajha AI & LangGraph • Secure & Encrypted
+                    </p>
+                )}
             </div>
         </div>
     );

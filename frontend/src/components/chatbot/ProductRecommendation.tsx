@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Product } from '../../types/chatbottypes';
 import { extractProductDetails, formatPrice, calculateDiscount } from '../../utils/chatbot.utils';
+import { ShoppingCart, Image as ImageIcon, Sparkles } from 'lucide-react';
 
 interface ProductRecommendationProps {
     products: Product[];
@@ -10,12 +11,18 @@ const ProductRecommendation: React.FC<ProductRecommendationProps> = ({ products 
     if (!products || products.length === 0) return null;
 
     return (
-        <div className="flex flex-col gap-4 my-4 animate-in fade-in slide-in-from-bottom-4">
-            <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>
-                Recommended for you
-            </h3>
-            <div className="flex gap-4 overflow-x-auto pb-4 -mx-2 px-2 scrollbar-hide">
+        <div className="flex flex-col gap-5 my-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center justify-between px-1">
+                <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wider">
+                    <Sparkles size={16} className="text-primary" />
+                    Picked Just For You
+                </h3>
+                <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full uppercase">
+                    AI Curated
+                </span>
+            </div>
+
+            <div className="flex gap-5 overflow-x-auto pb-6 -mx-2 px-2 scrollbar-hide">
                 {products.map((product) => {
                     const details = extractProductDetails(product);
                     const discount = calculateDiscount(details.mrp || 0, details.price);
@@ -23,48 +30,46 @@ const ProductRecommendation: React.FC<ProductRecommendationProps> = ({ products 
                     return (
                         <div
                             key={details.id}
-                            className="flex-shrink-0 w-64 bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 group"
+                            className="flex-shrink-0 w-64 bg-white border border-gray-100 rounded-3xl p-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group"
                         >
-                            <div className="aspect-square bg-gray-50 rounded-xl mb-3 relative overflow-hidden">
-                                {/* Fallback pattern for images since we don't have the real image here */}
-                                <div className="absolute inset-0 flex items-center justify-center text-gray-300">
-                                    <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.587-1.587a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
+                            <div className="aspect-square bg-gray-50 rounded-2xl mb-4 relative overflow-hidden shadow-inner">
+                                {/* Fallback pattern for images */}
+                                <div className="absolute inset-0 flex items-center justify-center text-gray-200">
+                                    <ImageIcon size={48} strokeWidth={1.5} />
                                 </div>
                                 {discount > 0 && (
-                                    <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full z-10">
+                                    <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full z-10 shadow-lg shadow-red-500/30">
                                         -{discount}%
                                     </div>
                                 )}
                             </div>
-                            <div className="mb-2">
-                                <span className="text-[10px] text-primary font-medium uppercase tracking-wide">
+
+                            <div className="mb-4">
+                                <span className="text-[10px] text-primary font-bold uppercase tracking-widest mb-1 block">
                                     {details.category}
                                 </span>
-                                <h4 className="text-sm font-semibold text-gray-800 line-clamp-1 group-hover:text-primary transition-colors">
+                                <h4 className="text-sm font-bold text-gray-900 line-clamp-2 leading-snug group-hover:text-primary transition-colors h-10">
                                     {details.name}
                                 </h4>
                             </div>
-                            <div className="flex items-center justify-between mt-auto">
+
+                            <div className="flex items-center justify-between">
                                 <div className="flex flex-col">
-                                    <span className="text-base font-bold text-gray-900">
+                                    <span className="text-lg font-black text-gray-900">
                                         {formatPrice(details.price)}
                                     </span>
                                     {details.mrp && details.mrp > details.price && (
-                                        <span className="text-xs text-gray-400 line-through">
+                                        <span className="text-xs text-gray-400 line-through font-medium">
                                             {formatPrice(details.mrp)}
                                         </span>
                                     )}
                                 </div>
                                 <button
-                                    className="p-2 bg-gray-50 text-gray-400 rounded-xl hover:bg-primary hover:text-white transition-all duration-300 shadow-sm overflow-hidden relative"
+                                    className="w-10 h-10 flex items-center justify-center bg-gray-50 text-gray-400 rounded-xl hover:bg-primary hover:text-white hover:rotate-12 transition-all duration-300 shadow-sm border border-gray-100 hover:border-primary active:scale-95"
                                     aria-label="Add to cart"
                                     title="Add to cart"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                                    </svg>
+                                    <ShoppingCart size={18} />
                                 </button>
                             </div>
                         </div>
