@@ -10,6 +10,7 @@ interface ConversationContext {
   userPreferences?: any;
   currentIntent?: string;
   suggestedProducts?: string[];
+  isVoiceAuthenticated?: boolean;
 }
 
 export class ConversationMemoryService {
@@ -45,7 +46,7 @@ export class ConversationMemoryService {
   async saveContext(context: ConversationContext): Promise<void> {
     try {
       const key = `chat:session:${context.sessionId}`;
-      
+
       // Keep only last MAX_MESSAGES
       if (context.messages.length > this.MAX_MESSAGES) {
         context.messages = context.messages.slice(-this.MAX_MESSAGES);
@@ -171,7 +172,7 @@ export class ConversationMemoryService {
   async clearOldSessions(): Promise<void> {
     try {
       const keys = await redis.keys('chat:session:*');
-      
+
       for (const key of keys) {
         const ttl = await redis.ttl(key);
         if (ttl < 0) {

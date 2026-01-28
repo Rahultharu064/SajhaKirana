@@ -4,9 +4,9 @@ import { ChatGroq } from '@langchain/groq';
 import { embeddingService } from './embeddingService';
 import { recommendationService } from './recommendationService';
 import { conversationMemoryService } from './conversation-memoryService';
-import { PrismaClient } from '@prisma/client';
+import { prismaClient } from '../config/client';
 
-const prisma = new PrismaClient();
+const prisma = prismaClient;
 
 interface ChatState {
     messages: Array<{ role: string; content: string }>;
@@ -21,6 +21,8 @@ interface ChatState {
     userId: string | undefined;
     sessionId: string;
     suggestedQuestions: string[];
+    parsedCartItems: Array<{ product: string; quantity: string; unit: string }> | null;
+    isVoiceAuthenticated: boolean;
 }
 
 // Define the state schema using Annotation for the latest LangGraph version
@@ -73,6 +75,14 @@ const ChatStateAnnotation = Annotation.Root({
         reducer: (x, y) => y ?? x,
         default: () => [],
     }),
+    parsedCartItems: Annotation<Array<{ product: string; quantity: string; unit: string }> | null>({
+        reducer: (x, y) => y ?? x,
+        default: () => null,
+    }),
+    isVoiceAuthenticated: Annotation<boolean>({
+        reducer: (x, y) => y ?? x,
+        default: () => false,
+    }),
 });
 
 export class LangGraphChatbot {
@@ -95,7 +105,9 @@ export class LangGraphChatbot {
         // Add nodes
         workflow.addNode('extract_query', this.extractQuery.bind(this));
         workflow.addNode('classify_intent', this.classifyIntent.bind(this));
+        workflow.addNode('extract_details', this.extractShoppingDetails.bind(this));
         workflow.addNode('process_actions', this.handleOrderActions.bind(this));
+        workflow.addNode('verify_security', this.verifyVoiceSecurity.bind(this));
         workflow.addNode('extract_preferences', this.extractPreferences.bind(this));
         workflow.addNode('retrieve_context', this.retrieveContext.bind(this));
         workflow.addNode('enrich_user_context', this.enrichUserContext.bind(this));
@@ -106,7 +118,9 @@ export class LangGraphChatbot {
         // Define workflow
         workflow.addEdge(START, 'extract_query' as any);
         workflow.addEdge('extract_query' as any, 'classify_intent' as any);
-        workflow.addEdge('classify_intent' as any, 'process_actions' as any);
+        workflow.addEdge('classify_intent' as any, 'extract_details' as any);
+        workflow.addEdge('extract_details' as any, 'verify_security' as any);
+        workflow.addEdge('verify_security' as any, 'process_actions' as any);
         workflow.addEdge('process_actions' as any, 'extract_preferences' as any);
         workflow.addEdge('extract_preferences' as any, 'retrieve_context' as any);
         workflow.addEdge('retrieve_context' as any, 'enrich_user_context' as any);
@@ -165,8 +179,26 @@ export class LangGraphChatbot {
             } else {
                 intent = 'order_query';
             }
-        } else if (query.includes('cart') || query.includes('checkout')) {
-            intent = 'cart_query';
+        } else if (
+            query.includes('cart') ||
+            query.includes('basket') ||
+            query.includes('my items') ||
+            query.includes('buy this')
+        ) {
+            if (query.includes('add') || query.includes('put') || query.includes('get me')) {
+                intent = 'add_to_cart';
+            } else if (query.includes('remove') || query.includes('delete') || query.includes('clear')) {
+                intent = 'cart_modification';
+            } else {
+                intent = 'cart_query';
+            }
+        } else if (
+            query.includes('checkout') ||
+            query.includes('buy now') ||
+            query.includes('place order') ||
+            query.includes('purchase')
+        ) {
+            intent = 'checkout';
         } else if (query.includes('payment') || query.includes('pay')) {
             intent = 'payment_query';
         } else if (query.includes('category') || query.includes('categories')) {
@@ -183,9 +215,71 @@ export class LangGraphChatbot {
         return { intent };
     }
 
-    // Step 2.5: Handle mutations/actions (like order cancellation)
+    // Step 2.1: Extract shopping details if needed
+    private async extractShoppingDetails(state: ChatState): Promise<Partial<ChatState>> {
+        if (state.intent !== 'add_to_cart' && state.intent !== 'cart_modification') {
+            return { parsedCartItems: null };
+        }
+
+        try {
+            const systemPrompt = `You are a shopping assistant data extractor. 
+            Extract products, quantities, and units from the user query.
+            Return ONLY a JSON array of objects with keys: "product", "quantity", "unit".
+            If quantity or unit is not specified, use null.
+            
+            Example: "Add 2kg rice and 1L milk" -> [{"product": "rice", "quantity": "2", "unit": "kg"}, {"product": "milk", "quantity": "1", "unit": "L"}]
+            Example: "Add a bar of chocolate" -> [{"product": "chocolate", "quantity": "1", "unit": "bar"}]
+            Example: "Get me sugar" -> [{"product": "sugar", "quantity": "1", "unit": null}]`;
+
+            const response = await this.llm.invoke([
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: state.query }
+            ]);
+
+            const content = response.content as string;
+            // Extract JSON from response (handling potential markdown)
+            const jsonMatch = content.match(/\[.*\]/s);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                console.log('📦 Extracted shopping items:', parsed);
+                return { parsedCartItems: parsed };
+            }
+        } catch (error) {
+            console.error('Error in extractShoppingDetails:', error);
+        }
+
+        return { parsedCartItems: null };
+    }
+
+    // Step 2.2: Voice Security Verification
+    private async verifyVoiceSecurity(state: ChatState): Promise<Partial<ChatState>> {
+        const query = state.query.toLowerCase();
+
+        // Simulating Voice Auth: In a real app, this would use speaker verification
+        // Here we look for a "Voice PIN" or a specific "Unlock phrase"
+        // Let's assume the user can unlock with "Unlock with voice code 1234"
+        if (query.includes('unlock') && (query.includes('voice') || query.includes('code'))) {
+            const hasCode = query.includes('1234'); // Placeholder secret
+            if (hasCode) {
+                console.log('🔐 Voice security verified!');
+                return { isVoiceAuthenticated: true, context: state.context + '\n\n[SECURITY]: Voice authentication successful. High-risk actions are now authorized.' };
+            }
+        }
+
+        // Check if high-risk intent requires auth
+        const highRiskIntents = ['checkout', 'order_cancellation', 'cart_modification'];
+        if (highRiskIntents.includes(state.intent) && !state.isVoiceAuthenticated) {
+            // We don't block the action entirely here, but we'll instruct the LLM to ask for auth in generateResponse
+            // Or we can flag it for handleOrderActions
+            return { context: state.context + '\n\n[SECURITY WARNING]: This action requires voice authentication. Please say "Unlock with voice code [YourCode]" to proceed.' };
+        }
+
+        return {};
+    }
+
+    // Step 2.5: Handle mutations/actions (like order cancellation, add to cart)
     private async handleOrderActions(state: ChatState): Promise<Partial<ChatState>> {
-        if (state.intent !== 'order_cancellation' || !state.userId) {
+        if (!state.userId) {
             return {};
         }
 
@@ -194,36 +288,114 @@ export class LangGraphChatbot {
             const uid = parseInt(state.userId);
             let actionContext = '';
 
-            // Look for order ID
-            const orderIdMatch = query.match(/(?:#|order\s+|no\.?\s*)(\d+)/i);
-            let orderId: number | null = null;
+            // --- 1. Order Cancellation ---
+            if (state.intent === 'order_cancellation') {
+                // Look for order ID
+                const orderIdMatch = query.match(/(?:#|order\s+|no\.?\s*)(\d+)/i);
+                let orderId: number | null = null;
 
-            if (orderIdMatch && orderIdMatch[1]) {
-                orderId = parseInt(orderIdMatch[1]);
-            } else {
-                // Find latest pending order if no ID specified
-                const latestOrder = await prisma.order.findFirst({
-                    where: { userId: uid, orderStatus: 'pending' },
-                    orderBy: { createdAt: 'desc' }
-                });
-                if (latestOrder) orderId = latestOrder.id;
-            }
+                if (orderIdMatch && orderIdMatch[1]) {
+                    orderId = parseInt(orderIdMatch[1]);
+                } else {
+                    // Find latest pending order if no ID specified
+                    const latestOrder = await prisma.order.findFirst({
+                        where: { userId: uid, orderStatus: 'pending' },
+                        orderBy: { createdAt: 'desc' }
+                    });
+                    if (latestOrder) orderId = latestOrder.id;
+                }
 
-            if (orderId) {
-                const order = await prisma.order.findUnique({
-                    where: { id: orderId, userId: uid }
-                });
-
-                if (order && order.orderStatus === 'pending') {
-                    // Only cancel if they are being specific or confirmed
-                    // For now, let's assume they want it cancelled if they reached here with 'order_cancellation' intent
-                    await prisma.order.update({
-                        where: { id: orderId },
-                        data: { orderStatus: 'cancelled' }
+                if (orderId) {
+                    const order = await prisma.order.findUnique({
+                        where: { id: orderId, userId: uid }
                     });
 
-                    actionContext = `\n\n[IMPORTANT]: I have successfully cancelled your Order #${orderId} as requested.`;
-                    console.log(`🗑️ Chatbot cancelled order ${orderId} for user ${uid}`);
+                    if (order && order.orderStatus === 'pending') {
+                        await prisma.order.update({
+                            where: { id: orderId },
+                            data: { orderStatus: 'cancelled' }
+                        });
+                        actionContext = `\n\n[ACTION SUCCESS]: Order #${orderId} has been cancelled.`;
+                    }
+                }
+            }
+
+            // --- 2. Add to Cart ---
+            if (state.intent === 'add_to_cart' && state.parsedCartItems) {
+                const addedItems: string[] = [];
+                const failedItems: string[] = [];
+
+                for (const item of state.parsedCartItems) {
+                    const searchResults = await embeddingService.searchSimilar(item.product, 3, {
+                        must: [{ key: 'type', match: { value: 'product' } }]
+                    });
+
+                    if (searchResults.length > 0 && searchResults[0]) {
+                        const bestMatch = searchResults[0];
+                        const sku = bestMatch.metadata?.sku;
+                        const price = bestMatch.metadata?.price;
+                        const productName = bestMatch.metadata?.name;
+
+                        if (sku && price) {
+                            // Check if already in cart
+                            const existingItem = await prisma.cartItem.findFirst({
+                                where: { userId: uid, sku: sku }
+                            });
+
+                            const quantityNum = parseFloat(item.quantity || '1');
+
+                            if (existingItem) {
+                                await prisma.cartItem.update({
+                                    where: { id: existingItem.id },
+                                    data: { quantity: existingItem.quantity + quantityNum }
+                                });
+                            } else {
+                                await prisma.cartItem.create({
+                                    data: {
+                                        userId: uid,
+                                        sku: sku,
+                                        quantity: quantityNum,
+                                        price: price
+                                    }
+                                });
+                            }
+                            addedItems.push(`${productName} (${quantityNum} ${item.unit || ''})`);
+                        }
+                    } else {
+                        failedItems.push(item.product);
+                    }
+                }
+
+                if (addedItems.length > 0) {
+                    actionContext += `\n\n[ACTION SUCCESS]: I've added the following to your cart: ${addedItems.join(', ')}.`;
+                }
+                if (failedItems.length > 0) {
+                    actionContext += `\n\n[NOTE]: I couldn't find matches for: ${failedItems.join(', ')}.`;
+                }
+            }
+
+            // --- 3. Checkout ---
+            if (state.intent === 'checkout') {
+                const cartItems = await prisma.cartItem.findMany({
+                    where: { userId: uid }
+                });
+
+                if (cartItems.length > 0) {
+                    actionContext = `\n\n[SYSTEM]: Ready for checkout. You have ${cartItems.length} items in your cart. You can proceed to the checkout page to complete your order.`;
+                    // Note: In a real app, we might create a draft order or set a flag
+                } else {
+                    actionContext = `\n\n[SYSTEM]: Your cart is empty. Please add items before checking out.`;
+                }
+            }
+
+            // --- 4. Cart Modification (Clear/Remove) ---
+            if (state.intent === 'cart_modification') {
+                if (query.includes('clear') || query.includes('empty')) {
+                    await prisma.cartItem.deleteMany({ where: { userId: uid } });
+                    actionContext = `\n\n[ACTION SUCCESS]: I have cleared your shopping cart.`;
+                } else if (state.parsedCartItems) {
+                    // Handle specific removal (simplified for now)
+                    actionContext = `\n\n[SYSTEM]: Please use the cart page to remove specific items, or say "clear cart" to empty it completely.`;
                 }
             }
 
@@ -606,11 +778,22 @@ Guidelines:
                     ];
                     break;
                 case 'cart_query':
+                case 'add_to_cart':
+                case 'cart_modification':
                     suggestedQuestions = [
+                        'Show my cart',
                         'Proceed to checkout',
-                        'Apply coupon code',
-                        'Show recommended products',
-                        'Clear my cart',
+                        'Empty my cart',
+                        'Add 1L milk',
+                        'Clear all items',
+                    ];
+                    break;
+                case 'checkout':
+                    suggestedQuestions = [
+                        'Unlock with voice code 1234',
+                        'Cancel checkout',
+                        'Show my cart',
+                        'Check delivery address',
                     ];
                     break;
                 case 'trending':
@@ -638,6 +821,7 @@ Guidelines:
                 );
                 if (context) {
                     context.currentIntent = state.intent;
+                    context.isVoiceAuthenticated = state.isVoiceAuthenticated;
                     context.suggestedProducts = state.recommendations.map((r: any) =>
                         r.metadata?.productId || r.id
                     );
@@ -687,6 +871,8 @@ Guidelines:
                 userId,
                 sessionId: sid,
                 suggestedQuestions: [],
+                parsedCartItems: null,
+                isVoiceAuthenticated: memory?.isVoiceAuthenticated || false,
             };
 
             const result = await this.graph.invoke(initialState);
