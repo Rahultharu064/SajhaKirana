@@ -221,15 +221,49 @@ const Checkout = () => {
                 return;
             }
 
-            const payload = {
-                userId: user.userId, // Updated to match authSlice User interface
-                shippingAddress,
-                paymentMethod,
+            const orderDetails = {
+                total: getTotalWithDiscount(),
                 items: items.map(item => ({
                     sku: item.sku,
                     qty: item.quantity,
                     price: item.price
-                }))
+                })),
+                shippingAddress,
+                paymentMethod
+            };
+
+            // Enhanced Fraud Detection Check
+            const deviceFingerprint = `${navigator.userAgent}-${window.screen.width}x${window.screen.height}`;
+
+            toast.loading('Running security checks...', { id: 'fraud-check' });
+
+            const fraudResponse = await orderService.validateFraud({
+                userId: user.userId,
+                orderDetails,
+                deviceFingerprint
+            });
+
+            toast.dismiss('fraud-check');
+
+            if (fraudResponse.data.success) {
+                const { riskScore, riskLevel, blockedReasons } = fraudResponse.data.data;
+
+                if (riskLevel === 'high') {
+                    toast.error(`Order Blocked: High security risk (${riskScore}). Reasons: ${blockedReasons.join(', ')}`, { duration: 6000 });
+                    setLoading(false);
+                    return;
+                }
+
+                if (riskLevel === 'medium') {
+                    toast.error(`Additional verification required. We will contact you shortly to confirm this order.`, { duration: 5000 });
+                    // Proceed but maybe flag later or handle specifically. 
+                    // For now, we'll let it proceed but the admin will see the risk level in DB.
+                }
+            }
+
+            const payload = {
+                userId: user.userId, // Updated to match authSlice User interface
+                ...orderDetails
             };
 
             const response = await orderService.createOrder(payload);
@@ -396,9 +430,8 @@ const Checkout = () => {
                                                             setIsDropdownItemClicked(true);
                                                             handleDistrictSelect(district);
                                                         }}
-                                                        className={`px-4 py-2 cursor-pointer hover:bg-emerald-50 ${
-                                                            index === highlightedIndex ? 'bg-emerald-100' : ''
-                                                        }`}
+                                                        className={`px-4 py-2 cursor-pointer hover:bg-emerald-50 ${index === highlightedIndex ? 'bg-emerald-100' : ''
+                                                            }`}
                                                     >
                                                         {district}
                                                     </div>

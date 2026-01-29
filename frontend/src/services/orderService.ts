@@ -40,5 +40,9 @@ export const orderService = {
 
     confirmDelivery: async (id: number, otp: string) => {
         return await api.post(`/orders/${id}/confirm-delivery`, { otp });
+    },
+
+    validateFraud: async (data: { userId: number; orderDetails: any; deviceFingerprint?: string; ipAddress?: string }) => {
+        return await api.post("/orders/validate-fraud", data);
     }
 };

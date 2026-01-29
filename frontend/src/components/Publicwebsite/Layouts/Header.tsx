@@ -1,21 +1,15 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, Heart } from 'lucide-react';
-import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { ShoppingCart, Heart } from 'lucide-react';
+
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../Redux/store';
 
+import SmartSearchBar from './SmartSearchBar';
+
 const Header = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const navigate = useNavigate();
+
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -47,19 +41,10 @@ const Header = () => {
 
           {/* Utilities */}
           <div className="flex items-center space-x-4">
-            {/* Search */}
-            <form onSubmit={handleSearch} className="hidden md:flex items-center bg-gray-100 rounded-lg px-3 py-2">
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent outline-none text-gray-700 placeholder-gray-500 w-48"
-              />
-              <button type="submit" className="ml-2 p-1 rounded hover:bg-gray-200" aria-label="Search">
-                <Search className="h-4 w-4 text-gray-600" />
-              </button>
-            </form>
+            {/* Smart Search */}
+            <div className="hidden md:block">
+              <SmartSearchBar />
+            </div>
 
             {/* Wishlist */}
             <button className="p-2 rounded-full hover:bg-gray-100" aria-label="View wishlist">

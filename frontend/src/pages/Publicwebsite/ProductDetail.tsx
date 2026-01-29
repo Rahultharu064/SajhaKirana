@@ -20,7 +20,7 @@ import {
   Edit,
   MessageSquarePlus,
 } from "lucide-react";
-import { getProductBySlug, getProductsByCategory } from "../../services/productService";
+import { getProduct, getProductsByCategory } from "../../services/productService";
 import { getReviewsByProduct, getMyReviews } from "../../services/reviewService";
 import Header from "../../components/Publicwebsite/Layouts/Header";
 import Footer from "../../components/Publicwebsite/Layouts/Footer";
@@ -39,7 +39,7 @@ const features = [
 ];
 
 export default function ProductDetail() {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug, id } = useParams<{ slug?: string; id?: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: any) => state.auth);
@@ -85,15 +85,17 @@ export default function ProductDetail() {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      // Safety check for slug
-      if (!slug) {
+      // Safety check for slug or id
+      if (!slug && !id) {
         setLoading(false);
         return;
       }
 
       setLoading(true);
       try {
-        const response = await getProductBySlug(slug!);
+        // Use slug if available, otherwise use id
+        const identifier = slug || id!;
+        const response = await getProduct(identifier);
         const productData = response.data?.data || response.data;
         setProduct(productData);
 
@@ -124,7 +126,7 @@ export default function ProductDetail() {
     };
 
     fetchProduct();
-  }, [slug]);
+  }, [slug, id]);
 
   // Check if user has already reviewed this product
   useEffect(() => {
@@ -748,7 +750,7 @@ export default function ProductDetail() {
                     <ReviewForm
                       productId={product.id}
                       editingReview={editingReview}
-                    onReviewSubmit={async () => {
+                      onReviewSubmit={async () => {
                         console.log('ProductDetail: onReviewSubmit called');
                         setShowReviewForm(false);
                         setEditingReview(null);

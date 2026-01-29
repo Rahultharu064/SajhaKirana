@@ -31,6 +31,7 @@ model User {
   reviews Review[]
   moderatedReviews Review[] @relation("ReviewModerator")
   conversations Conversation[]
+  searchAnalytics SearchAnalytics[]
 }
 
 model Category {
@@ -224,6 +225,38 @@ model Conversation {
   
   @@index([userId])
   @@index([createdAt])
+}
+
+model FraudLog {
+  id              Int      @id @default(autoincrement())
+  userId          Int?
+  ipAddress       String?
+  deviceFingerprint String?
+  riskScore       Int
+  riskLevel       String
+  reasons       String   @db.Text // JSON string of reasons
+  orderDetails    Json?
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+  @@index([ipAddress])
+  @@index([riskLevel])
+}
+
+model SearchAnalytics {
+  id              Int      @id @default(autoincrement())
+  userId          Int?
+  user            User?    @relation(fields: [userId], references: [id])
+  query           String   @db.VarChar(500)
+  resultsCount    Int
+  clickedProductId Int?
+  purchased       Boolean  @default(false)
+  sessionId       String?
+  timestamp       DateTime @default(now())
+
+  @@index([query])
+  @@index([timestamp])
+  @@index([userId])
 }
 
 enum ReservationStatus {

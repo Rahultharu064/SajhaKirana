@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { createOrder, getOrder, getUserOrders, getAllOrders, cancelOrder, confirmDelivery, updateOrderStatus } from "../controllers/orderController";
+import { validateFraud } from "../controllers/fraudController";
 import { createOrderSchema, confirmDeliverySchema, updateOrderStatusSchema } from "../validators/orderValidator";
 import { validate } from "../middlewares/validate";
 
@@ -7,6 +8,9 @@ const orderRoutes = Router();
 
 // Create order (checkout)
 orderRoutes.post("/", validate(createOrderSchema, "body"), createOrder);
+
+// Validate fraud
+orderRoutes.post("/validate-fraud", validateFraud);
 
 // Get order by ID
 orderRoutes.get("/:id", getOrder);

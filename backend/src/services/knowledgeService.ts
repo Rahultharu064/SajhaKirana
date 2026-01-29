@@ -24,8 +24,30 @@ export class KnowledgeService {
                         ? product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.reviews.length
                         : 0;
 
+                // Smart Keyword Enrichment (Conceptual Search Support)
+                const keywords = [];
+                const lowerTitle = product.title.toLowerCase();
+                const lowerDesc = (product.description || '').toLowerCase();
+                const catName = (product.category?.name || '').toLowerCase();
+
+                if (catName.includes('fruit') || catName.includes('veg') || lowerDesc.includes('fresh')) keywords.push('healthy', 'fresh', 'organic');
+                if (catName.includes('bakery') || catName.includes('dairy') || lowerTitle.includes('milk') || lowerTitle.includes('bread')) keywords.push('breakfast', 'morning essentials');
+                if (lowerDesc.includes('spicy') || lowerDesc.includes('momo') || lowerTitle.includes('masala')) keywords.push('nepali spices', 'momo ingredients');
+                if (product.price < 500) keywords.push('budget friendly', 'affordable');
+
+                const richText = [
+                    `Product: ${product.title}`,
+                    `Category: ${product.category?.name || 'Uncategorized'}`,
+                    `Description: ${product.description || 'No description'}`,
+                    `Tags: ${keywords.join(', ')}`,
+                    `Price: Rs ${product.price}`,
+                    `Availability: ${product.stock > 0 ? 'In Stock' : 'Out of Stock'}`,
+                    `Rating: ${avgRating.toFixed(1)} stars`,
+                    `Popularity: ${product.stock > 10 ? 'Trending' : 'Standard'}`
+                ].join('. ');
+
                 return {
-                    text: `Product: ${product.title}. Description: ${product.description || 'No description'}. Price: Rs ${product.price}. MRP: Rs ${product.mrp || product.price}. ${product.mrp > product.price ? `Save Rs ${product.mrp - product.price}! ` : ''}Category: ${product.category?.name || 'Uncategorized'}. SKU: ${product.sku}. Stock: ${product.stock > 0 ? `${product.stock} units available` : 'Out of stock'}. Rating: ${avgRating.toFixed(1)} stars. ${product.stock > 10 ? 'Popular item.' : ''}`,
+                    text: richText,
                     metadata: {
                         type: 'product',
                         productId: product.id,

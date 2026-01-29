@@ -29,6 +29,20 @@ export const getProductBySlug = (slug: string) => {
   return api.get(`/products/slug/${slug}`);
 }
 
+// Smart function to get product by ID or slug
+export const getProduct = (identifier: string | number) => {
+  // Check if identifier is a number or numeric string
+  const isNumeric = !isNaN(Number(identifier));
+
+  if (isNumeric) {
+    // It's an ID, use the ID endpoint
+    return api.get(`/products/${identifier}`);
+  } else {
+    // It's a slug, use the slug endpoint
+    return api.get(`/products/slug/${identifier}`);
+  }
+}
+
 // Create new product
 export const createProduct = (data: {
   title: string;
