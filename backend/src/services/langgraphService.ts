@@ -23,6 +23,8 @@ interface ChatState {
     suggestedQuestions: string[];
     parsedCartItems: Array<{ product: string; quantity: string; unit: string }> | null;
     isVoiceAuthenticated: boolean;
+    categories: any[];
+    cartPreview: any;
 }
 
 // Define the state schema using Annotation for the latest LangGraph version
@@ -82,6 +84,14 @@ const ChatStateAnnotation = Annotation.Root({
     isVoiceAuthenticated: Annotation<boolean>({
         reducer: (x, y) => y ?? x,
         default: () => false,
+    }),
+    categories: Annotation<any[]>({
+        reducer: (x, y) => y ?? x,
+        default: () => [],
+    }),
+    cartPreview: Annotation<any>({
+        reducer: (x, y) => y ?? x,
+        default: () => null,
     }),
 });
 
@@ -399,6 +409,47 @@ export class LangGraphChatbot {
                 }
             }
 
+            // --- Add Cart Preview data for frontend rendering ---
+            const shoppingIntents = ['add_to_cart', 'cart_query', 'checkout', 'cart_modification'];
+            if (shoppingIntents.includes(state.intent)) {
+                const cartItems = await prisma.cartItem.findMany({
+                    where: { userId: uid },
+                    orderBy: { addedAt: 'desc' }
+                });
+
+                if (cartItems.length > 0) {
+                    const skus = cartItems.map(item => item.sku);
+                    const products = await prisma.product.findMany({
+                        where: { sku: { in: skus } }
+                    });
+
+                    const cartPreview = {
+                        items: cartItems.map(item => {
+                            const p = products.find(prod => prod.sku === item.sku);
+                            return {
+                                id: item.id,
+                                sku: item.sku,
+                                quantity: item.quantity,
+                                price: item.price,
+                                name: p?.title || item.sku,
+                                image: (() => {
+                                    try {
+                                        const images = JSON.parse(p?.images || '[]');
+                                        return images.length > 0 ? images[0] : null;
+                                    } catch (e) { return null; }
+                                })()
+                            };
+                        }),
+                        total: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                        itemCount: cartItems.length
+                    };
+
+                    return { context: state.context + actionContext, cartPreview };
+                } else {
+                    return { context: state.context + actionContext, cartPreview: { items: [], total: 0, itemCount: 0 } };
+                }
+            }
+
             if (actionContext) {
                 return { context: state.context + actionContext };
             }
@@ -627,8 +678,15 @@ export class LangGraphChatbot {
     // Step 6: Get recommendations
     private async getRecommendations(state: ChatState): Promise<Partial<ChatState>> {
         try {
-            let recommendations = [];
+            let recommendations: any[] = [];
+            let categories: any[] = [];
             const uid = state.userId ? parseInt(state.userId) : undefined;
+
+            if (state.intent === 'category_query' || state.query.toLowerCase().includes('categories')) {
+                categories = await prisma.category.findMany({
+                    take: 8
+                });
+            }
 
             if (state.intent === 'recommendation' && uid) {
                 // Personalized recommendations
@@ -655,27 +713,59 @@ export class LangGraphChatbot {
                     );
                     recommendations = similar;
                 }
+            } else if (state.intent === 'category_query') {
+                // Find category from retrieved docs or query
+                const catDoc = state.retrievedDocs.find(d => d.metadata?.type === 'category');
+                const catId = catDoc?.metadata?.categoryId;
+
+                if (catId) {
+                    recommendations = await prisma.product.findMany({
+                        where: { categoryId: catId, isActive: true, stock: { gt: 0 } },
+                        include: { category: true },
+                        take: 8
+                    });
+                } else {
+                    // Try to search for products in the category mentioned
+                    recommendations = await prisma.product.findMany({
+                        where: {
+                            OR: [
+                                { category: { name: { contains: state.query } } },
+                                { title: { contains: state.query } }
+                            ],
+                            isActive: true,
+                            stock: { gt: 0 }
+                        },
+                        include: { category: true },
+                        take: 8
+                    });
+                }
             }
 
             // Add recommendations to context
             if (recommendations.length > 0) {
-                let recContext = '\n\nRecommended Products:\n';
+                let recContext = '\n\nRecommended Products Details (for your reference):\n';
                 recommendations.forEach((rec: any, idx: number) => {
                     if (rec.metadata) {
                         // From vector search
                         recContext += `${idx + 1}. ${rec.metadata.name} - Rs ${rec.metadata.price}`;
                         if (rec.metadata.mrp && rec.metadata.mrp > rec.metadata.price) {
-                            recContext += ` (MRP: Rs ${rec.metadata.mrp}, Save Rs ${rec.metadata.mrp - rec.metadata.price}!)`;
+                            recContext += ` (MRP: Rs ${rec.metadata.mrp})`;
+                        }
+                        if (rec.metadata.image) {
+                            recContext += ` [Image URL: ${rec.metadata.image}]`;
                         }
                         recContext += '\n';
                     } else {
                         // From database
                         recContext += `${idx + 1}. ${rec.title} - Rs ${rec.price}`;
-                        if (rec.mrp && rec.mrp > rec.price) {
-                            recContext += ` (MRP: Rs ${rec.mrp}, Save Rs ${rec.mrp - rec.price}!)`;
-                        }
-                        if (rec.avgRating) {
-                            recContext += ` (${rec.avgRating.toFixed(1)}⭐)`;
+                        const firstImg = (() => {
+                            try {
+                                const images = JSON.parse(rec.images || '[]');
+                                return images.length > 0 ? images[0] : null;
+                            } catch (e) { return null; }
+                        })();
+                        if (firstImg) {
+                            recContext += ` [Image URL: ${firstImg}]`;
                         }
                         recContext += '\n';
                     }
@@ -683,7 +773,15 @@ export class LangGraphChatbot {
 
                 return {
                     recommendations,
+                    categories,
                     context: state.context + recContext,
+                };
+            }
+
+            if (categories.length > 0) {
+                return {
+                    recommendations,
+                    categories,
                 };
             }
         } catch (error) {
@@ -699,29 +797,36 @@ export class LangGraphChatbot {
             const systemPrompt = `You are a helpful AI shopping assistant for Sajha Kirana (साझा किराना), Nepal's premier grocery e-commerce platform.
 
 Your role:
-- Help users find products within their budget and preferences
-- Provide personalized product recommendations
-- Answer questions about orders, delivery, and payments
-- Be friendly, helpful, and use Nepali greetings (नमस्ते, धन्यवाद)
-- Always mention prices in Nepali Rupees (Rs)
-- Highlight deals, discounts (MRP vs Price), ratings, and availability
-- If a product is on sale (MRP > Price), emphasize the savings
-- Use product descriptions to explain why a product is a good choice
+- Help users find products within their budget and preferences.
+- Provide personalized product recommendations with a professional yet friendly tone.
+- **Acknowledge Visual Aids**: When you provide product recommendations, categories, or cart updates, tell the user that you have displayed these items as **visual cards with images** below your message.
+- Encourage users to interact with these cards (e.g., "You can see the product images below and use the 'Add to Cart' button to pick them instantly").
+- Answer questions about orders, delivery, and payments.
+- Be friendly, helpful, and use Nepali greetings (नमस्ते, धन्यवाद).
+- Always mention prices in Nepali Rupees (Rs).
+- Highlight deals, discounts (MRP vs Price), ratings, and availability.
+- If a product is on sale (MRP > Price), emphasize the savings.
+- Use product descriptions to explain why a product is a good choice.
 
 Context Information:
 ${state.context}
+
+Active UI State:
+- Recommendations: ${state.recommendations?.length > 0 ? `${state.recommendations.length} products displayed as cards` : 'None'}
+- Categories: ${state.categories?.length > 0 ? `${state.categories.length} category cards displayed` : 'None'}
+- Cart Preview: ${state.cartPreview ? 'Visual cart summary shown' : 'Not active'}
 
 User Intent: ${state.intent}
 Price Filter: ${state.priceFilter ? `Rs ${state.priceFilter.min || 0} - Rs ${state.priceFilter.max || 'unlimited'}` : 'None'}
 
 Guidelines:
-- Be concise but informative
-- Suggest 2-3 products when relevant
-- Mention if products are in stock
-- Include ratings if available
-- Suggest similar or complementary products
-- Help with budget-friendly options
-- Guide users through checkout if needed`;
+- Be concise but informative.
+- **Connect with UI**: Explicitly say things like "I've listed some top choices with their images below for you" or "You can browse the categories shown below to find more."
+- **Direct Image Display**: You have the ability to show images directly in your chat bubble using standard markdown: \`![Product Name](Image URL)\`. 
+- Use this sparingly (e.g., to highlight the #1 best match) because the UI will already show a row of product cards below your message.
+- Always provide helpful context around any image you display.
+- Guide users through checkout if needed.
+- If voice authenticated, mention that secure actions (like checkout or clear cart) are now available.`;
 
             const response = await this.llm.invoke([
                 { role: 'system', content: systemPrompt },
@@ -841,7 +946,7 @@ Guidelines:
         messages: Array<{ role: string; content: string }>,
         userId?: string,
         sessionId?: string
-    ): Promise<{ response: string; suggestions: string[]; recommendations: any[] }> {
+    ): Promise<{ response: string; suggestions: string[]; recommendations: any[]; categories: any[]; cartPreview: any }> {
         try {
             // Generate session ID if not provided
             const sid = sessionId || `session_${Date.now()}`;
@@ -873,6 +978,8 @@ Guidelines:
                 suggestedQuestions: [],
                 parsedCartItems: null,
                 isVoiceAuthenticated: memory?.isVoiceAuthenticated || false,
+                categories: [],
+                cartPreview: null,
             };
 
             const result = await this.graph.invoke(initialState);
@@ -901,6 +1008,8 @@ Guidelines:
                 response: result.response,
                 suggestions: result.suggestedQuestions || [],
                 recommendations: result.recommendations || [],
+                categories: result.categories || [],
+                cartPreview: result.cartPreview || null,
             };
         } catch (error) {
             console.error('Error in chat:', error);

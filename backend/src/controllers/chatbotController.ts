@@ -1,4 +1,4 @@
-import type{ Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { langGraphChatbot } from '../services/langgraphService';
 import { knowledgeService } from '../services/knowledgeService';
 import { embeddingService } from '../services/embeddingService';
@@ -38,6 +38,8 @@ export const chatbotController = {
         response: result.response,
         suggestions: result.suggestions,
         recommendations: result.recommendations,
+        categories: result.categories,
+        cartPreview: result.cartPreview,
         sessionId: sessionId || `session_${Date.now()}`,
       });
     } catch (error) {
@@ -159,7 +161,7 @@ export const chatbotController = {
 
       res.json({
         success: true,
-        results: results.map((r : any) => ({
+        results: results.map((r: any) => ({
           id: r.metadata.productId,
           name: r.metadata.title,
           price: r.metadata.price,

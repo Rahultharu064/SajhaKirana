@@ -24,7 +24,16 @@ export const extractProductDetails = (product: Product) => {
   const category = product.metadata?.categoryName || product.category?.name;
   const id = product.metadata?.productId || product.id;
 
-  return { name, price, mrp, rating, stock, category, id };
+  const image = product.metadata?.image || (() => {
+    try {
+      const images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+      return Array.isArray(images) && images.length > 0 ? images[0] : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+
+  return { name, price, mrp, rating, stock, category, id, image };
 };
 
 // Generate session ID

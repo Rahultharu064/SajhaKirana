@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import type { Message, Product } from '../types/chatbottypes';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import type { ReactNode } from 'react';
+import type { Message, Product, Category, CartPreview } from '../types/chatbottypes';
 import chatbotService from '../services/chatbotService';
 import { generateSessionId } from '../utils/chatbot.utils';
 
@@ -9,6 +10,8 @@ interface ChatbotContextType {
     sessionId: string;
     suggestions: string[];
     recommendations: Product[];
+    categories: Category[];
+    cartPreview: CartPreview | null;
     error: string | null;
     sendMessage: (content: string) => Promise<void>;
     clearChat: () => void;
@@ -24,6 +27,8 @@ export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({ children })
     const [sessionId, setSessionId] = useState<string>('');
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [recommendations, setRecommendations] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [cartPreview, setCartPreview] = useState<CartPreview | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     // Initialize session
@@ -94,6 +99,8 @@ export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({ children })
 
                     if (response.suggestions?.length) setSuggestions(response.suggestions);
                     if (response.recommendations?.length) setRecommendations(response.recommendations);
+                    if (response.categories?.length) setCategories(response.categories);
+                    if (response.cartPreview) setCartPreview(response.cartPreview);
 
                     if (response.sessionId && response.sessionId !== sessionId) {
                         setSessionId(response.sessionId);
@@ -121,6 +128,8 @@ export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({ children })
     const clearChat = useCallback(() => {
         setMessages([]);
         setRecommendations([]);
+        setCategories([]);
+        setCartPreview(null);
         const newSessionId = generateSessionId();
         setSessionId(newSessionId);
         sessionStorage.setItem('chatbot_session_id', newSessionId);
@@ -153,6 +162,8 @@ export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({ children })
                 sessionId,
                 suggestions,
                 recommendations,
+                categories,
+                cartPreview,
                 error,
                 sendMessage,
                 clearChat,

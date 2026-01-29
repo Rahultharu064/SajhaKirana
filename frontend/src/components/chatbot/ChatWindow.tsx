@@ -2,6 +2,8 @@ import React, { useEffect, useRef } from 'react';
 import { useChatbot } from '../../hooks/useChatbot';
 import ChatMessage from './ChatMessage';
 import ProductRecommendation from './ProductRecommendation';
+import CategoryRecommendation from './CategoryRecommendation';
+import CartPreview from './CartPreview';
 import SuggestedQuestions from './SuggestedQuestions';
 import ChatbotInput from '../ui/ChatbotInput';
 import { getTimeBasedGreeting } from '../../utils/chatbot.utils';
@@ -18,6 +20,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
         isLoading,
         suggestions,
         recommendations,
+        categories,
+        cartPreview,
         error,
         sendMessage,
         clearChat,
@@ -125,7 +129,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
                 )}
 
                 {recommendations.length > 0 && !isLoading && (
-                    <ProductRecommendation products={recommendations} />
+                    <ProductRecommendation products={recommendations} onAddToCart={sendMessage} />
+                )}
+
+                {categories && categories.length > 0 && !isLoading && (
+                    <CategoryRecommendation categories={categories} onSelect={sendMessage} />
+                )}
+
+                {cartPreview && cartPreview.items.length > 0 && !isLoading && (
+                    <CartPreview
+                        cart={cartPreview}
+                        onClear={() => sendMessage('clear cart')}
+                        onCheckout={() => sendMessage('checkout')}
+                    />
                 )}
 
                 <div ref={messagesEndRef} />

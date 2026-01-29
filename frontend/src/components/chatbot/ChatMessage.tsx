@@ -14,26 +14,55 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
     const renderContent = (content: string) => {
         return content.split('\n').map((line, i) => {
             let processedLine = line;
-            // Handle bold **text**
-            const boldRegex = /\*\*(.*?)\*\*/g;
-            const parts = [];
-            let lastIndex = 0;
-            let match;
 
-            while ((match = boldRegex.exec(processedLine)) !== null) {
-                if (match.index > lastIndex) {
-                    parts.push(processedLine.substring(lastIndex, match.index));
+            // Handle markdown images: ![alt](url)
+            const imgRegex = /!\[(.*?)\]\((.*?)\)/g;
+            const lineParts = [];
+            let lastIdx = 0;
+            let imgMatch;
+
+            while ((imgMatch = imgRegex.exec(processedLine)) !== null) {
+                if (imgMatch.index > lastIdx) {
+                    lineParts.push(processedLine.substring(lastIdx, imgMatch.index));
                 }
-                parts.push(<strong key={`${i}-${match.index}`}>{match[1]}</strong>);
-                lastIndex = boldRegex.lastIndex;
+
+                const imgSrc = imgMatch[2].startsWith('http')
+                    ? imgMatch[2]
+                    : `${import.meta.env.VITE_API_URL}/${imgMatch[2]}`;
+
+                lineParts.push(
+                    <div key={`img-${i}-${imgMatch.index}`} className="my-3 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+                        <img src={imgSrc} alt={imgMatch[1]} className="w-full h-auto max-h-48 object-cover" />
+                    </div>
+                );
+                lastIdx = imgRegex.lastIndex;
             }
-            if (lastIndex < processedLine.length) {
-                parts.push(processedLine.substring(lastIndex));
+
+            if (lastIdx < processedLine.length) {
+                const remainingText = processedLine.substring(lastIdx);
+
+                // Handle bold **text** in the remaining part
+                const boldRegex = /\*\*(.*?)\*\*/g;
+                let bIdx = 0;
+                let bMatch;
+
+                while ((bMatch = boldRegex.exec(remainingText)) !== null) {
+                    if (bMatch.index > bIdx) {
+                        lineParts.push(remainingText.substring(bIdx, bMatch.index));
+                    }
+                    lineParts.push(<strong key={`b-${i}-${bMatch.index}`}>{bMatch[1]}</strong>);
+                    bIdx = boldRegex.lastIndex;
+                }
+                if (bIdx < remainingText.length) {
+                    lineParts.push(remainingText.substring(bIdx));
+                }
+            } else if (lineParts.length === 0) {
+                lineParts.push(processedLine);
             }
 
             return (
                 <div key={i} className={line.trim().startsWith('-') || line.trim().startsWith('*') ? 'pl-4 -indent-4' : ''}>
-                    {parts.length > 0 ? parts : processedLine}
+                    {lineParts}
                 </div>
             );
         });
@@ -60,12 +89,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                     </div>
 
                     <div
-                        className={`p-4 rounded-2xl shadow-sm text-sm leading-relaxed ${isAssistant
-                                ? 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
-                                : 'bg-primary text-white rounded-tr-none shadow-primary/20'
+                        className={`p-4 rounded-[1.25rem] shadow-sm text-sm leading-relaxed ${isAssistant
+                            ? 'bg-white/80 backdrop-blur-md text-gray-800 rounded-tl-none border border-gray-100/50 shadow-gray-200/20'
+                            : 'bg-gradient-to-br from-primary to-primary-dark text-white rounded-tr-none shadow-lg shadow-primary/25 border border-primary/20'
                             }`}
                     >
-                        <div className="whitespace-pre-wrap">
+                        <div className="whitespace-pre-wrap font-medium">
                             {renderContent(message.content)}
                         </div>
                     </div>

@@ -40,6 +40,14 @@ export class KnowledgeService {
                         avgRating,
                         isAvailable: product.stock > 0,
                         isActive: product.isActive,
+                        image: (() => {
+                            try {
+                                const images = JSON.parse(product.images);
+                                return Array.isArray(images) && images.length > 0 ? images[0] : null;
+                            } catch (e) {
+                                return null;
+                            }
+                        })(),
                     },
                 };
             });
@@ -64,6 +72,7 @@ export class KnowledgeService {
                     categoryId: category.id,
                     name: category.name,
                     slug: category.slug,
+                    image: category.image,
                 },
             }));
 
@@ -181,6 +190,14 @@ export class KnowledgeService {
                     avgRating,
                     isAvailable: product.stock > 0,
                     isActive: product.isActive,
+                    image: (() => {
+                        try {
+                            const images = JSON.parse(product.images);
+                            return Array.isArray(images) && images.length > 0 ? images[0] : null;
+                        } catch (e) {
+                            return null;
+                        }
+                    })(),
                 }
             );
 
