@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { getProduct, getProductsByCategory } from "../../services/productService";
 import { getReviewsByProduct, getMyReviews } from "../../services/reviewService";
+import { wishlistService } from "../../services/wishlistService";
 import Header from "../../components/Publicwebsite/Layouts/Header";
 import Footer from "../../components/Publicwebsite/Layouts/Footer";
 import { ProductCarousel } from "../../components/products/ProductCarousel";
@@ -127,6 +128,26 @@ export default function ProductDetail() {
 
     fetchProduct();
   }, [slug, id]);
+
+  // Check wishlist status when product loads
+  useEffect(() => {
+    const checkWishlistStatus = async () => {
+      if (!isAuthenticated || !product?.id) {
+        setIsWishlisted(false);
+        return;
+      }
+
+      try {
+        const response = await wishlistService.checkWishlistStatus(product.id);
+        setIsWishlisted(response.isWishlisted);
+      } catch (error) {
+        console.error('Failed to check wishlist status:', error);
+        setIsWishlisted(false);
+      }
+    };
+
+    checkWishlistStatus();
+  }, [isAuthenticated, product?.id]);
 
   // Check if user has already reviewed this product
   useEffect(() => {
@@ -246,6 +267,31 @@ export default function ProductDetail() {
       setReviewRefreshTrigger(prev => prev + 1); // Trigger review list refresh
       setUserHasReviewed(false); // Reset user review status
       setUserReview(null);
+    }
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!isAuthenticated) {
+      toast.error('Please login to add items to wishlist');
+      navigate('/login');
+      return;
+    }
+
+    if (!product?.id) return;
+
+    try {
+      if (isWishlisted) {
+        await wishlistService.removeFromWishlist(product.id);
+        setIsWishlisted(false);
+        toast.success('Removed from wishlist');
+      } else {
+        await wishlistService.addToWishlist(product.id);
+        setIsWishlisted(true);
+        toast.success('Added to wishlist');
+      }
+    } catch (error) {
+      console.error('Wishlist toggle failed:', error);
+      toast.error('Failed to update wishlist');
     }
   };
 
@@ -560,7 +606,7 @@ export default function ProductDetail() {
                       "sm:hidden flex items-center justify-center p-3.5 border-2 border-gray-200 rounded-xl",
                       isWishlisted ? "text-red-500 border-red-200 bg-red-50" : "text-gray-400 hover:text-gray-600"
                     )}
-                    onClick={() => setIsWishlisted(!isWishlisted)}
+                    onClick={handleToggleWishlist}
                   >
                     <Heart className={cn("h-6 w-6", isWishlisted && "fill-current")} />
                   </button>
@@ -580,7 +626,7 @@ export default function ProductDetail() {
                   <Button
                     variant="outline"
                     className="hidden sm:flex h-14 w-14 p-0 items-center justify-center rounded-xl border-gray-200 hover:border-red-200 hover:bg-red-50 group transition-all"
-                    onClick={() => setIsWishlisted(!isWishlisted)}
+                    onClick={handleToggleWishlist}
                   >
                     <Heart
                       className={cn("h-6 w-6 text-gray-400 group-hover:text-red-500 transition-colors", isWishlisted && "text-red-500 fill-current")}

@@ -216,7 +216,8 @@ export class LangGraphChatbot {
         } else if (
             query.includes('popular') ||
             query.includes('trending') ||
-            query.includes('bestseller')
+            query.includes('bestseller') ||
+            ['hi', 'hello', 'hey', 'namaste', 'namaskar'].some(w => query === w || query.startsWith(w + ' ') || query.endsWith(' ' + w))
         ) {
             intent = 'trending';
         }
@@ -704,15 +705,20 @@ export class LangGraphChatbot {
                     8
                 );
             } else if (state.intent === 'product_search' && state.retrievedDocs.length > 0) {
-                // Similar products
-                const firstProductId = state.retrievedDocs[0]?.metadata?.productId;
-                if (firstProductId) {
-                    const similar = await recommendationService.getSimilarProducts(
-                        firstProductId,
-                        3
-                    );
-                    recommendations = similar;
-                }
+                // Use retrieved docs as recommendations
+                recommendations = state.retrievedDocs
+                    .filter(doc => doc.metadata?.productId)
+                    .slice(0, 5)
+                    .map(doc => ({
+                        id: parseInt(doc.metadata.productId),
+                        title: doc.metadata.name || doc.metadata.title,
+                        price: parseFloat(doc.metadata.price),
+                        mrp: parseFloat(doc.metadata.mrp || 0),
+                        images: doc.metadata.image ? JSON.stringify([doc.metadata.image]) : '[]',
+                        sku: doc.metadata.sku,
+                        slug: doc.metadata.slug,
+                        category: { name: doc.metadata.categoryName || 'General' }
+                    }));
             } else if (state.intent === 'category_query') {
                 // Find category from retrieved docs or query
                 const catDoc = state.retrievedDocs.find(d => d.metadata?.type === 'category');

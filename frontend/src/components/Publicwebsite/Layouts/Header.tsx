@@ -47,9 +47,9 @@ const Header = () => {
             </div>
 
             {/* Wishlist */}
-            <button className="p-2 rounded-full hover:bg-gray-100" aria-label="View wishlist">
+            <Link to="/wishlist" className="p-2 rounded-full hover:bg-gray-100" aria-label="View wishlist">
               <Heart className="h-5 w-5 text-gray-600" />
-            </button>
+            </Link>
 
             {/* Cart */}
             <Link to="/cart" className="p-2 rounded-full hover:bg-gray-100 relative">

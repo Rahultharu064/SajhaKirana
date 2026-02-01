@@ -2,7 +2,15 @@ import React, { createContext, useContext, useState, useCallback, useEffect } fr
 import type { ReactNode } from 'react';
 import type { Message, Product, Category, CartPreview } from '../types/chatbottypes';
 import chatbotService from '../services/chatbotService';
+import customerServiceService from '../services/customerServiceService';
 import { generateSessionId } from '../utils/chatbot.utils';
+
+// Escalation ticket type
+interface EscalationTicket {
+    id?: number;
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+    status: string;
+}
 
 interface ChatbotContextType {
     messages: Message[];
@@ -13,10 +21,19 @@ interface ChatbotContextType {
     categories: Category[];
     cartPreview: CartPreview | null;
     error: string | null;
+    // Customer service features
+    showSurvey: boolean;
+    escalationTicket: EscalationTicket | null;
+    isEscalating: boolean;
+    lastSentiment: string | null;
+    // Methods
     sendMessage: (content: string) => Promise<void>;
     clearChat: () => void;
     loadTrending: () => Promise<void>;
     loadRecommendations: () => Promise<void>;
+    requestEscalation: (reason?: string) => Promise<void>;
+    submitFeedback: (rating: number, comment?: string) => Promise<void>;
+    dismissSurvey: () => void;
 }
 
 const ChatbotContext = createContext<ChatbotContextType | undefined>(undefined);
@@ -31,6 +48,13 @@ export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({ children })
     const [cartPreview, setCartPreview] = useState<CartPreview | null>(null);
     const [error, setError] = useState<string | null>(null);
 
+    // Customer service state
+    const [showSurvey, setShowSurvey] = useState(false);
+    const [escalationTicket, setEscalationTicket] = useState<EscalationTicket | null>(null);
+    const [isEscalating, setIsEscalating] = useState(false);
+    const [lastSentiment, setLastSentiment] = useState<string | null>(null);
+    const [messageCount, setMessageCount] = useState(0);
+
     // Initialize session
     useEffect(() => {
         const storedSessionId = sessionStorage.getItem('chatbot_session_id');
@@ -42,6 +66,17 @@ export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({ children })
             sessionStorage.setItem('chatbot_session_id', newSessionId);
         }
     }, []);
+
+    // Show survey after 5+ messages with no escalation
+    useEffect(() => {
+        if (messageCount >= 10 && !showSurvey && !escalationTicket) {
+            const hasShownSurvey = sessionStorage.getItem(`survey_shown_${sessionId}`);
+            if (!hasShownSurvey) {
+                setShowSurvey(true);
+                sessionStorage.setItem(`survey_shown_${sessionId}`, 'true');
+            }
+        }
+    }, [messageCount, sessionId, showSurvey, escalationTicket]);
 
     const loadSuggestions = useCallback(async (sid: string) => {
         try {
@@ -77,12 +112,37 @@ export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({ children })
             setMessages((prev) => [...prev, userMessage]);
             setIsLoading(true);
             setError(null);
+            setMessageCount(prev => prev + 1);
 
             try {
-                // We use the functional update 'prev' to get the most recent messages for the API call
-                // but since we want to send the current history + the new message:
-                const currentHistory = [...messages, userMessage];
+                // First, check for rule-based customer service response
+                const csResponse = await customerServiceService.processMessage(content, sessionId);
 
+                // If it's a rule-based response, use it directly (faster response)
+                if (csResponse.success && csResponse.isRuleBased && csResponse.response) {
+                    const assistantMessage: Message = {
+                        role: 'assistant',
+                        content: csResponse.response,
+                        timestamp: Date.now(),
+                    };
+                    setMessages((prev) => [...prev, assistantMessage]);
+                    setLastSentiment(csResponse.sentiment?.sentiment || null);
+
+                    // Handle escalation if needed
+                    if (csResponse.shouldEscalate && csResponse.escalationTicket) {
+                        setEscalationTicket({
+                            id: csResponse.escalationTicket.id,
+                            priority: csResponse.escalationTicket.priority as EscalationTicket['priority'],
+                            status: csResponse.escalationTicket.status
+                        });
+                    }
+
+                    setIsLoading(false);
+                    return;
+                }
+
+                // Otherwise, use the AI chatbot for complex queries
+                const currentHistory = [...messages, userMessage];
                 const response = await chatbotService.sendMessage(
                     currentHistory,
                     sessionId
@@ -130,6 +190,9 @@ export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({ children })
         setRecommendations([]);
         setCategories([]);
         setCartPreview(null);
+        setEscalationTicket(null);
+        setShowSurvey(false);
+        setMessageCount(0);
         const newSessionId = generateSessionId();
         setSessionId(newSessionId);
         sessionStorage.setItem('chatbot_session_id', newSessionId);
@@ -154,6 +217,50 @@ export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({ children })
         }
     }, []);
 
+    // Request escalation to human agent
+    const requestEscalation = useCallback(async (reason?: string) => {
+        if (isEscalating) return;
+
+        setIsEscalating(true);
+        try {
+            const result = await customerServiceService.escalateToHuman(sessionId, reason);
+            if (result.success && result.ticket) {
+                setEscalationTicket({
+                    id: result.ticket.id,
+                    priority: result.ticket.priority as EscalationTicket['priority'],
+                    status: result.ticket.status
+                });
+
+                // Add system message about escalation
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: `🎫 Support ticket #${result.ticket.id} created. A human agent will be with you shortly.`,
+                    timestamp: Date.now()
+                }]);
+            }
+        } catch (error) {
+            console.error('Failed to escalate:', error);
+            setError('Failed to connect to human support. Please try again.');
+        } finally {
+            setIsEscalating(false);
+        }
+    }, [sessionId, isEscalating]);
+
+    // Submit satisfaction feedback
+    const submitFeedback = useCallback(async (rating: number, comment?: string) => {
+        try {
+            await customerServiceService.submitFeedback(sessionId, rating, comment);
+            setShowSurvey(false);
+        } catch (error) {
+            console.error('Failed to submit feedback:', error);
+        }
+    }, [sessionId]);
+
+    // Dismiss survey
+    const dismissSurvey = useCallback(() => {
+        setShowSurvey(false);
+    }, []);
+
     return (
         <ChatbotContext.Provider
             value={{
@@ -165,10 +272,17 @@ export const ChatbotProvider: React.FC<{ children: ReactNode }> = ({ children })
                 categories,
                 cartPreview,
                 error,
+                showSurvey,
+                escalationTicket,
+                isEscalating,
+                lastSentiment,
                 sendMessage,
                 clearChat,
                 loadTrending,
                 loadRecommendations,
+                requestEscalation,
+                submitFeedback,
+                dismissSurvey,
             }}
         >
             {children}
@@ -183,3 +297,4 @@ export const useChatbotContext = () => {
     }
     return context;
 };
+

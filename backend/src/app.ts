@@ -18,6 +18,8 @@ import couponRoutes from "./routes/couponRoute";
 import userRoutes from "./routes/userRoute";
 import chatbotRoutes from "./routes/chatbotRoute";
 import searchRoutes from "./routes/searchRoute";
+import wishlistRoutes from "./routes/wishlistRoute";
+import customerServiceRoutes from "./routes/customerServiceRoute";
 
 dotenv.config();
 
@@ -74,6 +76,8 @@ app.use("/coupons", couponRoutes);
 app.use("/users", userRoutes);
 app.use("/chatbot", chatbotRoutes);
 app.use("/search", searchRoutes);
+app.use("/wishlist", wishlistRoutes);
+app.use("/customer-service", customerServiceRoutes);
 
 // Error handling middleware
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

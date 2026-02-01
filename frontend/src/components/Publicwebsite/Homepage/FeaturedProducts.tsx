@@ -42,7 +42,7 @@ const FeaturedProducts = () => {
   const mapProductsToCardFormat = (products: Product[]) => {
     return products.map(product => {
       // Use relative path for images - Vite proxy will handle routing to backend
-      let imageUrl = '/api/placeholder/300/200';
+      let imageUrl = 'https://placehold.co/300x200?text=Product';
       if (product.images && product.images.length > 0) {
         imageUrl = product.images[0]; // Backend returns full paths like /uploads/products/filename.jpg
       }

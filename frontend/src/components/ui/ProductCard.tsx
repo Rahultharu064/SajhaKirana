@@ -35,11 +35,15 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
     <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
       <div className="relative">
         <img
-          src={product.image?.startsWith('http') ? product.image : `/${product.image?.replace(/^\//, '')}`}
+          src={
+            product.image?.startsWith('http')
+              ? product.image
+              : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003'}/${product.image?.replace(/^\//, '')}`
+          }
           alt={product.title}
           className="w-full h-48 object-cover"
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/api/placeholder/400/400';
+            (e.target as HTMLImageElement).src = 'https://placehold.co/400x400?text=No+Image';
             (e.target as HTMLImageElement).onerror = null;
           }}
         />

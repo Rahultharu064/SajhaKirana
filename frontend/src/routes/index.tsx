@@ -4,6 +4,7 @@ import ProductDetail from "../pages/Publicwebsite/ProductDetail.tsx";
 import PublicCategories from "../pages/Publicwebsite/Categories.tsx";
 import PublicProducts from "../pages/Publicwebsite/Products.tsx";
 import SearchResults from "../pages/Publicwebsite/SearchResults.tsx";
+import Wishlist from "../pages/Publicwebsite/Wishlist.tsx";
 
 import Register from "../components/Auth/Register.tsx";
 import Login from "../components/Auth/Login.tsx";
@@ -23,6 +24,7 @@ import Promotions from "../components/AdminDashboard/Sections/Promotions.tsx";
 import Settings from "../components/AdminDashboard/Sections/Settings.tsx";
 import Categories from "../components/AdminDashboard/Sections/Categories.tsx";
 import Users from "../components/AdminDashboard/Sections/Users.tsx";
+import CustomerService from "../components/AdminDashboard/Sections/CustomerService.tsx";
 import ReviewModeration from "../components/AdminDashboard/ReviewModeration.tsx";
 import CreateProduct from "../components/AdminDashboard/Forum/CreateProduct.tsx";
 import EditProduct from "../components/AdminDashboard/Forum/EditProduct.tsx";
@@ -116,6 +118,10 @@ const routes = [
         path: "/chatbot",
         element: <SajhaKiranaChatbot />,
     },
+    {
+        path: "/wishlist",
+        element: <Wishlist />,
+    },
     // Admin Routes
     {
         path: "/admin",
@@ -152,6 +158,10 @@ const routes = [
             {
                 path: "users",
                 element: <Users />
+            },
+            {
+                path: "customer-service",
+                element: <CustomerService />
             },
             {
                 path: "reviews",
