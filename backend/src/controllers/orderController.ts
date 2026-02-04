@@ -211,19 +211,30 @@ export const updateOrderStatus = async (req: Request, res: Response, next: NextF
       return res.status(400).json({ success: false, error: { code: "INVALID_ID", message: "Invalid order ID" } });
     }
     const id = parseInt(idStr);
-    const { status } = req.body;
+    const { status, notes } = req.body;
+    const changedBy = (req as any).user?.id; // Admin who made the change
 
     const validStatuses = ['pending', 'processing', 'confirmed', 'shipped', 'delivered', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ success: false, error: { code: "INVALID_STATUS", message: "Invalid order status" } });
     }
 
-    const order = await prismaClient.order.findUnique({ where: { id } });
+    const order = await prismaClient.order.findUnique({ 
+      where: { id },
+      include: { user: true }
+    });
     if (!order) {
       return res.status(404).json({ success: false, error: { code: "ORDER_NOT_FOUND", message: "Order not found" } });
     }
 
     let updateData: any = { orderStatus: status };
+
+    // Add admin notes if provided
+    if (notes) {
+      updateData.adminNotes = order.adminNotes 
+        ? `${order.adminNotes}\n\n[${new Date().toISOString()}] ${notes}`
+        : notes;
+    }
 
     // Generate OTP when status is shipped
     if (status === 'shipped' && !order.otp) {
@@ -235,6 +246,30 @@ export const updateOrderStatus = async (req: Request, res: Response, next: NextF
       where: { id },
       data: updateData,
     });
+
+    // Create status history record
+    await prismaClient.orderStatusHistory.create({
+      data: {
+        orderId: id,
+        status,
+        notes: notes || null,
+        changedBy: changedBy || null,
+      }
+    });
+
+    // Send email notification
+    try {
+      const { sendOrderStatusEmail } = await import('../utils/verifyEmail');
+      await sendOrderStatusEmail(
+        order.user.email,
+        order.user.name,
+        id,
+        status,
+        updatedOrder.otp || undefined
+      );
+    } catch (emailError) {
+      console.error('Failed to send status email:', emailError);
+    }
 
     // Notify clients about the update
     try {
@@ -281,6 +316,150 @@ export const confirmDelivery = async (req: Request, res: Response, next: NextFun
 
     res.status(200).json({ success: true, message: "Delivery confirmed" });
   } catch (error) {
+    next(error);
+  }
+};
+
+// Get order status history
+export const getOrderStatusHistory = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const idStr = req.params.id;
+    if (!idStr || isNaN(parseInt(idStr))) {
+      return res.status(400).json({ success: false, error: { code: "INVALID_ID", message: "Invalid order ID" } });
+    }
+    const id = parseInt(idStr);
+    
+    const history = await prismaClient.orderStatusHistory.findMany({
+      where: { orderId: id },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    res.status(200).json({ success: true, data: history });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Generate PDF invoice for order
+export const generateInvoice = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const idStr = req.params.id;
+    if (!idStr || isNaN(parseInt(idStr))) {
+      return res.status(400).json({ success: false, error: { code: "INVALID_ID", message: "Invalid order ID" } });
+    }
+    const id = parseInt(idStr);
+    
+    const order = await prismaClient.order.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        orderItems: {
+          include: {
+            product: true
+          }
+        }
+      }
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, error: { code: "ORDER_NOT_FOUND", message: "Order not found" } });
+    }
+
+    // Use dynamic import to avoid TypeScript issues
+    const PDFDocument = (await import('pdfkit')).default;
+    const doc = new PDFDocument({ margin: 50 });
+
+    // Set response headers
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=invoice-${id}.pdf`);
+
+    // Pipe PDF to response
+    doc.pipe(res);
+
+    // Parse shipping address
+    let shippingAddress: any = {};
+    try {
+      shippingAddress = JSON.parse(order.shippingAddress);
+    } catch (e) {
+      shippingAddress = { address: order.shippingAddress };
+    }
+
+    // Header
+    doc.fontSize(20).text('INVOICE', { align: 'center' });
+    doc.fontSize(10).text(process.env.APP_NAME || 'SajhaKirana', { align: 'center' });
+    doc.moveDown();
+
+    // Order Info
+    doc.fontSize(12).text(`Invoice #: ${id}`);
+    doc.fontSize(10).text(`Order Date: ${new Date(order.createdAt).toLocaleDateString()}`);
+    doc.text(`Order Status: ${order.orderStatus.toUpperCase()}`);
+    doc.text(`Payment Method: ${order.paymentMethod.toUpperCase()}`);
+    doc.text(`Payment Status: ${order.paymentStatus.toUpperCase()}`);
+    doc.moveDown();
+
+    // Customer Info
+    doc.fontSize(12).text('Customer Details:');
+    doc.fontSize(10).text(`Name: ${order.user.name}`);
+    doc.text(`Email: ${order.user.email}`);
+    if (order.user.phone) doc.text(`Phone: ${order.user.phone}`);
+    doc.moveDown();
+
+    // Shipping Address
+    doc.fontSize(12).text('Shipping Address:');
+    doc.fontSize(10).text(shippingAddress.fullName || order.user.name);
+    doc.text(`${shippingAddress.address}, ${shippingAddress.city}`);
+    doc.text(shippingAddress.district || '');
+    if (shippingAddress.phone) doc.text(`Phone: ${shippingAddress.phone}`);
+    doc.moveDown();
+
+    // Items Table Header
+    doc.fontSize(12).text('Order Items:');
+    doc.moveDown(0.5);
+
+    const tableTop = doc.y;
+    const itemX = 50;
+    const qtyX = 300;
+    const priceX = 380;
+    const totalX = 460;
+
+    doc.fontSize(10).font('Helvetica-Bold');
+    doc.text('Item', itemX, tableTop);
+    doc.text('Qty', qtyX, tableTop);
+    doc.text('Price', priceX, tableTop);
+    doc.text('Total', totalX, tableTop);
+    doc.moveTo(itemX, doc.y + 5).lineTo(totalX + 70, doc.y + 5).stroke();
+    doc.font('Helvetica');
+
+    // Items
+    let yPosition = doc.y + 10;
+    for (const item of order.orderItems) {
+      if (yPosition > 700) {
+        doc.addPage();
+        yPosition = 50;
+      }
+      doc.text(item.product?.title || item.sku, itemX, yPosition, { width: 240 });
+      doc.text(item.quantity.toString(), qtyX, yPosition);
+      doc.text(`Rs. ${item.price}`, priceX, yPosition);
+      doc.text(`Rs. ${(item.price * item.quantity).toFixed(2)}`, totalX, yPosition);
+      yPosition = doc.y + 10;
+    }
+
+    // Totals
+    doc.moveTo(itemX, yPosition).lineTo(totalX + 70, yPosition).stroke();
+    yPosition += 10;
+    doc.fontSize(12).font('Helvetica-Bold');
+    doc.text('Total Amount:', priceX, yPosition);
+    doc.text(`Rs. ${order.total.toFixed(2)}`, totalX, yPosition);
+
+    // Footer
+    doc.fontSize(10).font('Helvetica').moveDown(2);
+    doc.text('Thank you for your business!', { align: 'center' });
+    doc.fontSize(8).text(`Generated on ${new Date().toLocaleString()}`, { align: 'center' });
+
+    // Finalize PDF
+    doc.end();
+  } catch (error) {
+    console.error('PDF generation error:', error);
     next(error);
   }
 };

@@ -135,10 +135,12 @@ model Order {
   orderStatus     String   @default("pending")
   shippingAddress String   @db.LongText // JSON
   otp             String?  // for delivery confirmation
+  adminNotes      String?  @db.Text // Admin notes for the order
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   payments        Payment[]
   orderItems      OrderItem[]
+  statusHistory   OrderStatusHistory[]
 
   @@index([userId])
 }
@@ -318,4 +320,17 @@ model ChatbotFeedback {
 
   @@index([userId])
   @@index([rating])
+}
+
+model OrderStatusHistory {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    String   // pending, processing, shipped, delivered, cancelled
+  notes     String?  @db.Text  // Admin notes for this status change
+  changedBy Int?     // User ID who made the change (admin/system)
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([createdAt])
 }

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import Table from '../Layouts/Table';
-import { Eye } from 'lucide-react';
+import { Eye, Edit } from 'lucide-react';
 import { orderService } from '../../../services/orderService';
 import toast from 'react-hot-toast';
 import Modal from '../../ui/Modal';
 import OrderDetailsView from '../../Publicwebsite/Order/OrderDetailsView';
+import Button from '../../ui/Button';
 
 interface Order {
   id: number;
@@ -23,6 +24,9 @@ function Orders() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState('');
+  const [editingOrder, setEditingOrder] = useState<number | null>(null);
+  const [statusForm, setStatusForm] = useState({ status: '', notes: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchOrders = async () => {
     try {
@@ -62,6 +66,30 @@ function Orders() {
       console.error("Failed to update status", error);
       toast.error("Failed to update order status");
     }
+  };
+
+  const handleStatusFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingOrder) return;
+
+    try {
+      setSubmitting(true);
+      await orderService.updateOrderStatus(editingOrder, statusForm.status, statusForm.notes);
+      toast.success(`Order #${editingOrder} status updated successfully`);
+      setEditingOrder(null);
+      setStatusForm({ status: '', notes: '' });
+      fetchOrders();
+    } catch (error) {
+      console.error("Failed to update status", error);
+      toast.error("Failed to update order status");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const openEditModal = (order: Order) => {
+    setEditingOrder(order.id);
+    setStatusForm({ status: order.orderStatus, notes: '' });
   };
 
   // Format data for Table component
@@ -123,6 +151,7 @@ function Orders() {
           data={tableData}
           actions={(row: any) => {
             const orderId = row.originalId;
+            const order = orders.find(o => o.id === orderId);
             return (
               <div className="flex gap-2">
                 <button
@@ -131,6 +160,13 @@ function Orders() {
                   title="View Details"
                 >
                   <Eye size={18} />
+                </button>
+                <button
+                  onClick={() => order && openEditModal(order)}
+                  className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors"
+                  title="Update Status"
+                >
+                  <Edit size={18} />
                 </button>
               </div>
             );
@@ -147,6 +183,76 @@ function Orders() {
           <div className="p-4">
             <OrderDetailsView orderId={selectedOrder} />
           </div>
+        )}
+      </Modal>
+
+      {/* Status Update Modal */}
+      <Modal
+        isOpen={!!editingOrder}
+        onClose={() => {
+          setEditingOrder(null);
+          setStatusForm({ status: '', notes: '' });
+        }}
+        title={`Update Order Status #${editingOrder}`}
+      >
+        {editingOrder && (
+          <form onSubmit={handleStatusFormSubmit} className="space-y-6 p-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Order Status
+              </label>
+              <select
+                value={statusForm.status}
+                onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                required
+              >
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Admin Notes (Optional)
+              </label>
+              <textarea
+                value={statusForm.notes}
+                onChange={(e) => setStatusForm({ ...statusForm, notes: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                rows={4}
+                placeholder="Add notes about this status change..."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                These notes will be saved in the order history and sent to the customer via email.
+              </p>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setEditingOrder(null);
+                  setStatusForm({ status: '', notes: '' });
+                }}
+                disabled={submitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                {submitting ? 'Updating...' : 'Update Status'}
+              </Button>
+            </div>
+          </form>
         )}
       </Modal>
     </div>

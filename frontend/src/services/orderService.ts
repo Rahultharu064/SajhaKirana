@@ -30,8 +30,8 @@ export const orderService = {
         return await api.get("/orders", { params });
     },
 
-    updateOrderStatus: async (id: number, status: string) => {
-        return await api.put(`/orders/${id}/status`, { status });
+    updateOrderStatus: async (id: number, status: string, notes?: string) => {
+        return await api.put(`/orders/${id}/status`, { status, notes });
     },
 
     cancelOrder: async (id: number) => {
@@ -44,5 +44,15 @@ export const orderService = {
 
     validateFraud: async (data: { userId: number; orderDetails: any; deviceFingerprint?: string; ipAddress?: string }) => {
         return await api.post("/orders/validate-fraud", data);
+    },
+
+    getOrderStatusHistory: async (id: number) => {
+        return await api.get(`/orders/${id}/history`);
+    },
+
+    downloadInvoice: (id: number) => {
+        const token = localStorage.getItem('token');
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5003';
+        window.open(`${apiUrl}/orders/${id}/invoice?token=${token}`, '_blank');
     }
 };

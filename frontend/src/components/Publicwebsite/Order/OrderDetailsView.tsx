@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../ui/Button';
-import { CheckCircle, ShoppingBag, MapPin, CreditCard, Clock, Package, Truck, Calendar, Printer, XCircle } from 'lucide-react';
+import { CheckCircle, ShoppingBag, MapPin, CreditCard, Clock, Package, Truck, Calendar, Printer, XCircle, Download, FileText } from 'lucide-react';
 import { orderService } from '../../../services/orderService';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { socket } from '../../../services/socket';
 
 // Interfaces for state
+interface OrderStatusHistoryItem {
+    id: number;
+    status: string;
+    notes: string | null;
+    changedBy: number | null;
+    createdAt: string;
+}
+
 interface OrderItem {
     id: number;
     sku: string;
@@ -40,6 +48,8 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
     const navigate = useNavigate();
     const [order, setOrder] = useState<OrderDetails | null>(null);
     const [loading, setLoading] = useState(true);
+    const [statusHistory, setStatusHistory] = useState<OrderStatusHistoryItem[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -60,7 +70,23 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
             }
         };
 
+        const fetchStatusHistory = async () => {
+            if (!orderId) return;
+            try {
+                setLoadingHistory(true);
+                const response = await orderService.getOrderStatusHistory(typeof orderId === 'string' ? parseInt(orderId) : orderId);
+                if (response.data && response.data.success) {
+                    setStatusHistory(response.data.data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch status history", error);
+            } finally {
+                setLoadingHistory(false);
+            }
+        };
+
         fetchOrder();
+        fetchStatusHistory();
 
         // Socket listener for real-time updates
         const handleStatusUpdate = (data: any) => {
@@ -69,6 +95,8 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                 // Update orderStatus
                 setOrder(prev => prev ? { ...prev, orderStatus: data.status } : null);
                 toast.success(`Order status updated to ${data.status}`);
+                // Refresh status history
+                fetchStatusHistory();
             }
         };
 
@@ -211,6 +239,40 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                             </div>
                         </div>
 
+                        {/* Status History */}
+                        {statusHistory.length > 0 && (
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                                    <FileText className="w-5 h-5 text-emerald-600" />
+                                    Status History
+                                </h3>
+                                <div className="space-y-4">
+                                    {statusHistory.map((historyItem, index) => (
+                                        <div key={historyItem.id} className="flex gap-4 pb-4 border-b border-gray-100 last:border-0">
+                                            <div className="flex-shrink-0">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                                                    <Clock className="w-4 h-4 text-emerald-600" />
+                                                </div>
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="font-semibold text-gray-900 capitalize">{historyItem.status}</span>
+                                                    <span className="text-xs text-gray-500">
+                                                        {new Date(historyItem.createdAt).toLocaleString()}
+                                                    </span>
+                                                </div>
+                                                {historyItem.notes && (
+                                                    <p className="text-sm text-gray-600 mt-1 bg-gray-50 p-2 rounded">
+                                                        {historyItem.notes}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Order Items */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
@@ -308,6 +370,14 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                             >
                                 <ShoppingBag className="w-4 h-4 mr-2" />
                                 Continue Shopping
+                            </Button>
+                            <Button
+                                className="w-full border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+                                variant="outline"
+                                onClick={() => orderService.downloadInvoice(order.id)}
+                            >
+                                <Download className="w-4 h-4 mr-2" />
+                                Download Invoice
                             </Button>
                             <Button
                                 className="w-full border-gray-200 hover:bg-gray-50 text-gray-700"
