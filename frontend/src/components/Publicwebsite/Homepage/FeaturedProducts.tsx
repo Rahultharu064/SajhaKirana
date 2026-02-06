@@ -61,17 +61,23 @@ const FeaturedProducts = () => {
   };
 
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
-          <div className="text-center md:text-left">
-            <span className="text-emerald-600 font-semibold tracking-wider uppercase text-sm">Top Quality</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Featured Products</h2>
-            <p className="text-lg text-gray-600 mt-2 max-w-xl">Discover our handpicked selection of premium groceries available for instant delivery.</p>
+    <section className="section-padding bg-white relative overflow-hidden">
+      {/* Background Decoration */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-emerald-100/30 to-transparent rounded-full blur-3xl"></div>
+      
+      <div className="container-custom relative z-10">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+          <div className="text-center md:text-left space-y-3">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-100 to-cyan-100 border border-emerald-200/50">
+              <div className="w-2 h-2 bg-emerald-600 rounded-full animate-pulse"></div>
+              <span className="text-sm font-semibold text-emerald-800">Top Quality Selection</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900">Featured Products</h2>
+            <p className="text-lg text-slate-600 max-w-2xl">Discover our handpicked selection of premium groceries, fresh from farm to your door.</p>
           </div>
           <button
             onClick={() => navigate('/products')}
-            className="hidden md:flex items-center gap-2 text-emerald-600 font-bold hover:text-emerald-700 transition-colors group"
+            className="hidden md:btn-ghost group"
           >
             View All Products
             <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -79,31 +85,40 @@ const FeaturedProducts = () => {
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"></div>
+          <div className="flex justify-center items-center py-20">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-emerald-200"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-emerald-600 absolute top-0 left-0"></div>
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {mapProductsToCardFormat(products).map((product, index) => (
-              <div key={product.id} className="opacity-0 animate-fadeIn" style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}>
-                <ProductCard
-                  product={product as any}
-                  onViewDetails={() => handleViewDetails(product.slug)}
-                />
-              </div>
-            ))}
-          </div>
-        )}
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+              {mapProductsToCardFormat(products).map((product, index) => (
+                <div 
+                  key={product.id} 
+                  className="opacity-0 animate-fadeIn" 
+                  style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
+                >
+                  <ProductCard
+                    product={product as any}
+                    onViewDetails={() => handleViewDetails(product.slug)}
+                  />
+                </div>
+              ))}
+            </div>
 
-        <div className="mt-8 text-center md:hidden">
-          <button
-            onClick={() => navigate('/products')}
-            className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 font-bold px-6 py-3 rounded-full hover:bg-emerald-100 transition-colors"
-          >
-            View All Products
-            <span>→</span>
-          </button>
-        </div>
+            <div className="mt-12 text-center md:hidden">
+              <button
+                onClick={() => navigate('/products')}
+                className="btn-secondary"
+              >
+                View All Products
+                <span>→</span>
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </section>
   );
