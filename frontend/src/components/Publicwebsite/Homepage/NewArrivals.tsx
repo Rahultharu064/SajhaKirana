@@ -69,25 +69,40 @@ const NewArrivals = () => {
   };
 
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">New Arrivals</h2>
-          <p className="text-lg text-gray-600">Fresh products just arrived in our store</p>
+    <section className="section-padding bg-white relative overflow-hidden">
+      {/* Background Decoration */}
+      <div className="absolute bottom-0 left-0 w-64 h-64 sm:w-96 sm:h-96 bg-gradient-to-tr from-amber-100/30 to-transparent rounded-full blur-3xl"></div>
+      
+      <div className="container-custom relative z-10">
+        <div className="text-center mb-12 sm:mb-16 space-y-3 px-4 sm:px-0">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-200/50">
+            <div className="w-2 h-2 bg-amber-600 rounded-full animate-pulse"></div>
+            <span className="text-xs sm:text-sm font-semibold text-amber-800">Just Arrived</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900">New Arrivals</h2>
+          <p className="text-sm sm:text-base lg:text-lg text-slate-600 max-w-2xl mx-auto">Fresh products just arrived in our store</p>
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-16">
-            <div className="text-lg text-gray-600">Loading products...</div>
+          <div className="flex justify-center items-center py-20">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-4 border-amber-200"></div>
+              <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-t-4 border-amber-600 absolute top-0 left-0"></div>
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {mapProductsToCardFormat(products).map((product) => (
-              <ProductCard
+          <div className="grid-responsive-4">
+            {mapProductsToCardFormat(products).map((product, index) => (
+              <div 
                 key={`new-${product.id}`}
-                product={product}
-                onViewDetails={handleViewDetails}
-              />
+                className="opacity-0 animate-fadeIn"
+                style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
+              >
+                <ProductCard
+                  product={product}
+                  onViewDetails={handleViewDetails}
+                />
+              </div>
             ))}
           </div>
         )}

@@ -69,22 +69,36 @@ const BestSelling = () => {
   };
 
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Best Selling</h2>
-          <p className="text-lg text-gray-600">Most popular items among our customers</p>
+    <section className="section-padding bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
+      {/* Background Decoration */}
+      <div className="absolute top-0 right-0 w-64 h-64 sm:w-96 sm:h-96 bg-gradient-to-bl from-violet-100/30 to-transparent rounded-full blur-3xl"></div>
+      
+      <div className="container-custom relative z-10">
+        <div className="text-center mb-12 sm:mb-16 space-y-3 px-4 sm:px-0">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-violet-100 to-purple-100 border border-violet-200/50">
+            <div className="w-2 h-2 bg-violet-600 rounded-full animate-pulse"></div>
+            <span className="text-xs sm:text-sm font-semibold text-violet-800">Most Popular</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900">Best Selling</h2>
+          <p className="text-sm sm:text-base lg:text-lg text-slate-600 max-w-2xl mx-auto">Most popular items among our customers</p>
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-16">
-            <div className="text-lg text-gray-600">Loading products...</div>
+          <div className="flex justify-center items-center py-20">
+            <div className="relative">
+              <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-4 border-violet-200"></div>
+              <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-t-4 border-violet-600 absolute top-0 left-0"></div>
+            </div>
           </div>
         ) : (
-          <div className="overflow-x-auto scrollbar-hide">
-            <div className="flex space-x-6 pb-4 min-w-max">
-              {mapProductsToCardFormat(products).map((product) => (
-                <div key={`bestseller-${product.id}`} className="flex-shrink-0 w-72">
+          <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0">
+            <div className="flex space-x-4 sm:space-x-6 pb-4 px-4 sm:px-0 min-w-max lg:grid lg:grid-cols-5 lg:space-x-0 lg:gap-6">
+              {mapProductsToCardFormat(products).map((product, index) => (
+                <div 
+                  key={`bestseller-${product.id}`} 
+                  className="flex-shrink-0 w-64 sm:w-72 lg:w-auto opacity-0 animate-fadeIn"
+                  style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
+                >
                   <ProductCard
                     product={product}
                     onViewDetails={handleViewDetails}

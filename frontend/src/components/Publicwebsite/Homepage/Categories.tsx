@@ -64,21 +64,31 @@ const Categories = ({ onCategorySelect }: CategoriesProps) => {
 
   if (loading) {
     return (
-      <section className="py-20 bg-gray-50 flex justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-600"></div>
+      <section className="section-padding bg-slate-50 flex justify-center items-center">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-4 border-emerald-200"></div>
+          <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-t-4 border-emerald-600 absolute top-0 left-0"></div>
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <span className="text-emerald-600 font-semibold tracking-wider uppercase text-sm">Shop by Category</span>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Explore Categories</h2>
+    <section className="section-padding bg-slate-50 relative overflow-hidden">
+      {/* Background Decoration */}
+      <div className="absolute bottom-0 left-0 w-64 h-64 sm:w-96 sm:h-96 bg-gradient-to-tr from-cyan-100/30 to-transparent rounded-full blur-3xl"></div>
+      
+      <div className="container-custom relative z-10">
+        <div className="text-center mb-12 sm:mb-16 space-y-3 px-4 sm:px-0">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-100 to-emerald-100 border border-cyan-200/50">
+            <div className="w-2 h-2 bg-cyan-600 rounded-full animate-pulse"></div>
+            <span className="text-xs sm:text-sm font-semibold text-cyan-800">Shop by Category</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900">Explore Categories</h2>
+          <p className="text-sm sm:text-base lg:text-lg text-slate-600 max-w-2xl mx-auto">Browse through our wide range of fresh products</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div className="grid-responsive-6">
           {categories.map((category, index) => (
             <motion.div
               key={category.id}
@@ -86,16 +96,19 @@ const Categories = ({ onCategorySelect }: CategoriesProps) => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -5 }}
+              whileHover={{ y: -8, scale: 1.02 }}
               onClick={() => onCategorySelect(category)}
-              className="bg-white rounded-2xl p-6 text-center shadow-sm hover:shadow-lg transition-all cursor-pointer group border border-gray-100"
+              className="card-modern group cursor-pointer hover:shadow-xl transition-all duration-300 p-4 sm:p-6"
             >
-              <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center mb-4 transition-colors ${category.color}`}>
-                {category.icon && <category.icon className="w-8 h-8" />}
+              <div className="flex flex-col items-center text-center gap-3 sm:gap-4">
+                <div className={`relative p-3 sm:p-4 rounded-2xl ${category.color} group-hover:scale-110 transition-transform`}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent rounded-2xl"></div>
+                  {category.icon && <category.icon className="w-6 h-6 sm:w-8 sm:h-8 relative z-10" />}
+                </div>
+                <h3 className="font-bold text-slate-900 text-xs sm:text-sm group-hover:text-emerald-600 transition-colors line-clamp-2">
+                  {category.name}
+                </h3>
               </div>
-              <h3 className="font-semibold text-gray-900 group-hover:text-emerald-600 transition-colors">
-                {category.name}
-              </h3>
             </motion.div>
           ))}
         </div>
