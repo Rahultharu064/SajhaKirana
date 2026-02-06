@@ -11,7 +11,7 @@ type Props = {
 
 export default function KPI({ title, value, trend, icon, color = 'emerald' }: Props) {
   const isPositive = trend?.startsWith("+");
-  const trendColor = isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400";
+  // const trendColor = isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400";
   
   const colorClasses = {
     emerald: 'from-emerald-500 to-teal-600',

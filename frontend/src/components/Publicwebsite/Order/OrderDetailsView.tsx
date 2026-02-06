@@ -29,14 +29,25 @@ interface OrderItem {
 }
 
 interface OrderDetails {
-    id: number;
-    total: number;
-    orderStatus: string; // Changed from status to orderStatus
-    paymentStatus: string;
-    paymentMethod: string;
-    createdAt: string;
-    shippingAddress: string; // JSON string in DB, need to parse
-    orderItems: OrderItem[];
+  id: number;
+  orderNumber: string;
+  status: string;
+  totalAmount: number;
+  createdAt: string;
+  items: OrderItem[];
+  shippingAddress: ShippingAddress;
+  paymentMethod: string;
+  // statusHistory: OrderStatusHistoryItem[];
+}
+
+interface ShippingAddress {
+  fullName: string;
+  address: string;
+  city: string;
+  district: string;
+  landmark?: string;
+  phone: string;
+  email: string;
 }
 
 interface OrderDetailsViewProps {
@@ -48,8 +59,8 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
     const navigate = useNavigate();
     const [order, setOrder] = useState<OrderDetails | null>(null);
     const [loading, setLoading] = useState(true);
-    const [statusHistory, setStatusHistory] = useState<OrderStatusHistoryItem[]>([]);
-    const [loadingHistory, setLoadingHistory] = useState(false);
+    // const [statusHistory, setStatusHistory] = useState<OrderStatusHistoryItem[]>([]);
+    // const [loadingHistory, setLoadingHistory] = useState(false);
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -71,18 +82,18 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
         };
 
         const fetchStatusHistory = async () => {
-            if (!orderId) return;
-            try {
-                setLoadingHistory(true);
-                const response = await orderService.getOrderStatusHistory(typeof orderId === 'string' ? parseInt(orderId) : orderId);
-                if (response.data && response.data.success) {
-                    setStatusHistory(response.data.data);
-                }
-            } catch (error) {
-                console.error("Failed to fetch status history", error);
-            } finally {
-                setLoadingHistory(false);
-            }
+            // if (!orderId) return;
+            // try {
+            //     setLoadingHistory(true);
+            //     const response = await orderService.getOrderStatusHistory(typeof orderId === 'string' ? parseInt(orderId) : orderId);
+            //     if (response.data && response.data.success) {
+            //         setStatusHistory(response.data.data);
+            //     }
+            // } catch (error) {
+            //     console.error("Failed to fetch status history", error);
+            // } finally {
+            //     setLoadingHistory(false);
+            // }
         };
 
         fetchOrder();
@@ -240,38 +251,37 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                         </div>
 
                         {/* Status History */}
-                        {statusHistory.length > 0 && (
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                                <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
-                                    <FileText className="w-5 h-5 text-emerald-600" />
+                        {/* {statusHistory.length > 0 && (
+                            <div className="space-y-6">
+                                <h3 className="text-lg font-semibold text-gray-900">
                                     Status History
                                 </h3>
                                 <div className="space-y-4">
-                                    {statusHistory.map((historyItem, index) => (
+                                    {statusHistory.map((historyItem: any) => (
                                         <div key={historyItem.id} className="flex gap-4 pb-4 border-b border-gray-100 last:border-0">
                                             <div className="flex-shrink-0">
                                                 <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                                                    <Clock className="w-4 h-4 text-emerald-600" />
+                                                    <Check className="w-4 h-4 text-emerald-600" />
                                                 </div>
                                             </div>
                                             <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="font-semibold text-gray-900 capitalize">{historyItem.status}</span>
-                                                    <span className="text-xs text-gray-500">
-                                                        {new Date(historyItem.createdAt).toLocaleString()}
+                                                <div className="flex justify-between">
+                                                    <h4 className="font-medium text-gray-900 capitalize">
+                                                        {historyItem.status}
+                                                    </h4>
+                                                    <span className="text-sm text-gray-500">
+                                                        {format(new Date(historyItem.timestamp), "MMM d, yyyy 'at' h:mm a")}
                                                     </span>
                                                 </div>
-                                                {historyItem.notes && (
-                                                    <p className="text-sm text-gray-600 mt-1 bg-gray-50 p-2 rounded">
-                                                        {historyItem.notes}
-                                                    </p>
-                                                )}
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    {historyItem.description}
+                                                </p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                        )}
+                        )} */}
 
                         {/* Order Items */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">

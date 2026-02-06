@@ -1,5 +1,5 @@
 import { TrendingUp, AlertTriangle, DollarSign, ShoppingCart, Users, Package, ArrowUpRight, ArrowDownRight, Activity } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, AreaChart, Area } from "recharts";
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 
 export default function Dashboard() {
   const kpiData = [

@@ -162,8 +162,8 @@ const SearchResults = () => {
 
                   {/* Relevance Score (Debug) */}
                   {process.env.NODE_ENV === 'development' && (
-                    <div className="mt-2 text-xs text-gray-400">
-                      Score: {product.score.toFixed(2)} | Relevance: {product.relevanceScore.toFixed(2)}
+                    <div className="text-xs text-gray-500 mt-1">
+                      Search executed in {searchTime}ms
                     </div>
                   )}
                 </div>

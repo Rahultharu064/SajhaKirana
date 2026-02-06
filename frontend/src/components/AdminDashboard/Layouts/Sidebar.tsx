@@ -1,5 +1,5 @@
 
-import { Home, Box, ShoppingCart, Layers, Gift, Settings, Users, MessageSquare, Headphones, ChevronLeft, ChevronRight, LayoutDashboard, Package, Tag } from "lucide-react";
+import { ShoppingCart, Layers, Gift, Settings, Users, MessageSquare, Headphones, ChevronLeft, ChevronRight, LayoutDashboard, Package, Tag } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 
