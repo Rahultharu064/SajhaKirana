@@ -2,30 +2,153 @@
 
 @theme {
   --animate-fadeIn: fadeIn 0.5s ease-out forwards;
-  --color-primary: #4f46e5;
-  /* indigo-600 */
-  --color-secondary: #4b5563;
-  /* gray-600 */
-  --color-accent: #10b981;
+  --animate-slideIn: slideIn 0.5s ease-out forwards;
+  --color-primary: #10b981;
   /* emerald-500 */
+  --color-secondary: #06b6d4;
+  /* cyan-500 */
+  --color-accent: #8b5cf6;
+  /* violet-500 */
 
+  /* Animation Keyframes */
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(10px);
     }
-
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  @keyframes ping {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.9;
+    }
+  }
 }
 
+/* Progress Bar */
 .progress-bar-fill {
   background-color: #fbbf24;
   height: 12px;
   border-radius: 9999px;
   transition: all 0.5s;
   width: var(--bar-width);
+}
+
+/* Custom Scrollbar Styles */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-slate-300/50 rounded-sm;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400/70;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb {
+  @apply bg-slate-700/50;
+}
+
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-600/70;
+}
+
+/* Scrollbar Track Color */
+.scrollbar-track-slate::-webkit-scrollbar-track {
+  @apply bg-slate-100 dark:bg-slate-800;
+}
+
+/* Loading Shimmer Effect */
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+.dark .loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+/* Notification Animation */
+.notification-dot {
+  animation: ping 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Glass Morphism Utilities */
+.glass-effect {
+  @apply bg-white/70 backdrop-blur-lg border border-white/30;
+}
+
+.dark .glass-effect {
+  @apply bg-slate-900/70 backdrop-blur-lg border-white/10;
+}
+
+/* Recharts Custom Styles */
+.recharts-wrapper {
+  @apply transition-all duration-300;
+}
+
+/* Print Utilities */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Responsive Mobile Utilities */
+@media (max-width: 768px) {
+  .mobile-padding {
+    @apply px-4;
+  }
+  
+  .mobile-text-sm {
+    @apply text-sm;
+  }
 }

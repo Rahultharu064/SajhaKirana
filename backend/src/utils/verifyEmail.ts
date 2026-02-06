@@ -230,7 +230,7 @@ export const sendOrderStatusEmail = async (
     const mailOptions = {
       from: `"${process.env.APP_NAME || 'SajhaKirana'}" <${EMAIL_USER}>`,
       to: email,
-      subject: `${statusInfo.subject} - Order #${orderId}`,
+      subject: `${statusInfo.subject} - Order #${orderId}` || 'Order Status Update',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background-color: ${statusInfo.color}; color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">

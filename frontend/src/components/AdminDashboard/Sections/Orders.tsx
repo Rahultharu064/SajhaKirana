@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import Table from '../Layouts/Table';
-import { Eye, Edit } from 'lucide-react';
+import { Eye, Edit, ShoppingCart, Clock, Package, CheckCircle, Filter } from 'lucide-react';
 import { orderService } from '../../../services/orderService';
 import toast from 'react-hot-toast';
 import Modal from '../../ui/Modal';
@@ -49,11 +49,13 @@ function Orders() {
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'delivered': return 'bg-emerald-100 text-emerald-700';
-      case 'shipped': return 'bg-blue-100 text-blue-700';
-      case 'processing': return 'bg-yellow-100 text-yellow-700';
-      case 'cancelled': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'delivered': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800';
+      case 'shipped': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800';
+      case 'processing': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800';
+      case 'confirmed': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800';
+      case 'pending': return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700';
+      case 'cancelled': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -121,23 +123,93 @@ function Orders() {
     originalId: order.id // hidden, used for actions
   }));
 
+  // Order stats
+  const orderStats = {
+    total: orders.length,
+    pending: orders.filter(o => o.orderStatus === 'pending').length,
+    processing: orders.filter(o => o.orderStatus === 'processing').length,
+    delivered: orders.filter(o => o.orderStatus === 'delivered').length,
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between gap-4 items-center">
-        <h2 className="text-2xl font-bold text-gray-800">Orders</h2>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <select
-            className="bg-white border border-gray-300 text-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
+      {/* Header with Stats */}
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Order Management</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Track and manage all customer orders</p>
+          </div>
+        </div>
+
+        {/* Quick Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium mb-1">Total Orders</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-white">{orderStats.total}</p>
+              </div>
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+                <ShoppingCart className="text-blue-600 dark:text-blue-400" size={24} />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium mb-1">Pending</p>
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{orderStats.pending}</p>
+              </div>
+              <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                <Clock className="text-amber-600 dark:text-amber-400" size={24} />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium mb-1">Processing</p>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{orderStats.processing}</p>
+              </div>
+              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+                <Package className="text-purple-600 dark:text-purple-400" size={24} />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-5 border border-slate-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 font-medium mb-1">Delivered</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{orderStats.delivered}</p>
+              </div>
+              <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
+                <CheckCircle className="text-emerald-600 dark:text-emerald-400" size={24} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700/50 shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="text-slate-400" size={18} />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Filter Orders:</span>
+            </div>
+            <select
+              className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
         </div>
       </div>
 
