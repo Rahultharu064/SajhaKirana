@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+.git
+.env
+.env.local
+.DS_Store
+backend/uploads
+frontend/dist
+frontend/.next
+frontend/.vercel

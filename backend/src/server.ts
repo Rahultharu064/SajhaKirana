@@ -1,3 +1,4 @@
+import "dotenv/config"; // Ensure env vars are loaded first
 import app from "./app";
 import { prismaClient } from "./config/client";
 import http from "http";
@@ -13,7 +14,7 @@ import { redis } from "./config/redis";
  */
 
 const server = http.createServer(app);
-const PORT = process.env.PORT || 5003;
+const PORT = parseInt(process.env.PORT || "5003");
 
 // Initialize Socket.IO
 initSocket(server);
@@ -31,11 +32,14 @@ async function initializeServices() {
 
     // Step 2: Index all knowledge
     // This ensures the AI assistant has the latest product and platform data
-    console.log('🔄 Syncing knowledge base with vector database...');
-    await knowledgeService.indexAll();
-
-    console.log('✅ Chatbot knowledge sync completed successfully');
-    console.log('🎉 AI Assistant is ready to help users!');
+    // We only run this if NOT in a build environment (optional check)
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('🔄 Syncing knowledge base with vector database...');
+      // This is a heavy operation, so we ensure it doesn't block the initial server response
+      await knowledgeService.indexAll();
+      console.log('✅ Chatbot knowledge sync completed successfully');
+      console.log('🎉 AI Assistant is ready to help users!');
+    }
   } catch (error) {
     console.error('❌ Service initialization failed:', error);
     console.log('⚠️  The chatbot might have limited functionality.');
@@ -45,14 +49,22 @@ async function initializeServices() {
 /**
  * Start the server
  */
-server.listen(PORT, async () => {
+// Bind to 0.0.0.0 to ensure Docker/Railway compatibility
+server.listen(PORT, "0.0.0.0", async () => {
   console.log('--- Startup Phase ---');
   console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`🏠 Application URL: http://localhost:${PORT}`);
+  console.log(`🏠 Application URL: http://0.0.0.0:${PORT}`);
+
+  // Log environment status (redacted)
+  console.log(`Resource Status:`);
+  console.log(`- Database URL Provided: ${!!process.env.DATABASE_URL}`);
+  console.log(`- Redis URL Provided: ${!!process.env.REDIS_URL}`);
+  console.log(`- Qdrant URL Provided: ${!!process.env.QDRANT_URL}`);
+  console.log(`- GROQ API Key Provided: ${!!process.env.GROQ_API_KEY}`);
 
   try {
     // 1. Database Connection
-    console.log('Using DATABASE_URL:', process.env.DATABASE_URL); // Log URL for debugging (hide password in real app if possible, but helpful here)
+    console.log('Using DATABASE_URL:', process.env.DATABASE_URL ? '[REDACTED]' : 'MISSING');
     await prismaClient.$connect();
     console.log(`✅ Database connected successfully`);
 
@@ -64,11 +76,13 @@ server.listen(PORT, async () => {
     }
 
     // 3. Service Initializations
-    // We run this in the background so a Qdrant/Knowledge sync failure 
-    // doesn't take down the entire API server.
-    initializeServices().catch(err => {
-      console.error('⚠️ Background service initialization failed:', err.message);
-    });
+    // We delay this slightly to let the server fully stabilize and pass initial health checks
+    setTimeout(() => {
+      console.log('⏰ Starting delayed background services...');
+      initializeServices().catch(err => {
+        console.error('⚠️ Background service initialization failed:', err.message);
+      });
+    }, 10000); // 10 seconds delay
 
     console.log('---------------------');
     console.log(`📡 WebSocket server is enabled`);

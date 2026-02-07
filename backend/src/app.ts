@@ -60,18 +60,29 @@ app.use(
 );
 
 // Health check endpoint
+// Health check endpoint
 app.get("/health", async (req: express.Request, res: express.Response) => {
   try {
-    await prismaClient.$queryRaw`SELECT 1`;
+    // Race the DB query against a timeout
+    const dbCheck = Promise.race([
+      prismaClient.$queryRaw`SELECT 1`,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('DB Timeout')), 3000))
+    ]);
+
+    await dbCheck;
+
     res.status(200).json({
       status: "ok",
       timestamp: new Date().toISOString(),
       services: { database: "connected" }
     });
   } catch (error: any) {
+    // Even if DB fails, return 200 so Railway keeps the container alive
+    // The app might still be functional for static content or cached data
+    console.error('Health check failed (but sending 200):', error);
     res.status(200).json({
       status: "degraded",
-      message: "Database connection failed",
+      message: "Database connection failed or timed out",
       timestamp: new Date().toISOString(),
       services: { database: "disconnected", error: error.message }
     });

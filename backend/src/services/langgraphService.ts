@@ -100,8 +100,16 @@ export class LangGraphChatbot {
     private llm: ChatGroq;
 
     constructor() {
+        const apiKey = process.env.GROQ_API_KEY;
+
+        if (!apiKey) {
+            console.warn('⚠️ GROQ_API_KEY is missing. AI Chatbot features will be disabled or fail.');
+            // Initialize with potential dummy to prevent immediate crash during instantiation
+            // LangChain might still throw on invoke, but at least the server starts
+        }
+
         this.llm = new ChatGroq({
-            apiKey: process.env.GROQ_API_KEY,
+            apiKey: apiKey || 'dummy_key_for_startup',
             model: 'llama-3.3-70b-versatile',
             temperature: 0.7,
         });
