@@ -35,6 +35,7 @@ import Checkout from "../pages/Publicwebsite/Checkout.tsx";
 import OrderConfirmation from "../pages/Publicwebsite/OrderConfirmation.tsx";
 import MyOrders from "../pages/Publicwebsite/MyOrders.tsx";
 import SajhaKiranaChatbot from "../pages/chatbot/SajhaKiranaChatbot.tsx";
+import NotFound from "../pages/NotFound.tsx";
 
 const routes = [
     {
@@ -188,6 +189,10 @@ const routes = [
                 element: <Settings />
             }
         ]
+    },
+    {
+        path: "*",
+        element: <NotFound />,
     }
 ];
 
