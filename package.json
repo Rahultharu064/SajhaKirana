@@ -1,0 +1,10 @@
+{
+    "name": "sajha-kirana-deployment",
+    "private": true,
+    "scripts": {
+        "build": "npm install --prefix frontend && npm run build --prefix frontend"
+    },
+    "engines": {
+        "node": ">=20"
+    }
+}
