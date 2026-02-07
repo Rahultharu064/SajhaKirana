@@ -5,6 +5,7 @@ import cors from "cors";
 import categoryRoutes from "./routes/categoryRoute";
 import productRoutes from "./routes/productRoute";
 import authRoutes from "./routes/authRoute";
+import { prismaClient } from "./config/client";
 import path from "path";
 import { fileURLToPath } from "url";
 import cartRoutes from "./routes/cartRoute";
@@ -59,8 +60,22 @@ app.use(
 );
 
 // Health check endpoint
-app.get("/health", (req: express.Request, res: express.Response) => {
-  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+app.get("/health", async (req: express.Request, res: express.Response) => {
+  try {
+    await prismaClient.$queryRaw`SELECT 1`;
+    res.status(200).json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      services: { database: "connected" }
+    });
+  } catch (error: any) {
+    res.status(200).json({
+      status: "degraded",
+      message: "Database connection failed",
+      timestamp: new Date().toISOString(),
+      services: { database: "disconnected", error: error.message }
+    });
+  }
 });
 
 // Serve static files from uploads directory

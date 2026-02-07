@@ -46,10 +46,13 @@ async function initializeServices() {
  * Start the server
  */
 server.listen(PORT, async () => {
-  try {
-    console.log('--- Startup Phase ---');
+  console.log('--- Startup Phase ---');
+  console.log(`🚀 Server is running on port ${PORT}`);
+  console.log(`🏠 Application URL: http://localhost:${PORT}`);
 
+  try {
     // 1. Database Connection
+    console.log('Using DATABASE_URL:', process.env.DATABASE_URL); // Log URL for debugging (hide password in real app if possible, but helpful here)
     await prismaClient.$connect();
     console.log(`✅ Database connected successfully`);
 
@@ -68,12 +71,11 @@ server.listen(PORT, async () => {
     });
 
     console.log('---------------------');
-    console.log(`🚀 Server is running on port ${PORT}`);
     console.log(`📡 WebSocket server is enabled`);
-    console.log(`🏠 Application URL: http://localhost:${PORT}`);
   } catch (error) {
-    console.error('❌ Server failed to start:', error);
-    process.exit(1);
+    console.error('❌ Server startup error:', error);
+    console.error('⚠️ The server is running but some services failed to start. Check your database connection.');
+    // Do NOT exit process.exit(1) so that /health remains accessible for debugging
   }
 });
 
