@@ -4,7 +4,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY backend/package*.json ./
-RUN npm install --production --no-audit --no-fund --legacy-peer-deps --engine-strict=false
+# Ensure clean installation avoiding lock file issues
+RUN rm -rf node_modules package-lock.json 2>/dev/null || true && npm install --production --no-audit --no-fund --legacy-peer-deps --engine-strict=false
 
 COPY backend/ .
 
