@@ -30,8 +30,8 @@ export const customerServiceController = {
                 });
             }
 
-            const orderIdNum = parseInt(orderId);
-            if (isNaN(orderIdNum)) {
+            const orderIdNum = parseInt(orderId || '0');
+            if (isNaN(orderIdNum) || orderIdNum === 0) {
                 return res.status(400).json({
                     success: false,
                     message: 'Invalid order ID format'
@@ -142,9 +142,9 @@ export const customerServiceController = {
     async getProductInfo(req: Request, res: Response) {
         try {
             const { productId } = req.params;
-            const productIdNum = parseInt(productId);
+            const productIdNum = parseInt(productId || '0');
 
-            if (isNaN(productIdNum)) {
+            if (isNaN(productIdNum) || productIdNum === 0) {
                 return res.status(400).json({
                     success: false,
                     message: 'Invalid product ID format'
@@ -411,7 +411,7 @@ export const customerServiceController = {
             if (status === 'resolved') updateData.resolvedAt = new Date();
 
             const ticket = await prismaClient.supportTicket.update({
-                where: { id: parseInt(id) },
+                where: { id: parseInt(id || '0') },
                 data: updateData,
                 include: {
                     user: { select: { id: true, name: true, email: true } },

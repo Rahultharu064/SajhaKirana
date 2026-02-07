@@ -1,0 +1,20 @@
+import { Router } from "express";
+import { createCategory, getAllCategories, getCategoryById, getCategoryBySlug, updateCategory, deleteCategory } from "../controllers/categoryController";
+import { validate } from "../middlewares/validate";
+import { uploadCategories } from "../config/multer";
+import { createCategorySchema, updateCategorySchema, idParamSchema } from "../validators/categoryValidator";
+const categoryRoutes = Router();
+// Create category with file upload and validation
+categoryRoutes.post("/", uploadCategories.single("image"), validate(createCategorySchema, "body"), createCategory);
+// Get all categories
+categoryRoutes.get("/", getAllCategories);
+// Get category by ID with validation
+categoryRoutes.get("/:id", validate(idParamSchema, "params"), getCategoryById);
+// Get category by Slug
+categoryRoutes.get("/slug/:slug", getCategoryBySlug);
+// Update category with file upload and validation
+categoryRoutes.put("/:id", uploadCategories.single("image"), validate(idParamSchema, "params"), updateCategory);
+// Delete category with validation
+categoryRoutes.delete("/:id", validate(idParamSchema, "params"), deleteCategory);
+export default categoryRoutes;
+//# sourceMappingURL=categoryRoute.js.map

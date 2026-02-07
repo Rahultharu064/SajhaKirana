@@ -224,7 +224,7 @@ export const sendOrderStatusEmail = async (
       }
     };
 
-    const statusInfo = statusMessages[status] || statusMessages['pending'];
+    const statusInfo = (statusMessages[status] || statusMessages['pending'])!;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
     const mailOptions = {
