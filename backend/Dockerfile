@@ -1,21 +1,25 @@
+# -------- Build Stage --------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY backend/package*.json ./
+RUN npm install
+
+COPY backend/ .
+
+RUN npx prisma generate --schema=prisma/schema.prisma
+RUN npm run build
+
+# -------- Production Stage --------
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY backend/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
 
-# Install dependencies with npm install instead of npm ci
-RUN npm install
+EXPOSE 3000
 
-# Copy source files
-COPY backend/ .
-
-# Generate Prisma client
-RUN npx prisma generate
-
-# Expose port
-EXPOSE $PORT
-
-# Start the application
-CMD ["npx", "tsx", "src/server.ts"]
+CMD ["node", "dist/server.js"]
