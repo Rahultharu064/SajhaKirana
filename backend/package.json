@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node --experimental-specifier-resolution=node dist/server.js",
+    "start": "npx tsx src/server.ts",
     "dev": "nodemon --watch \"src/**/*.ts\" --exec \"npx tsx src/server.ts\"",
     "prisma:generate": "prisma generate",
     "seed": "tsx prisma/seed.ts",
