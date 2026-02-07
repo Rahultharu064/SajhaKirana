@@ -4,7 +4,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY backend/package*.json ./
-RUN npm install
+RUN npm install --production --no-audit --no-fund --legacy-peer-deps --engine-strict=false
 
 COPY backend/ .
 
