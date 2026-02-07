@@ -17,10 +17,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Copy necessary files
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
 
-CMD ["node", "--experimental-specifier-resolution=node", "dist/server.js"]
+# Use tsx to run directly from source, avoiding ESM build issues
+CMD ["npx", "tsx", "src/server.ts"]
