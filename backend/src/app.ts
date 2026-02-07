@@ -34,6 +34,7 @@ app.use(express.urlencoded({ extended: false }));
 
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:5173",
+  "https://sajha-kirana-rahultharu064-rahultharu064s-projects.vercel.app", // Added specific Vercel URL
   "http://localhost:3000", // if using create-react-app default port
   "http://localhost:8080", // if using other dev servers
   "http://localhost:5003", // api server itself
