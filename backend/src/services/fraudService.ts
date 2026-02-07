@@ -26,8 +26,14 @@ export class FraudService {
     private llm: ChatGroq;
 
     constructor() {
+        const apiKey = process.env.GROQ_API_KEY;
+
+        if (!apiKey) {
+            console.warn('⚠️ GROQ_API_KEY is missing in FraudService. Fraud detection AI will be disabled or fail.');
+        }
+
         this.llm = new ChatGroq({
-            apiKey: process.env.GROQ_API_KEY,
+            apiKey: apiKey || 'dummy_key_for_startup',
             model: 'llama-3.3-70b-versatile',
         });
     }
