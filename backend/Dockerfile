@@ -1,10 +1,12 @@
 # -------- Build Stage --------
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
 COPY backend/package*.json ./
-# Install dependencies
+# Install dependencies including OpenSSL for Prisma
+RUN apt-get update -y && apt-get install -y openssl
+
 RUN npm ci
 
 COPY backend/ .
@@ -13,9 +15,12 @@ RUN npx prisma generate --schema=prisma/schema.prisma
 RUN npm run build
 
 # -------- Production Stage --------
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /app
+
+# Install runtime dependencies including OpenSSL for Prisma
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Copy necessary files
 COPY --from=builder /app/node_modules ./node_modules
