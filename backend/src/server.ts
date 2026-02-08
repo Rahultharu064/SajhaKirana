@@ -63,10 +63,24 @@ server.listen(PORT, "0.0.0.0", async () => {
   console.log(`- GROQ API Key Provided: ${!!process.env.GROQ_API_KEY}`);
 
   try {
-    // 1. Database Connection
+    // 1. Database Connection with Retry Logic
+    const connectWithRetry = async (retries = 5, delay = 5000) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          await prismaClient.$connect();
+          console.log(`✅ Database connected successfully`);
+          return;
+        } catch (err: any) {
+          console.error(`❌ Database connection failed (Attempt ${i + 1}/${retries}):`, err.message);
+          if (i === retries - 1) throw err;
+          console.log(`⏳ Retrying in ${delay / 1000} seconds...`);
+          await new Promise(res => setTimeout(res, delay));
+        }
+      }
+    };
+
     console.log('Using DATABASE_URL:', process.env.DATABASE_URL ? '[REDACTED]' : 'MISSING');
-    await prismaClient.$connect();
-    console.log(`✅ Database connected successfully`);
+    await connectWithRetry();
 
     // 2. Redis Connection Check
     if (redis.status === 'ready') {
