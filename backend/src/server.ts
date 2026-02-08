@@ -105,7 +105,7 @@ server.listen(PORT, "0.0.0.0", async () => {
   console.error('⚠️ The server is running but some services failed to start. Check your database connection.');
   // Do NOT exit process.exit(1) so that /health remains accessible for debugging
 }
-});
+);
 
 /**
  * Graceful Shutdown Handling
