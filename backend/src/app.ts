@@ -34,10 +34,11 @@ app.use(express.urlencoded({ extended: false }));
 
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:5173",
-  process.env.VERCEL_URL || "https://sajha-kirana-lp5l77fts-rahultharu064s-projects.vercel.app", // Added specific Vercel URL
-  "http://localhost:3000", // if using create-react-app default port
-  "http://localhost:8080", // if using other dev servers
-  "http://localhost:5003", // api server itself
+  process.env.VERCEL_URL || "https://sajha-kirana-lp5l77fts-rahultharu064s-projects.vercel.app",
+  "https://sajha-kirana.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:8080",
+  "http://localhost:5003",
 ];
 
 app.use(
@@ -45,16 +46,17 @@ app.use(
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // allow requests with no origin (like mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        console.log(`CORS: Allowing access from ${origin}`);
-        // For development, allow any localhost origin
-        if (origin.startsWith('http://localhost:')) {
-          return callback(null, true);
-        }
-        const msg = `The CORS policy for this site does not allow access from the specified Origin.`;
+
+      const isAllowed = allowedOrigins.includes(origin) ||
+        origin.startsWith('http://localhost:') ||
+        origin.endsWith('.vercel.app');
+
+      if (isAllowed) {
+        return callback(null, true);
+      } else {
+        const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
         return callback(new Error(msg), false);
       }
-      return callback(null, true);
     },
     credentials: true,
   })
