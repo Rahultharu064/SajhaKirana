@@ -48,14 +48,17 @@ app.use(
       if (!origin) return callback(null, true);
 
       const trimmedOrigin = origin.trim();
-      const isAllowed = allowedOrigins.includes(trimmedOrigin) ||
-        trimmedOrigin.startsWith('http://localhost:') ||
-        trimmedOrigin.endsWith('.vercel.app');
 
-      if (isAllowed) {
+      // Check if it's in the allowed list or a localhost or a vercel subdomain
+      const isLocalhost = trimmedOrigin.startsWith('http://localhost:');
+      const isVercel = /\.vercel\.app$/.test(trimmedOrigin) || trimmedOrigin === 'https://vercel.app';
+      const isExplicitlyAllowed = allowedOrigins.includes(trimmedOrigin);
+
+      if (isLocalhost || isVercel || isExplicitlyAllowed) {
         return callback(null, true);
       } else {
-        console.error(`CORS Blocked: ${trimmedOrigin} is not in`, allowedOrigins);
+        console.error(`❌ CORS Blocked: "${trimmedOrigin}" is not in allowed list.`);
+        console.log(`Debug Allowed List:`, allowedOrigins);
         const msg = `The CORS policy for this site does not allow access from the specified Origin: ${trimmedOrigin}`;
         return callback(new Error(msg), false);
       }
@@ -117,8 +120,19 @@ app.use("/customer-service", customerServiceRoutes);
 
 // Error handling middleware
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', error);
-  res.status(500).json({ message: 'Internal server error', error: error.message });
+  console.error('💥 Backend Error:', {
+    message: error.message,
+    stack: error.stack,
+    path: req.path,
+    method: req.method
+  });
+
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error',
+    error: error.message,
+    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+  });
 });
 
 export default app;
