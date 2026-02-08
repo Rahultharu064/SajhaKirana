@@ -43,24 +43,17 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      // allow requests with no origin (like mobile apps, curl, server-to-server)
+    origin: (origin, callback) => {
       if (!origin) return callback(null, true);
+      const isVercel = origin.endsWith('.vercel.app');
+      const isLocal = origin.startsWith('http://localhost:');
+      const isAllowed = allowedOrigins.includes(origin);
 
-      const trimmedOrigin = origin.trim();
-
-      // Check if it's in the allowed list or a localhost or a vercel subdomain
-      const isLocalhost = trimmedOrigin.startsWith('http://localhost:');
-      const isVercel = /\.vercel\.app$/.test(trimmedOrigin) || trimmedOrigin === 'https://vercel.app';
-      const isExplicitlyAllowed = allowedOrigins.includes(trimmedOrigin);
-
-      if (isLocalhost || isVercel || isExplicitlyAllowed) {
-        return callback(null, true);
+      if (isVercel || isLocal || isAllowed) {
+        callback(null, true);
       } else {
-        console.error(`❌ CORS Blocked: "${trimmedOrigin}" is not in allowed list.`);
-        console.log(`Debug Allowed List:`, allowedOrigins);
-        const msg = `The CORS policy for this site does not allow access from the specified Origin: ${trimmedOrigin}`;
-        return callback(new Error(msg), false);
+        console.error(`❌ CORS Rejected: ${origin}`);
+        callback(new Error(`CORS policy blocked this origin: ${origin}`), false);
       }
     },
     credentials: true,
@@ -81,6 +74,7 @@ app.get("/health", async (req: express.Request, res: express.Response) => {
 
     res.status(200).json({
       status: "ok",
+      version: "1.0.5-CORS-FIX", // VERSION MARKER
       timestamp: new Date().toISOString(),
       services: { database: "connected" }
     });
