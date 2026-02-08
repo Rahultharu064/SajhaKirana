@@ -24,7 +24,7 @@ const AdminProductCard: React.FC<AdminProductCardProps> = ({ product, onEdit, on
       <div className="relative">
         {product.images && Array.isArray(product.images) && product.images.length > 0 ? (
           <img
-            src={typeof product.images[0] === 'string' && !product.images[0].startsWith('http') ? `http://localhost:5003${product.images[0]}` : product.images[0]}
+            src={typeof product.images[0] === 'string' && !product.images[0].startsWith('http') ? `${import.meta.env.VITE_API_URL || 'http://localhost:5003'}/${product.images[0].replace(/^\//, '')}` : product.images[0]}
             alt={product.title}
             className="w-full h-48 object-cover"
           />
@@ -34,11 +34,10 @@ const AdminProductCard: React.FC<AdminProductCardProps> = ({ product, onEdit, on
           </div>
         )}
         <div className="absolute top-2 left-2">
-          <span className={`px-2 py-1 rounded text-xs font-medium ${
-            product.isActive
+          <span className={`px-2 py-1 rounded text-xs font-medium ${product.isActive
               ? 'bg-green-100 text-green-800'
               : 'bg-red-100 text-red-800'
-          }`}>
+            }`}>
             {product.isActive ? 'Active' : 'Inactive'}
           </span>
         </div>
@@ -61,7 +60,7 @@ const AdminProductCard: React.FC<AdminProductCardProps> = ({ product, onEdit, on
         </div>
 
         <div className="flex justify-between items-center">
-<Button
+          <Button
             variant="ghost"
             size="sm"
             onClick={() => onEdit?.(product.id)}
@@ -70,7 +69,7 @@ const AdminProductCard: React.FC<AdminProductCardProps> = ({ product, onEdit, on
           >
             Edit
           </Button>
-<Button
+          <Button
             variant="ghost"
             size="sm"
             onClick={() => onDelete?.(product.id)}

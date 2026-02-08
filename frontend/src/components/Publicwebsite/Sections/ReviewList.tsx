@@ -27,7 +27,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
     // Debug: Log user state on every render
     console.log('ReviewList user state:', { user, isAuthenticated });
 
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
 
     useEffect(() => {
         fetchReviews();
@@ -115,8 +115,8 @@ const ReviewList: React.FC<ReviewListProps> = ({
                                             <Star
                                                 key={star}
                                                 className={`h-4 w-4 ${star <= review.rating
-                                                        ? 'fill-yellow-400 text-yellow-400'
-                                                        : 'text-gray-300'
+                                                    ? 'fill-yellow-400 text-yellow-400'
+                                                    : 'text-gray-300'
                                                     }`}
                                             />
                                         ))}

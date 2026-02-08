@@ -122,7 +122,7 @@ const OrderStatusCard: React.FC<OrderStatusCardProps> = ({
                         >
                             {item.image ? (
                                 <img
-                                    src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003'}/${item.image.replace(/^\//, '')}`}
+                                    src={item.image.startsWith('http') ? item.image : `${import.meta.env.VITE_API_URL || 'http://localhost:5003'}/${item.image.replace(/^\//, '')}`}
                                     alt={item.name}
                                     className="w-10 h-10 rounded-lg object-cover"
                                     onError={(e) => {

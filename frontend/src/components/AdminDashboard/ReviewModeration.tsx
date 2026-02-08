@@ -51,7 +51,7 @@ const ReviewModeration: React.FC = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003';
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5003';
 
     useEffect(() => {
         fetchPendingReviews();

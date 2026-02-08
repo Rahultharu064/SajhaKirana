@@ -38,7 +38,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           src={
             product.image?.startsWith('http')
               ? product.image
-              : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5003'}/${product.image?.replace(/^\//, '')}`
+              : `${import.meta.env.VITE_API_URL || 'http://localhost:5003'}/${product.image?.replace(/^\//, '')}`
           }
           alt={product.title}
           className="w-full h-48 object-cover"
