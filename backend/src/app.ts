@@ -47,14 +47,16 @@ app.use(
       // allow requests with no origin (like mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
 
-      const isAllowed = allowedOrigins.includes(origin) ||
-        origin.startsWith('http://localhost:') ||
-        origin.endsWith('.vercel.app');
+      const trimmedOrigin = origin.trim();
+      const isAllowed = allowedOrigins.includes(trimmedOrigin) ||
+        trimmedOrigin.startsWith('http://localhost:') ||
+        trimmedOrigin.endsWith('.vercel.app');
 
       if (isAllowed) {
         return callback(null, true);
       } else {
-        const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
+        console.error(`CORS Blocked: ${trimmedOrigin} is not in`, allowedOrigins);
+        const msg = `The CORS policy for this site does not allow access from the specified Origin: ${trimmedOrigin}`;
         return callback(new Error(msg), false);
       }
     },
