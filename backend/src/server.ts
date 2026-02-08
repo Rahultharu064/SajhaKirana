@@ -100,7 +100,7 @@ server.listen(PORT, "0.0.0.0", async () => {
 
   console.log('---------------------');
   console.log(`📡 WebSocket server is enabled`);
-} catch (error) {
+} catch(error) {
   console.error('❌ Server startup error:', error);
   console.error('⚠️ The server is running but some services failed to start. Check your database connection.');
   // Do NOT exit process.exit(1) so that /health remains accessible for debugging
