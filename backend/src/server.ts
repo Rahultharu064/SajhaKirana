@@ -62,49 +62,49 @@ server.listen(PORT, "0.0.0.0", async () => {
   console.log(`- Qdrant URL Provided: ${!!process.env.QDRANT_URL}`);
   console.log(`- GROQ API Key Provided: ${!!process.env.GROQ_API_KEY}`);
 
-  try {
-    // 1. Database Connection with Retry Logic
-    const connectWithRetry = async (retries = 5, delay = 5000) => {
-      for (let i = 0; i < retries; i++) {
-        try {
-          await prismaClient.$connect();
-          console.log(`✅ Database connected successfully`);
-          return;
-        } catch (err: any) {
-          console.error(`❌ Database connection failed (Attempt ${i + 1}/${retries}):`, err.message);
-          if (i === retries - 1) throw err;
-          console.log(`⏳ Retrying in ${delay / 1000} seconds...`);
-          await new Promise(res => setTimeout(res, delay));
-        }
+
+  // 1. Database Connection with Retry Logic
+  const connectWithRetry = async (retries = 10, delay = 5000) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await prismaClient.$connect();
+        console.log(`✅ Database connected successfully`);
+        return;
+      } catch (err: any) {
+        console.error(`❌ Database connection failed (Attempt ${i + 1}/${retries}):`, err.message);
+        if (i === retries - 1) throw err;
+        console.log(`⏳ Retrying in ${delay / 1000} seconds...`);
+        await new Promise(res => setTimeout(res, delay));
       }
-    };
-
-    console.log('Using DATABASE_URL:', process.env.DATABASE_URL ? '[REDACTED]' : 'MISSING');
-    await connectWithRetry();
-
-    // 2. Redis Connection Check
-    if (redis.status === 'ready') {
-      console.log('✅ Redis connected successfully');
-    } else {
-      console.log(`⏳ Redis Status: ${redis.status}...`);
     }
+  };
 
-    // 3. Service Initializations
-    // We delay this slightly to let the server fully stabilize and pass initial health checks
-    setTimeout(() => {
-      console.log('⏰ Starting delayed background services...');
-      initializeServices().catch(err => {
-        console.error('⚠️ Background service initialization failed:', err.message);
-      });
-    }, 10000); // 10 seconds delay
+  console.log('Using DATABASE_URL:', process.env.DATABASE_URL ? '[REDACTED]' : 'MISSING');
+  await connectWithRetry();
 
-    console.log('---------------------');
-    console.log(`📡 WebSocket server is enabled`);
-  } catch (error) {
-    console.error('❌ Server startup error:', error);
-    console.error('⚠️ The server is running but some services failed to start. Check your database connection.');
-    // Do NOT exit process.exit(1) so that /health remains accessible for debugging
+  // 2. Redis Connection Check
+  if (redis.status === 'ready') {
+    console.log('✅ Redis connected successfully');
+  } else {
+    console.log(`⏳ Redis Status: ${redis.status}...`);
   }
+
+  // 3. Service Initializations
+  // We delay this slightly to let the server fully stabilize and pass initial health checks
+  setTimeout(() => {
+    console.log('⏰ Starting delayed background services...');
+    initializeServices().catch(err => {
+      console.error('⚠️ Background service initialization failed:', err.message);
+    });
+  }, 10000); // 10 seconds delay
+
+  console.log('---------------------');
+  console.log(`📡 WebSocket server is enabled`);
+} catch (error) {
+  console.error('❌ Server startup error:', error);
+  console.error('⚠️ The server is running but some services failed to start. Check your database connection.');
+  // Do NOT exit process.exit(1) so that /health remains accessible for debugging
+}
 });
 
 /**
