@@ -95,16 +95,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
             </div>
 
             {/* Chat Area */}
-            <div className={`flex-1 overflow-y-auto ${isFloating ? 'px-5 py-6' : 'px-8 py-10'} space-y-4 scrollbar-hide bg-[#F8FAFC]/30 backdrop-blur-sm relative`}>
+            <div className={`flex-1 overflow-y-auto ${isFloating ? 'px-4 py-4' : 'px-6 py-6'} space-y-3 scrollbar-hide bg-[#F8FAFC]/30 backdrop-blur-sm relative`}>
                 {/* Subtle Geometric Overlay */}
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                 {messages.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-center space-y-6 animate-in fade-in zoom-in duration-700">
-                        <div className="w-24 h-24 bg-primary/5 rounded-[2rem] flex items-center justify-center text-primary-light">
-                            <Bot size={48} />
+                        <div className="w-20 h-20 bg-primary/5 rounded-[2rem] flex items-center justify-center text-primary-light">
+                            <Bot size={40} />
                         </div>
-                        <div className="space-y-2">
-                            <h2 className={`${isFloating ? 'text-xl' : 'text-3xl'} font-black text-gray-900`}>
+                        <div className="space-y-1">
+                            <h2 className={`${isFloating ? 'text-lg' : 'text-2xl'} font-black text-gray-900`}>
                                 {getTimeBasedGreeting()}!
                             </h2>
                             <p className="text-sm text-gray-500 max-w-[280px] mx-auto leading-relaxed">
@@ -119,14 +119,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
                 ))}
 
                 {isLoading && (
-                    <div className="flex justify-start mb-6 animate-in fade-in slide-in-from-left-2 duration-300">
-                        <div className="bg-white border border-gray-100 py-4 px-6 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5 overflow-hidden relative">
+                    <div className="flex justify-start mb-4 animate-in fade-in slide-in-from-left-2 duration-300">
+                        <div className="bg-white border border-gray-100 py-3 px-5 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5 overflow-hidden relative">
                             <div className="w-2 h-2 bg-primary/30 rounded-full animate-bounce"></div>
                             <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:0.2s]"></div>
                             <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:0.4s]"></div>
-                            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary/5">
-                                <div className="h-full bg-primary/20 animate-loading-bar"></div>
-                            </div>
                         </div>
                     </div>
                 )}
@@ -151,9 +148,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
             </div>
 
             {/* Footer */}
-            <div className={`${isFloating ? 'px-5 py-5' : 'px-10 py-8'} bg-white border-t border-gray-50 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)]`}>
+            <div className={`${isFloating ? 'px-4 py-4' : 'px-8 py-5'} bg-white border-t border-gray-50 shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.05)] flex-shrink-0`}>
                 {error && (
-                    <div className="mb-4 text-xs text-red-600 bg-red-50 py-3 px-4 rounded-xl border border-red-100 flex items-center gap-3">
+                    <div className="mb-3 text-[10px] text-red-600 bg-red-50 py-2 px-3 rounded-lg border border-red-100 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div>
                         {error}
                     </div>
@@ -163,8 +160,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
                 <ChatbotInput onSend={sendMessage} isLoading={isLoading} />
 
                 {!isFloating && (
-                    <p className="mt-4 text-[10px] text-center text-gray-400 font-medium tracking-wide uppercase">
-                        Powered by Sajha AI & LangGraph • Secure & Encrypted
+                    <p className="mt-3 text-[9px] text-center text-gray-400 font-bold uppercase tracking-[0.15em] opacity-60">
+                        Secure AI Shopping Session
                     </p>
                 )}
             </div>

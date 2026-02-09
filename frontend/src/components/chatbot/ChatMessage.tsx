@@ -69,7 +69,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
     };
 
     return (
-        <div className={`flex w-full mb-6 ${isAssistant ? 'justify-start' : 'justify-end'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+        <div className={`flex w-full mb-4 ${isAssistant ? 'justify-start' : 'justify-end'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
             <div className={`flex gap-3 max-w-[85%] ${isAssistant ? 'flex-row' : 'flex-row-reverse'}`}>
                 {/* Avatar */}
                 <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${isAssistant ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'
