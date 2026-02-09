@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SendHorizonal, Loader2, Mic, MicOff } from 'lucide-react';
+import { Send, Loader2, Mic, MicOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ChatbotInputProps {
@@ -31,7 +31,7 @@ const ChatbotInput: React.FC<ChatbotInputProps> = ({ onSend, isLoading }) => {
 
             recognition.continuous = false;
             recognition.interimResults = false;
-            recognition.lang = 'en-US'; // Better for "Add 2kg rice" extraction, but you can change to ne-NP if needed
+            recognition.lang = 'en-US';
             recognition.maxAlternatives = 1;
 
             recognition.onstart = () => {
@@ -42,7 +42,6 @@ const ChatbotInput: React.FC<ChatbotInputProps> = ({ onSend, isLoading }) => {
                 const transcript = event.results[0][0].transcript;
                 setInput(transcript);
                 setIsListening(false);
-                // Automatically send if it's a clear command
                 if (transcript.length > 3) {
                     onSend(transcript);
                     setInput('');
@@ -67,41 +66,43 @@ const ChatbotInput: React.FC<ChatbotInputProps> = ({ onSend, isLoading }) => {
     return (
         <form
             onSubmit={handleSubmit}
-            className="group relative flex items-center p-1.5 bg-gray-50 rounded-[1.25rem] border border-gray-200 focus-within:border-primary/50 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/5 transition-all duration-500 shadow-sm hover:shadow-md"
+            className="flex items-center gap-2 p-1.5 bg-gray-50 rounded-2xl border-2 border-gray-100 focus-within:border-emerald-300 focus-within:bg-white transition-all duration-200"
         >
             <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Message Sajha Assistant..."
-                className="flex-1 px-4 py-3 bg-transparent border-none outline-none text-gray-700 placeholder:text-gray-400 text-sm font-medium"
+                placeholder="Ask me anything..."
+                className="flex-1 px-4 py-2.5 bg-transparent border-none outline-none text-gray-700 placeholder:text-gray-400 text-sm font-medium"
                 disabled={isLoading}
             />
-            <div className="flex items-center gap-2 pr-1.5">
+
+            <div className="flex items-center gap-1.5 pr-0.5">
                 <button
                     type="button"
                     onClick={handleVoiceSearch}
                     disabled={isLoading}
-                    className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-300 ${isListening
-                        ? 'bg-red-100 text-red-600 animate-pulse'
-                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 ${isListening
+                            ? 'bg-gradient-to-br from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/30 animate-pulse'
+                            : 'text-gray-400 hover:text-emerald-600 hover:bg-emerald-50'
                         }`}
-                    title="Voice Shopping Assistant"
+                    title="Voice input"
                 >
-                    {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                    {isListening ? <MicOff size={18} /> : <Mic size={18} />}
                 </button>
+
                 <button
                     type="submit"
                     disabled={isLoading || !input.trim()}
-                    className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-300 ${isLoading || !input.trim()
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed opacity-50'
-                        : 'bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary-dark hover:-translate-y-0.5 active:translate-y-0'
+                    className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${isLoading || !input.trim()
+                            ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                            : 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white hover:shadow-lg hover:shadow-emerald-500/30 hover:scale-105'
                         }`}
                 >
                     {isLoading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <Loader2 size={18} className="animate-spin" />
                     ) : (
-                        <SendHorizonal className="w-5 h-5" />
+                        <Send size={18} />
                     )}
                 </button>
             </div>

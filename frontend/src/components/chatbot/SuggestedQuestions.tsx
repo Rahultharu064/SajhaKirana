@@ -9,12 +9,12 @@ const SuggestedQuestions: React.FC<SuggestedQuestionsProps> = ({ questions, onSe
     if (!questions || questions.length === 0) return null;
 
     return (
-        <div className="flex flex-wrap gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2">
+        <div className="flex flex-wrap gap-2 mb-3">
             {questions.map((question, index) => (
                 <button
                     key={index}
                     onClick={() => onSelect(question)}
-                    className="px-4 py-2 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-300 shadow-sm active:scale-95"
+                    className="px-3.5 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-full text-[12px] font-semibold text-emerald-700 hover:from-emerald-100 hover:to-teal-100 hover:border-emerald-200 hover:shadow-sm transition-all duration-200"
                 >
                     {question}
                 </button>
