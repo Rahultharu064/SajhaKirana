@@ -29,13 +29,11 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
 const allowedOrigins = [
   process.env.FRONTEND_URL || "http://localhost:5173",
   process.env.VERCEL_URL || "https://sajha-kirana-lp5l77fts-rahultharu064s-projects.vercel.app",
   "https://sajha-kirana.vercel.app",
+  "https://sajhakirana-production.up.railway.app",
   "http://localhost:3000",
   "http://localhost:8080",
   "http://localhost:5003",
@@ -59,6 +57,9 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // Health check endpoint
 // Health check endpoint

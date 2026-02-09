@@ -86,47 +86,80 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 export const loginUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const { identifier, password }: { identifier: string, password: string } = req.body;
-        // Find user by email (phone check temporarily commented out due to missing column in database)
-        const user = await prismaClient.user.findFirst({
-            where: {
-                email: identifier
 
-            },
-            select: { id: true, name: true, email: true, password: true } // only select columns that exist in current database
-        })
-        if (!user) {
-            res.status(400).json({ message: "Invalid creditendials" });
+        if (!identifier || !password) {
+            res.status(400).json({ message: "Identifier and password are required" });
             return;
         }
+
+        const trimmedIdentifier = identifier.trim().toLowerCase();
+
+        console.log(`[Login] Attempting login for: ${trimmedIdentifier}`);
+
+        // Find user by email or phone
+        const user = await prismaClient.user.findFirst({
+            where: {
+                OR: [
+                    { email: trimmedIdentifier },
+                    { phone: trimmedIdentifier }
+                ]
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                password: true,
+                phone: true,
+                role: true,
+                address: true,
+                profileImage: true
+            }
+        })
+
+        if (!user) {
+            console.log(`[Login] User not found: ${trimmedIdentifier}`);
+            res.status(400).json({ message: "Invalid credentials" });
+            return;
+        }
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            res.status(400).json({ message: "Invalid creditendials" });
+            console.log(`[Login] Invalid password for: ${trimmedIdentifier}`);
+            res.status(400).json({ message: "Invalid credentials" });
             return;
         }
 
         // Update last login timestamp
-        await prismaClient.user.update({
-            where: { id: user.id },
-            data: { lastLogin: new Date() }
-        });
+        try {
+            await prismaClient.user.update({
+                where: { id: user.id },
+                data: { lastLogin: new Date() }
+            });
+        } catch (updateError) {
+            console.error('[Login] Failed to update lastLogin:', updateError);
+            // Continue login even if update fails
+        }
 
         // Generate JWT token
         const token = jwt.sign({
             userId: user.id,
-            role: (user as any).role ?? "customer" // fallback since role column may not exist yet
+            role: user.role || "customer"
         },
             JWT_SECRET, {
             expiresIn: JWT_EXPIRES_IN
         })
+
+        console.log(`[Login] Successful login for: ${user.email} (ID: ${user.id})`);
+
         res.status(200).json({
             message: "Login successful",
             user: {
                 userId: user.id,
                 name: user.name,
                 email: user.email,
-                phone: (user as any).phone ?? null, // fallback since phone column may not exist yet
-                address: (user as any).address ?? null, // fallback since address column may not exist yet
-                role: (user as any).role ?? "customer" // fallback since role column may not exist yet
+                phone: user.phone,
+                address: user.address,
+                role: user.role || "customer"
             },
             token
         })
@@ -134,8 +167,10 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
     }
 
     catch (error) {
+        console.error("[Login] Server error:", error);
         res.status(500).json({
-            message: "server erro", error: error
+            message: "Internal server error",
+            error: process.env.NODE_ENV === 'development' ? error : undefined
         });
         return;
     }
@@ -438,51 +473,42 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
     try {
         const { identifier, password }: { identifier: string, password: string } = req.body;
 
-        console.log('[Admin Login] Attempting login for:', identifier);
+        if (!identifier || !password) {
+            res.status(400).json({ success: false, message: "Identifier and password are required" });
+            return;
+        }
 
-        // First, check if user exists at all
-        const userExists = await prismaClient.user.findFirst({
-            where: { email: identifier },
-            select: { id: true, email: true, role: true }
+        const trimmedIdentifier = identifier.trim().toLowerCase();
+        console.log('[Admin Login] Attempting login for:', trimmedIdentifier);
+
+        // Find user by email or phone
+        const user = await prismaClient.user.findFirst({
+            where: {
+                OR: [
+                    { email: trimmedIdentifier },
+                    { phone: trimmedIdentifier }
+                ]
+            },
+            select: { id: true, name: true, email: true, password: true, role: true, profileImage: true, lastLogin: true, phone: true }
         });
 
-        if (!userExists) {
-            console.log('[Admin Login] User not found:', identifier);
+        if (!user) {
+            console.log('[Admin Login] User not found:', trimmedIdentifier);
             res.status(401).json({
                 success: false,
                 message: "Invalid credentials",
-                error: "User with this email does not exist"
+                error: "User does not exist"
             });
             return;
         }
 
         // Check if user has admin role
-        if (userExists.role !== 'admin') {
-            console.log('[Admin Login] User exists but is not an admin. Role:', userExists.role);
+        if (user.role !== 'admin') {
+            console.log('[Admin Login] User exists but is not an admin. Role:', user.role);
             res.status(401).json({
                 success: false,
                 message: "Access denied",
-                error: "This account does not have admin privileges. Please use the regular login."
-            });
-            return;
-        }
-
-        // Find admin user with password
-        const user = await prismaClient.user.findFirst({
-            where: {
-                AND: [
-                    { email: identifier },
-                    { role: 'admin' }
-                ]
-            },
-            select: { id: true, name: true, email: true, password: true, role: true, profileImage: true, lastLogin: true }
-        });
-
-        if (!user) {
-            console.log('[Admin Login] Unexpected error: Admin user not found in second query');
-            res.status(401).json({
-                success: false,
-                message: "Invalid admin credentials"
+                error: "This account does not have admin privileges."
             });
             return;
         }
@@ -490,7 +516,7 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
         // Verify password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            console.log('[Admin Login] Invalid password for:', identifier);
+            console.log('[Admin Login] Invalid password for:', trimmedIdentifier);
             res.status(401).json({
                 success: false,
                 message: "Invalid credentials",
@@ -499,13 +525,17 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
             return;
         }
 
-        console.log('[Admin Login] Login successful for:', identifier);
+        console.log('[Admin Login] Login successful for:', user.email);
 
         // Update last login timestamp
-        await prismaClient.user.update({
-            where: { id: user.id },
-            data: { lastLogin: new Date() }
-        });
+        try {
+            await prismaClient.user.update({
+                where: { id: user.id },
+                data: { lastLogin: new Date() }
+            });
+        } catch (updateError) {
+            console.error('[Admin Login] Failed to update lastLogin:', updateError);
+        }
 
         // Generate JWT token with admin role
         const token = jwt.sign({
@@ -523,6 +553,7 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
                 userId: user.id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
                 role: user.role,
                 profileImage: user.profileImage,
                 lastLogin: user.lastLogin
@@ -535,7 +566,7 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
         res.status(500).json({
             success: false,
             message: "Server error during admin login",
-            error: error
+            error: process.env.NODE_ENV === 'development' ? error : undefined
         });
         return;
     }
