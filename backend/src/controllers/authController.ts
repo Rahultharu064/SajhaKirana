@@ -28,9 +28,13 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
             return;
         }
 
+        const trimmedName = name.trim();
+        const trimmedEmail = email.trim().toLowerCase();
+        const trimmedPhone = phone ? phone.trim() : null;
+
         // Use findFirst to avoid findUnique errors if email is not unique in schema
         const existingUser = await prismaClient.user.findFirst({
-            where: { email },
+            where: { email: trimmedEmail },
             select: { id: true, name: true, email: true, password: true } // only select columns that exist in current database
         });
         if (existingUser) {
@@ -42,9 +46,9 @@ export const registerUser = async (req: Request, res: Response, next: NextFuncti
 
         const newUser = await prismaClient.user.create({
             data: {
-                name,
-                email,
-                phone: phone ?? null, // added back since phone exists in schema
+                name: trimmedName,
+                email: trimmedEmail,
+                phone: trimmedPhone, // added back since phone exists in schema
                 password: hashedPassword,
             },
         });
@@ -117,15 +121,15 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         })
 
         if (!user) {
-            console.log(`[Login] User not found: ${trimmedIdentifier}`);
-            res.status(400).json({ message: "Invalid credentials" });
+            console.log(`[Login] User not found for: ${trimmedIdentifier}`);
+            res.status(401).json({ message: "Invalid credentials" });
             return;
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            console.log(`[Login] Invalid password for: ${trimmedIdentifier}`);
-            res.status(400).json({ message: "Invalid credentials" });
+            console.log(`[Login] Invalid password for: ${user.email}`);
+            res.status(401).json({ message: "Invalid credentials" });
             return;
         }
 
@@ -137,7 +141,6 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
             });
         } catch (updateError) {
             console.error('[Login] Failed to update lastLogin:', updateError);
-            // Continue login even if update fails
         }
 
         // Generate JWT token
@@ -505,7 +508,7 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
         // Check if user has admin role
         if (user.role !== 'admin') {
             console.log('[Admin Login] User exists but is not an admin. Role:', user.role);
-            res.status(401).json({
+            res.status(403).json({
                 success: false,
                 message: "Access denied",
                 error: "This account does not have admin privileges."
@@ -516,7 +519,7 @@ export const loginAdmin = async (req: Request, res: Response, next: NextFunction
         // Verify password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            console.log('[Admin Login] Invalid password for:', trimmedIdentifier);
+            console.log('[Admin Login] Invalid password for:', user.email);
             res.status(401).json({
                 success: false,
                 message: "Invalid credentials",
