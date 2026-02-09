@@ -36,27 +36,28 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
 
     const containerClasses = isFloating
         ? "flex flex-col h-[550px] w-[400px] bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5 duration-500"
-        : "flex flex-col h-[750px] max-w-5xl mx-auto bg-white/80 backdrop-blur-xl rounded-[2.5rem] border border-white shadow-2xl overflow-hidden mt-4 mb-4";
+        : "flex flex-col h-full w-full bg-white/95 backdrop-blur-2xl rounded-[2.5rem] border border-white/20 shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-500";
 
     return (
         <div className={containerClasses}>
             {/* Header */}
-            <div className={`flex items-center justify-between ${isFloating ? 'px-5 py-4' : 'px-10 py-7'} bg-gradient-to-r from-primary to-primary-dark text-white shadow-md relative overflow-hidden`}>
+            <div className={`flex items-center justify-between ${isFloating ? 'px-5 py-4' : 'px-8 py-6'} bg-gradient-to-br from-primary via-primary to-primary-dark text-white shadow-xl relative overflow-hidden flex-shrink-0`}>
                 {/* Decorative Pattern */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-24 -mt-24 blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary-light/10 rounded-full -ml-16 -mb-16 blur-2xl"></div>
 
-                <div className="flex items-center gap-4 relative z-10">
-                    <div className={`${isFloating ? 'w-11 h-11' : 'w-14 h-14'} bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center relative shadow-inner`}>
-                        <Bot size={isFloating ? 24 : 32} className="text-white" />
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 border-2 border-primary rounded-full animate-pulse shadow-sm"></span>
+                <div className="flex items-center gap-5 relative z-10">
+                    <div className={`${isFloating ? 'w-11 h-11' : 'w-16 h-16'} bg-white/10 backdrop-blur-xl rounded-2xl flex items-center justify-center relative shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] border border-white/20`}>
+                        <Bot size={isFloating ? 24 : 36} className="text-white drop-shadow-lg" />
+                        <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-primary rounded-full animate-pulse shadow-lg shadow-green-400/20"></span>
                     </div>
                     <div>
-                        <h1 className={`${isFloating ? 'text-base' : 'text-2xl'} font-bold tracking-tight text-white shadow-sm`}>
-                            Sajha Assistant
+                        <h1 className={`${isFloating ? 'text-base' : 'text-2xl'} font-extrabold tracking-tight text-white mb-0.5 drop-shadow-sm`}>
+                            Sajha Smart Assistant
                         </h1>
                         <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                            <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">Always Active</span>
+                            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-sm shadow-green-400/50"></span>
+                            <span className="text-[10px] sm:text-xs font-bold text-white/70 uppercase tracking-[0.2em]">Interactive Session</span>
                         </div>
                     </div>
                 </div>
@@ -94,7 +95,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ isFloating = false, onClose }) 
             </div>
 
             {/* Chat Area */}
-            <div className={`flex-1 overflow-y-auto ${isFloating ? 'px-5 py-6' : 'px-10 py-10'} space-y-2 scrollbar-hide bg-[#F9FAFB]/50`}>
+            <div className={`flex-1 overflow-y-auto ${isFloating ? 'px-5 py-6' : 'px-8 py-10'} space-y-4 scrollbar-hide bg-[#F8FAFC]/30 backdrop-blur-sm relative`}>
+                {/* Subtle Geometric Overlay */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                 {messages.length === 0 && (
                     <div className="flex flex-col items-center justify-center h-full text-center space-y-6 animate-in fade-in zoom-in duration-700">
                         <div className="w-24 h-24 bg-primary/5 rounded-[2rem] flex items-center justify-center text-primary-light">

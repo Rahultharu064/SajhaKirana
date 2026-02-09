@@ -89,12 +89,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                     </div>
 
                     <div
-                        className={`p-4 rounded-[1.25rem] shadow-sm text-sm leading-relaxed ${isAssistant
-                            ? 'bg-white/80 backdrop-blur-md text-gray-800 rounded-tl-none border border-gray-100/50 shadow-gray-200/20'
-                            : 'bg-gradient-to-br from-primary to-primary-dark text-white rounded-tr-none shadow-lg shadow-primary/25 border border-primary/20'
+                        className={`p-4 sm:p-5 rounded-[1.5rem] shadow-sm text-[13px] sm:text-sm leading-relaxed ${isAssistant
+                            ? 'bg-white/80 backdrop-blur-lg text-gray-800 rounded-tl-none border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)]'
+                            : 'bg-gradient-to-br from-primary via-primary to-primary-dark text-white rounded-tr-none shadow-[0_10px_25px_-5px_rgba(var(--primary-rgb),0.4)] border border-primary/20'
                             }`}
                     >
-                        <div className="whitespace-pre-wrap font-medium">
+                        <div className="whitespace-pre-wrap font-medium tracking-tight">
                             {renderContent(message.content)}
                         </div>
                     </div>
