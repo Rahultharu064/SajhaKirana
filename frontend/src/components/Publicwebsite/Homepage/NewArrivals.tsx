@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import ProductCard from '../../ui/ProductCard';
 import { getAllProducts } from '../../../services/productService';
+import { Sparkles, Zap, Clock } from 'lucide-react';
 
 interface Product {
   id: number;
@@ -21,7 +23,6 @@ const NewArrivals = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Get newest products
         const response = await getAllProducts({ sort: 'newest', limit: 4 });
         const productsData = response.data?.data || response.data;
         setProducts(productsData);
@@ -36,30 +37,26 @@ const NewArrivals = () => {
   }, []);
 
   const handleViewDetails = (productId: number) => {
-    // Find product by ID to get its slug
     const product = products.find(p => p.id === productId);
     if (product?.slug) {
       navigate(`/product/${product.slug}`);
     } else {
-      // Fallback to ID if slug is not available
       navigate(`/product/${productId}`);
     }
   };
 
-  // Map backend product data to ProductCard format
   const mapProductsToCardFormat = (products: Product[]) => {
     return products.map(product => {
-      // Use relative path for images - Vite proxy will handle routing to backend
       let imageUrl = 'https://placehold.co/300x200?text=Product';
       if (product.images && product.images.length > 0) {
-        imageUrl = product.images[0]; // Backend returns full paths like /uploads/products/filename.jpg
+        imageUrl = product.images[0];
       }
       return {
         id: product.id,
         title: product.title,
         price: product.price,
         mrp: product.mrp,
-        rating: 4.5, // Default rating (can be fetched from reviews later)
+        rating: 4.5,
         image: imageUrl,
         sku: product.sku,
         slug: product.slug,
@@ -69,40 +66,60 @@ const NewArrivals = () => {
   };
 
   return (
-    <section className="section-padding bg-white relative overflow-hidden">
-      {/* Background Decoration */}
-      <div className="absolute bottom-0 left-0 w-64 h-64 sm:w-96 sm:h-96 bg-gradient-to-tr from-amber-100/30 to-transparent rounded-full blur-3xl"></div>
-      
+    <section className="py-20 bg-gradient-to-b from-white to-amber-50/30 relative overflow-hidden">
+      {/* Background Decorations */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-amber-200/30 to-transparent rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gradient-to-tl from-orange-200/30 to-transparent rounded-full blur-3xl"></div>
+
       <div className="container-custom relative z-10">
-        <div className="text-center mb-12 sm:mb-16 space-y-3 px-4 sm:px-0">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12 space-y-4"
+        >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-200/50">
-            <div className="w-2 h-2 bg-amber-600 rounded-full animate-pulse"></div>
-            <span className="text-xs sm:text-sm font-semibold text-amber-800">Just Arrived</span>
+            <Zap size={16} className="text-amber-600 fill-current" />
+            <span className="text-sm font-bold text-amber-800">Just Arrived</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900">New Arrivals</h2>
-          <p className="text-sm sm:text-base lg:text-lg text-slate-600 max-w-2xl mx-auto">Fresh products just arrived in our store</p>
-        </div>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900">
+            New <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">Arrivals</span>
+          </h2>
+          <p className="text-slate-600 max-w-lg mx-auto text-base sm:text-lg">
+            Fresh products just arrived in our store - be the first to try!
+          </p>
+        </motion.div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-20">
+          <div className="flex justify-center items-center py-24">
             <div className="relative">
-              <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-4 border-amber-200"></div>
-              <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-t-4 border-amber-600 absolute top-0 left-0"></div>
+              <div className="w-16 h-16 border-4 border-amber-100 rounded-full animate-spin"></div>
+              <div className="w-16 h-16 border-4 border-transparent border-t-amber-600 rounded-full animate-spin absolute top-0 left-0"></div>
+              <Clock size={20} className="text-amber-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
           </div>
         ) : (
-          <div className="grid-responsive-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {mapProductsToCardFormat(products).map((product, index) => (
-              <div 
+              <motion.div
                 key={`new-${product.id}`}
-                className="opacity-0 animate-fadeIn"
-                style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards' }}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
               >
-                <ProductCard
-                  product={product}
-                  onViewDetails={handleViewDetails}
-                />
-              </div>
+                <div className="relative">
+                  <div className="absolute -top-3 left-4 z-10 px-3 py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold rounded-full shadow-lg flex items-center gap-1">
+                    <Sparkles size={12} />
+                    New
+                  </div>
+                  <ProductCard
+                    product={product}
+                    onViewDetails={handleViewDetails}
+                  />
+                </div>
+              </motion.div>
             ))}
           </div>
         )}
