@@ -5,6 +5,7 @@ import PublicCategories from "../pages/Publicwebsite/Categories.tsx";
 import PublicProducts from "../pages/Publicwebsite/Products.tsx";
 import SearchResults from "../pages/Publicwebsite/SearchResults.tsx";
 import Wishlist from "../pages/Publicwebsite/Wishlist.tsx";
+import Deals from "../pages/Publicwebsite/Deals.tsx";
 
 import Register from "../components/Auth/Register.tsx";
 import Login from "../components/Auth/Login.tsx";
@@ -122,6 +123,10 @@ const routes = [
     {
         path: "/wishlist",
         element: <Wishlist />,
+    },
+    {
+        path: "/deals",
+        element: <Deals />,
     },
     // Admin Routes
     {

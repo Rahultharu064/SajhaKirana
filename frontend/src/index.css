@@ -5,7 +5,7 @@
   --animate-fadeIn: fadeIn 0.5s ease-out forwards;
   --animate-slideIn: slideIn 0.5s ease-out forwards;
   --animate-scaleIn: scaleIn 0.4s ease-out forwards;
-  
+
   /* Professional Color Palette */
   --color-primary: #10b981;
   /* emerald-500 */
@@ -21,12 +21,12 @@
   /* amber-500 */
   --color-error: #ef4444;
   /* red-500 */
-  
+
   /* Neutral Colors */
   --color-gray-50: #f8fafc;
   --color-gray-100: #f1f5f9;
   --color-gray-900: #0f172a;
-  
+
   /* Animation Keyframes - Moved outside @theme */
 }
 
@@ -36,6 +36,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -47,6 +48,7 @@
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -58,6 +60,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -68,16 +71,20 @@
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
 }
 
 @keyframes ping {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.1);
     opacity: 0.9;
@@ -85,18 +92,24 @@
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
 }
 
 @keyframes gradient {
-  0%, 100% {
+
+  0%,
+  100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
@@ -110,7 +123,12 @@ body {
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -169,23 +187,19 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Loading Shimmer Effect */
 .loading-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0) 100%);
   background-size: 1000px 100%;
   animation: shimmer 2s infinite;
 }
 
 .dark .loading-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0) 100%);
   background-size: 1000px 100%;
 }
 
@@ -396,7 +410,7 @@ h1, h2, h3, h4, h5, h6 {
   .mobile-padding {
     @apply px-4;
   }
-  
+
   .mobile-text-sm {
     @apply text-sm;
   }
@@ -511,6 +525,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Touch Device Optimizations (All iOS and Android) */
 @media (hover: none) and (pointer: coarse) {
+
   /* Larger touch targets */
   button,
   a,
@@ -577,7 +592,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* High DPI / Retina Displays (iPhone, high-end Android) */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+
   /* Optimize for crisp images on retina */
   .img-responsive {
     image-rendering: -webkit-optimize-contrast;
@@ -594,8 +611,10 @@ h1, h2, h3, h4, h5, h6 {
   /* Add dark mode support if needed */
   /* Currently using light theme */
 }
+
 /* Reduced Motion (Accessibility - iOS, Android) */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -686,6 +705,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* iOS Specific Fixes */
 @supports (-webkit-touch-callout: none) {
+
   /* Fix for iOS Safari viewport height */
   .ios-full-height {
     height: -webkit-fill-available;
@@ -707,8 +727,17 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Android Specific Fixes */
 @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-device-width: 320px) and (max-device-width: 812px) {
+
   /* Fix for Android Chrome address bar */
   .android-viewport {
     min-height: calc(100vh - 56px);
   }
+}
+
+/* Custom Select Arrow */
+.custom-select-arrow {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7' /%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
 }

@@ -13,6 +13,7 @@ import {
   getAutocompleteSuggestions,
   getFacets,
   searchByImage,
+  getProductsWithDeals,
 } from "../controllers/productController";
 import { validate } from "../middlewares/validate";
 import {
@@ -41,6 +42,9 @@ productRoutes.get(
   // validate(searchProductSchema, "query"),
   getAllProducts
 );
+
+// Get products with deals
+productRoutes.get("/deals", getProductsWithDeals);
 
 // Search products
 productRoutes.get(

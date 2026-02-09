@@ -176,3 +176,7 @@ export const searchByImage = (imageFile?: File) => {
     },
   });
 }
+// Get products with deals
+export const getDeals = (params?: { page?: number; limit?: number; sort?: string }) => {
+  return api.get('/products/deals', { params });
+}

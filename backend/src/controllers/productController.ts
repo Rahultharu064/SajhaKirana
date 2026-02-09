@@ -628,3 +628,81 @@ export const searchByImage = async (
     next(error);
   }
 };
+// Get products with deals (discounts)
+export const getProductsWithDeals = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { page = 1, limit = 10, sort = "discount" } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page as string) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit as string) || 10));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Filter for products where price < mrp
+    const where = {
+      isActive: true,
+      price: {
+        lt: prismaClient.product.fields.mrp
+      }
+    };
+
+    // Note: Prisma doesn't support field comparison in 'where' easily for all databases without raw query
+    // But we can use products that have a price strictly less than mrp.
+    // However, some products might have mrp=price.
+    // A more reliable way for "Deals" is to fetch products where mrp/price > 1.
+
+    // For simplicity and since most products in a grocery app have MRP >= price, 
+    // we fetch products where mrp > 0 and price < mrp.
+
+    const [products, total] = await Promise.all([
+      prismaClient.product.findMany({
+        where: {
+          isActive: true,
+          // We'll use a raw query or a computed filter if needed, 
+          // but for now let's assume deals are products where mrp > price
+        },
+        include: { category: true },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      }),
+      prismaClient.product.count({
+        where: { isActive: true }
+      }),
+    ]);
+
+    // Manual filtering because Prisma comparison of fields is limited in standard findMany
+    const dealsProducts = products
+      .filter(p => p.mrp > p.price)
+      .map(p => ({
+        ...p,
+        images: JSON.parse(p.images),
+        discount: Math.round(((p.mrp - p.price) / p.mrp) * 100)
+      }));
+
+    // Sorting by discount
+    if (sort === "discount") {
+      dealsProducts.sort((a, b) => b.discount - a.discount);
+    } else if (sort === "priceLow") {
+      dealsProducts.sort((a, b) => a.price - b.price);
+    }
+
+    const paginatedDeals = dealsProducts.slice(skip, skip + limitNum);
+
+    return res.status(200).json({
+      success: true,
+      data: paginatedDeals,
+      pagination: {
+        total: dealsProducts.length,
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(dealsProducts.length / limitNum),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

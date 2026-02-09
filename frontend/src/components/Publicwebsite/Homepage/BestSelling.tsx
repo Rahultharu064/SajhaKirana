@@ -103,12 +103,20 @@ const BestSelling = () => {
           <div className="relative">
             {/* Scroll Indicators */}
             <div className="hidden lg:flex absolute -left-4 top-1/2 -translate-y-1/2 z-10">
-              <button className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-violet-600 hover:shadow-xl transition-all">
+              <button
+                title="Scroll Left"
+                aria-label="Scroll Left"
+                className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-violet-600 hover:shadow-xl transition-all"
+              >
                 <ChevronLeft size={24} />
               </button>
             </div>
             <div className="hidden lg:flex absolute -right-4 top-1/2 -translate-y-1/2 z-10">
-              <button className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-violet-600 hover:shadow-xl transition-all">
+              <button
+                title="Scroll Right"
+                aria-label="Scroll Right"
+                className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-slate-400 hover:text-violet-600 hover:shadow-xl transition-all"
+              >
                 <ChevronRight size={24} />
               </button>
             </div>
