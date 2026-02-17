@@ -16,8 +16,14 @@ export default defineConfig({
   server: {
     proxy: {
       '/uploads': {
-        target: 'http://localhost:5003',
+        target: process.env.VITE_API_URL || 'https://sajhakirana-production.up.railway.app',
         changeOrigin: true,
+        secure: false,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('Proxy error (uploads):', err.message);
+          });
+        },
       },
     },
   },

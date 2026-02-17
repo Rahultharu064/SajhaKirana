@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Heart, Menu, X, User, Package, Search, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Heart, Menu, X, User, Package, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../Redux/store';
@@ -21,10 +21,9 @@ const Header = () => {
   return (
     <>
       {/* Announcement Bar */}
-      <div className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 text-white py-2 text-center text-sm font-medium relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-        <div className="relative z-10 flex items-center justify-center gap-2">
-          <span className="animate-pulse">🎉</span>
+      <div className="bg-emerald-600 text-white py-2 text-center text-sm font-medium">
+        <div className="flex items-center justify-center gap-2">
+          <span>🎉</span>
           <span>Free Delivery on orders over Rs. 1000!</span>
           <Link to="/products" className="underline hover:no-underline font-semibold ml-2">Shop Now →</Link>
         </div>
@@ -34,15 +33,12 @@ const Header = () => {
         <div className="container-custom">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 to-teal-500 rounded-2xl blur-lg opacity-60 group-hover:opacity-80 transition-opacity"></div>
-                <div className="relative bg-gradient-to-br from-emerald-600 to-teal-500 p-2.5 rounded-2xl shadow-lg shadow-emerald-600/30">
-                  <Package className="w-6 h-6 text-white" />
-                </div>
+            <Link to="/" className="flex items-center gap-3">
+              <div className="bg-emerald-600 p-2.5 rounded-xl shadow-md">
+                <Package className="w-6 h-6 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                <span className="text-2xl font-bold text-emerald-600">
                   SajhaKirana
                 </span>
                 <span className="text-[10px] font-semibold text-slate-500 -mt-1 tracking-wider uppercase">Fresh & Fast Delivery</span>
@@ -59,7 +55,7 @@ const Header = () => {
                 >
                   {link.name}
                   {link.badge && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full">
+                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-rose-500 text-white rounded-full">
                       {link.badge}
                     </span>
                   )}
@@ -90,7 +86,7 @@ const Header = () => {
               >
                 <ShoppingCart className="w-5 h-5 text-slate-500 group-hover:text-emerald-600 transition-colors" />
                 {totalItems > 0 && (
-                  <span className="absolute top-1 right-1 bg-gradient-to-br from-emerald-500 to-teal-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-lg shadow-emerald-500/40 animate-pulse">
+                  <span className="bg-emerald-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 shadow-md">
                     {totalItems}
                   </span>
                 )}
@@ -107,7 +103,7 @@ const Header = () => {
                 </Link>
                 <Link
                   to="/register"
-                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 shadow-lg shadow-emerald-600/30 hover:shadow-xl hover:shadow-emerald-600/40 transition-all duration-200 hover:-translate-y-0.5"
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md hover:shadow-lg transition-all duration-200"
                 >
                   Sign Up Free
                 </Link>
@@ -148,7 +144,7 @@ const Header = () => {
                   <span className="flex items-center gap-2">
                     {link.name}
                     {link.badge && (
-                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-full">
+                      <span className="px-1.5 py-0.5 text-[10px] font-bold bg-rose-500 text-white rounded-full">
                         {link.badge}
                       </span>
                     )}
@@ -168,7 +164,7 @@ const Header = () => {
                 <Link
                   to="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-500 text-center shadow-lg shadow-emerald-600/30"
+                  className="block px-4 py-3.5 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 text-center shadow-md"
                 >
                   Create Free Account
                 </Link>

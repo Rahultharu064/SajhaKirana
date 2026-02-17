@@ -6,8 +6,8 @@ import type { Category as CategoryType } from '../../../services/categoryService
 
 interface Category extends CategoryType {
   icon?: any;
-  gradient?: string;
-  shadowColor?: string;
+  color?: string;
+  bgLight?: string;
 }
 
 interface CategoriesProps {
@@ -30,14 +30,14 @@ const Categories = ({ onCategorySelect }: CategoriesProps) => {
 
   const getCategoryStyle = (index: number) => {
     const styles = [
-      { gradient: 'from-rose-500 to-pink-500', shadowColor: 'shadow-rose-500/30', bgLight: 'bg-rose-50' },
-      { gradient: 'from-blue-500 to-cyan-500', shadowColor: 'shadow-blue-500/30', bgLight: 'bg-blue-50' },
-      { gradient: 'from-amber-500 to-orange-500', shadowColor: 'shadow-amber-500/30', bgLight: 'bg-amber-50' },
-      { gradient: 'from-emerald-500 to-teal-500', shadowColor: 'shadow-emerald-500/30', bgLight: 'bg-emerald-50' },
-      { gradient: 'from-violet-500 to-purple-500', shadowColor: 'shadow-violet-500/30', bgLight: 'bg-violet-50' },
-      { gradient: 'from-fuchsia-500 to-pink-500', shadowColor: 'shadow-fuchsia-500/30', bgLight: 'bg-fuchsia-50' },
-      { gradient: 'from-indigo-500 to-blue-500', shadowColor: 'shadow-indigo-500/30', bgLight: 'bg-indigo-50' },
-      { gradient: 'from-lime-500 to-green-500', shadowColor: 'shadow-lime-500/30', bgLight: 'bg-lime-50' },
+      { color: 'rose', bgLight: 'bg-rose-50' },
+      { color: 'blue', bgLight: 'bg-blue-50' },
+      { color: 'amber', bgLight: 'bg-amber-50' },
+      { color: 'emerald', bgLight: 'bg-emerald-50' },
+      { color: 'violet', bgLight: 'bg-violet-50' },
+      { color: 'pink', bgLight: 'bg-pink-50' },
+      { color: 'indigo', bgLight: 'bg-indigo-50' },
+      { color: 'lime', bgLight: 'bg-lime-50' },
     ];
     return styles[index % styles.length];
   };
@@ -64,21 +64,16 @@ const Categories = ({ onCategorySelect }: CategoriesProps) => {
 
   if (loading) {
     return (
-      <section className="py-20 bg-gradient-to-b from-slate-50 to-cyan-50/30 flex justify-center items-center">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-cyan-100 rounded-full animate-spin"></div>
-          <div className="w-16 h-16 border-4 border-transparent border-t-cyan-600 rounded-full animate-spin absolute top-0 left-0"></div>
-          <Grid3X3 size={20} className="text-cyan-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-        </div>
+      <section className="py-20 bg-slate-50 flex justify-center items-center">
+        <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
       </section>
     );
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-slate-50 relative overflow-hidden">
-      {/* Background Decorations */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-cyan-200/30 to-transparent rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gradient-to-tl from-emerald-200/30 to-transparent rounded-full blur-3xl"></div>
+    <section className="py-20 bg-white relative overflow-hidden">
+      {/* Subtle Background */}
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-emerald-50 rounded-full blur-3xl opacity-50"></div>
 
       <div className="container-custom relative z-10">
         {/* Section Header */}
@@ -88,12 +83,12 @@ const Categories = ({ onCategorySelect }: CategoriesProps) => {
           viewport={{ once: true }}
           className="text-center mb-12 space-y-4"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-cyan-100 to-emerald-100 border border-cyan-200/50">
-            <Grid3X3 size={16} className="text-cyan-600" />
-            <span className="text-sm font-bold text-cyan-800">Shop by Category</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200">
+            <Grid3X3 size={16} className="text-emerald-600" />
+            <span className="text-sm font-semibold text-emerald-700">Shop by Category</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900">
-            Explore <span className="bg-gradient-to-r from-cyan-600 to-emerald-600 bg-clip-text text-transparent">Categories</span>
+            Explore <span className="text-emerald-600">Categories</span>
           </h2>
           <p className="text-slate-600 max-w-lg mx-auto text-base sm:text-lg">
             Browse through our wide range of fresh products and find what you need
@@ -113,13 +108,10 @@ const Categories = ({ onCategorySelect }: CategoriesProps) => {
               onClick={() => onCategorySelect(category)}
               className="group cursor-pointer"
             >
-              <div className="bg-white rounded-3xl p-5 border border-slate-100 hover:border-transparent hover:shadow-2xl transition-all duration-300 h-full flex flex-col items-center text-center gap-4">
+              <div className="bg-white rounded-xl p-5 border border-slate-200 hover:shadow-lg transition-all duration-300 h-full flex flex-col items-center text-center gap-4">
                 {/* Icon */}
-                <div className={`relative`}>
-                  <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} rounded-2xl blur-lg opacity-40 group-hover:opacity-60 transition-opacity`}></div>
-                  <div className={`relative bg-gradient-to-br ${category.gradient} p-4 rounded-2xl shadow-lg ${category.shadowColor}`}>
-                    {category.icon && <category.icon className="w-7 h-7 text-white" />}
-                  </div>
+                <div className={`bg-${category.color}-100 p-4 rounded-xl`}>
+                  {category.icon && <category.icon className={`w-7 h-7 text-${category.color}-600`} />}
                 </div>
 
                 {/* Name */}

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import ProductCard from '../../ui/ProductCard';
 import { getAllProducts } from '../../../services/productService';
-import { Sparkles, ArrowRight, TrendingUp } from 'lucide-react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 
 interface Product {
   id: number;
@@ -61,10 +61,9 @@ const FeaturedProducts = () => {
   };
 
   return (
-    <section className="py-20 bg-white relative overflow-hidden">
-      {/* Background Decorations */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-emerald-100/40 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-teal-100/40 to-transparent rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+    <section className="py-20 bg-slate-50 relative overflow-hidden">
+      {/* Subtle Background */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-50 rounded-full blur-3xl opacity-50"></div>
 
       <div className="container-custom relative z-10">
         {/* Section Header */}
@@ -75,12 +74,12 @@ const FeaturedProducts = () => {
             viewport={{ once: true }}
             className="space-y-4"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-100 to-teal-100 border border-emerald-200/50">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200">
               <Sparkles size={16} className="text-emerald-600" />
-              <span className="text-sm font-bold text-emerald-800">Top Quality Selection</span>
+              <span className="text-sm font-semibold text-emerald-700">Top Quality Selection</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900">
-              Featured <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Products</span>
+              Featured <span className="text-emerald-600">Products</span>
             </h2>
             <p className="text-slate-600 max-w-lg text-base sm:text-lg">
               Discover our handpicked selection of premium groceries, fresh from farm to your door.
@@ -102,11 +101,7 @@ const FeaturedProducts = () => {
 
         {loading ? (
           <div className="flex justify-center items-center py-24">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-emerald-100 rounded-full animate-spin"></div>
-              <div className="w-16 h-16 border-4 border-transparent border-t-emerald-600 rounded-full animate-spin absolute top-0 left-0"></div>
-              <Sparkles size={20} className="text-emerald-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-            </div>
+            <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
           </div>
         ) : (
           <>
@@ -135,7 +130,7 @@ const FeaturedProducts = () => {
             >
               <button
                 onClick={() => navigate('/products')}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-2xl font-bold shadow-lg shadow-emerald-500/30 hover:shadow-xl transition-all"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all"
               >
                 View All Products
                 <ArrowRight size={18} />

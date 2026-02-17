@@ -55,7 +55,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Container */}
-      <div className="relative aspect-square bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
+      <div className="relative aspect-square bg-slate-100 overflow-hidden">
         <img
           src={
             product.image?.startsWith('http')
@@ -70,12 +70,11 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
           }}
         />
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
 
         {/* Discount Badge */}
         {product.discount && product.discount > 0 && (
-          <div className="absolute top-3 left-3 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg shadow-rose-500/30 flex items-center gap-1">
+          <div className="px-3 py-1.5 bg-rose-500 text-white rounded-full text-xs font-bold shadow-md flex items-center gap-1">
             <span className="text-white/80">-</span>
             {product.discount}%
           </div>
@@ -85,8 +84,8 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
         <button
           onClick={handleWishlist}
           className={`absolute top-3 right-3 p-2.5 rounded-full transition-all duration-300 shadow-lg ${isWishlisted
-              ? 'bg-rose-500 text-white scale-110'
-              : 'bg-white/90 backdrop-blur-sm text-slate-400 hover:bg-rose-50 hover:text-rose-500'
+            ? 'bg-rose-500 text-white scale-110'
+            : 'bg-white/90 backdrop-blur-sm text-slate-400 hover:bg-rose-50 hover:text-rose-500'
             }`}
           aria-label="Add to wishlist"
         >
@@ -97,7 +96,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
         <div className={`absolute bottom-3 left-3 right-3 flex gap-2 transition-all duration-300 ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <button
             onClick={handleAddToCart}
-            className="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
+            className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all duration-200"
           >
             <ShoppingCart size={16} />
             Add to Cart
@@ -137,7 +136,7 @@ const ProductCard = ({ product, onViewDetails }: ProductCardProps) => {
 
         {/* Price */}
         <div className="flex items-baseline gap-2">
-          <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+          <span className="text-lg font-bold text-emerald-600">
             Rs. {product.price.toLocaleString()}
           </span>
           {product.mrp > product.price && (

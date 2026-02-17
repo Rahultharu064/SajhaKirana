@@ -62,13 +62,16 @@ function AppContent() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log('App: Initializing, token present:', !!token);
     if (token) {
-      console.log('App: Dispatching getCurrentUserAsync');
       dispatch(getCurrentUserAsync())
         .unwrap()
-        .then(user => console.log('App: User loaded:', user))
-        .catch(err => console.error('App: Failed to load user:', err));
+        .catch(err => {
+          // If token is invalid (401), clear it silently
+          if (err?.response?.status === 401 || err?.message?.includes('401')) {
+            localStorage.removeItem('token');
+          }
+          // Don't log errors for unauthenticated users
+        });
     }
   }, [dispatch]);
 
