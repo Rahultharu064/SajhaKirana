@@ -61,83 +61,68 @@ const FeaturedProducts = () => {
   };
 
   return (
-    <section className="py-20 bg-slate-50 relative overflow-hidden">
-      {/* Subtle Background */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-50 rounded-full blur-3xl opacity-50"></div>
+    <section className="py-24 bg-slate-50 relative overflow-hidden">
+      {/* Decorative Elements */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-100/30 rounded-full blur-[120px] -z-10" />
 
       <div className="container-custom relative z-10">
-        {/* Section Header */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-12 gap-6">
+        <div className="flex flex-col lg:flex-row justify-between items-end mb-16 gap-8 text-center lg:text-left">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="space-y-4"
+            className="space-y-4 max-w-2xl"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200">
-              <Sparkles size={16} className="text-emerald-600" />
-              <span className="text-sm font-semibold text-emerald-700">Top Quality Selection</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-black uppercase tracking-widest">
+              <Sparkles size={14} className="animate-pulse" />
+              <span>Premium Selects</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900">
-              Featured <span className="text-emerald-600">Products</span>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-tight">
+              Farm-To-Table <br className="hidden sm:block" />
+              <span className="text-gradient">Featured Freshness</span>
             </h2>
-            <p className="text-slate-600 max-w-lg text-base sm:text-lg">
-              Discover our handpicked selection of premium groceries, fresh from farm to your door.
+            <p className="text-slate-500 text-lg font-medium">
+              Hand-picked daily essentials from local organic farmers, quality tested for your family.
             </p>
           </motion.div>
 
           <motion.button
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate('/products')}
-            className="hidden lg:flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-semibold hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl group"
+            className="btn-premium px-8 py-4 flex items-center gap-3 hidden lg:flex"
           >
-            View All Products
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            <span className="text-sm uppercase tracking-widest font-black">View All Collection</span>
+            <ArrowRight size={20} />
           </motion.button>
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center py-24">
-            <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="glass-card rounded-[2.5rem] h-[500px] animate-pulse bg-white/50" />
+            ))}
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {mapProductsToCardFormat(products).map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <ProductCard
-                    product={product as any}
-                    onViewDetails={() => handleViewDetails(product.slug)}
-                  />
-                </motion.div>
-              ))}
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mt-10 text-center lg:hidden"
-            >
-              <button
-                onClick={() => navigate('/products')}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all"
-              >
-                View All Products
-                <ArrowRight size={18} />
-              </button>
-            </motion.div>
-          </>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {mapProductsToCardFormat(products).map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product as any}
+                onViewDetails={() => handleViewDetails(product.slug)}
+              />
+            ))}
+          </div>
         )}
+
+        <div className="mt-16 text-center lg:hidden">
+          <button
+            onClick={() => navigate('/products')}
+            className="btn-premium w-full sm:w-auto px-10 py-5"
+          >
+            See All Products
+          </button>
+        </div>
       </div>
     </section>
   );

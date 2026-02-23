@@ -1,56 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --animate-fadeIn: fadeIn 0.5s ease-out forwards;
-  --animate-slideIn: slideIn 0.5s ease-out forwards;
-  --animate-scaleIn: scaleIn 0.4s ease-out forwards;
+  --animate-fadeIn: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-slideUp: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-scaleIn: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-float: float 6s ease-in-out infinite;
 
-  /* Professional Color Palette */
-  --color-primary: #10b981;
-  /* emerald-500 */
-  --color-primary-dark: #059669;
-  /* emerald-600 */
-  --color-secondary: #06b6d4;
-  /* cyan-500 */
-  --color-accent: #8b5cf6;
-  /* violet-500 */
-  --color-success: #22c55e;
-  /* green-500 */
-  --color-warning: #f59e0b;
-  /* amber-500 */
-  --color-error: #ef4444;
-  /* red-500 */
+  /* Premium High-End Color Palette */
+  --color-brand-primary: #10b981;
+  /* Emerald 500 */
+  --color-brand-secondary: #0ea5e9;
+  /* Sky 500 */
+  --color-brand-accent: #8b5cf6;
+  /* Violet 500 */
+  --color-brand-surface: #f8fafc;
+  /* Slate 50 */
 
-  /* Neutral Colors */
-  --color-gray-50: #f8fafc;
-  --color-gray-100: #f1f5f9;
-  --color-gray-900: #0f172a;
+  --color-glass-white: rgba(255, 255, 255, 0.7);
+  --color-glass-dark: rgba(15, 23, 42, 0.7);
 
-  /* Animation Keyframes - Moved outside @theme */
+  /* Font Family */
+  --font-heading: 'Outfit', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
 }
 
-/* Animation Keyframes - Moved outside @theme block to comply with CSS rules */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
 
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
   }
 }
 
@@ -66,35 +58,11 @@
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-@keyframes ping {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  50% {
-    transform: scale(1.1);
-    opacity: 0.9;
-  }
-}
-
 @keyframes float {
 
   0%,
   100% {
-    transform: translateY(0px);
+    transform: translateY(0);
   }
 
   50% {
@@ -102,23 +70,29 @@
   }
 }
 
-@keyframes gradient {
+@keyframes pulse-soft {
 
   0%,
   100% {
-    background-position: 0% 50%;
+    opacity: 1;
+    transform: scale(1);
   }
 
   50% {
-    background-position: 100% 50%;
+    opacity: 0.8;
+    transform: scale(1.02);
   }
 }
 
-/* Typography System */
+/* Global Styles */
+:root {
+  --brand-gradient: linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-brand-secondary) 100%);
+  --brand-gradient-hover: linear-gradient(135deg, var(--color-brand-primary) 20%, var(--color-brand-secondary) 120%);
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-body);
+  @apply text-slate-800 bg-slate-50 antialiased;
 }
 
 h1,
@@ -127,613 +101,87 @@ h3,
 h4,
 h5,
 h6 {
-  font-weight: 700;
-  line-height: 1.3;
+  font-family: var(--font-heading);
+  @apply font-bold tracking-tight text-slate-900;
 }
 
-/* Progress Bar */
-.progress-bar-fill {
-  background-color: #fbbf24;
-  height: 12px;
-  border-radius: 9999px;
-  transition: all 0.5s;
-  width: var(--bar-width);
+/* Glassmorphism Utilities */
+.glass {
+  @apply bg-white/70 backdrop-blur-xl border border-white/30 shadow-xl;
 }
 
-/* Custom Scrollbar Styles */
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.glass-dark {
+  @apply bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl;
 }
 
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
+.glass-card {
+  @apply bg-white/60 backdrop-blur-md border border-white/40 shadow-sm transition-all duration-300 hover:shadow-xl hover:bg-white/80 hover:-translate-y-1;
 }
 
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  @apply bg-slate-300/50 rounded-sm;
+/* Premium Gradients */
+.bg-brand-gradient {
+  background: var(--brand-gradient);
 }
 
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400/70;
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-brand-gradient;
 }
 
-.dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  @apply bg-slate-700/50;
+/* Button System */
+.btn-premium {
+  @apply relative inline-flex items-center justify-center px-6 py-3 font-semibold text-white transition-all duration-300 rounded-2xl bg-brand-gradient hover:scale-[1.02] active:scale-[0.98] shadow-[0_10px_20px_-10px_rgba(16, 185, 129, 0.5)];
 }
 
-.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-600/70;
+.btn-premium-outline {
+  @apply relative inline-flex items-center justify-center px-6 py-3 font-semibold transition-all duration-300 rounded-2xl border-2 border-emerald-500/30 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-500;
 }
 
-/* Hide Scrollbar */
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+.btn-glass {
+  @apply inline-flex items-center justify-center px-5 py-2.5 font-medium transition-all duration-300 rounded-xl glass hover:bg-white/90;
 }
 
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* Layout Utilities */
+.section-container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24;
 }
 
-/* Scrollbar Track Color */
-.scrollbar-track-slate::-webkit-scrollbar-track {
-  @apply bg-slate-100 dark:bg-slate-800;
+/* Form Styles */
+.input-premium {
+  @apply w-full px-4 py-3 bg-white/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none;
 }
 
-/* Loading Shimmer Effect */
-.loading-shimmer {
-  background: linear-gradient(90deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.2) 50%,
-      rgba(255, 255, 255, 0) 100%);
-  background-size: 1000px 100%;
-  animation: shimmer 2s infinite;
+/* Micro-animations */
+.hover-lift {
+  @apply transition-transform duration-300 hover:-translate-y-2;
 }
 
-.dark .loading-shimmer {
-  background: linear-gradient(90deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      rgba(255, 255, 255, 0) 100%);
-  background-size: 1000px 100%;
+.hover-glow {
+  @apply transition-shadow duration-300 hover:shadow-[0_0_30px_rgba(16, 185, 129, 0.2)];
 }
 
-/* Notification Animation */
-.notification-dot {
-  animation: ping 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* Floating Animation */
-.float-animation {
-  animation: float 3s ease-in-out infinite;
+::-webkit-scrollbar-track {
+  @apply bg-slate-100;
 }
 
-/* Glass Morphism Utilities */
-.glass-effect {
-  @apply bg-white/70 backdrop-blur-lg border border-white/30;
-}
-
-.dark .glass-effect {
-  @apply bg-slate-900/70 backdrop-blur-lg border-white/10;
-}
-
-/* Gradient Text */
-.gradient-text {
-  @apply text-emerald-600;
-}
-
-/* Animated Gradient */
-.animate-gradient {
-  background-size: 200% auto;
-  animation: gradient 3s ease infinite;
-}
-
-/* Professional Button Styles */
-.btn-primary {
-  @apply inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-white bg-emerald-600 hover:bg-emerald-700 shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5;
-}
-
-.btn-secondary {
-  @apply inline-flex items-center justify-center px-8 py-4 rounded-xl font-semibold text-slate-700 bg-white hover:bg-slate-50 border-2 border-slate-200 hover:border-emerald-500 shadow-sm hover:shadow-md transition-all duration-200;
-}
-
-.btn-ghost {
-  @apply inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 transition-all duration-200;
-}
-
-/* Card Styles */
-.card-modern {
-  @apply bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-emerald-200 transition-all duration-300 hover:-translate-y-1;
-}
-
-.card-glass {
-  @apply bg-white/95 backdrop-blur-sm rounded-xl border border-slate-200 shadow-md;
-}
-
-/* Input Styles */
-.input-modern {
-  @apply w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all duration-200 placeholder:text-slate-400;
-}
-
-/* Recharts Custom Styles */
-.recharts-wrapper {
-  @apply transition-all duration-300;
-}
-
-/* Section Spacing */
-.section-padding {
-  @apply py-16 sm:py-20 lg:py-24;
-}
-
-.container-custom {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full border-2 border-transparent bg-clip-content hover:bg-slate-400;
 }
 
 /* Badge Styles */
-.badge {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold;
+.badge-premium {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200;
 }
 
-.badge-success {
-  @apply bg-emerald-100 text-emerald-700 border border-emerald-200;
+/* Animations */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
 
-.badge-warning {
-  @apply bg-amber-100 text-amber-700 border border-amber-200;
-}
-
-.badge-info {
-  @apply bg-blue-100 text-blue-700 border border-blue-200;
-}
-
-/* Hover Lift Effect */
-.hover-lift {
-  @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
-}
-
-/* Print Utilities */
-@media print {
-  .no-print {
-    display: none !important;
-  }
-}
-
-/* ===== MOBILE DEVICE SPECIFIC OPTIMIZATIONS ===== */
-
-/* iPhone SE, 5, 5S (320px) - Smallest iPhone */
-@media (max-width: 375px) {
-  body {
-    font-size: 14px;
-  }
-
-  h1 {
-    font-size: 1.75rem;
-    line-height: 1.2;
-  }
-
-  h2 {
-    font-size: 1.5rem;
-    line-height: 1.3;
-  }
-
-  h3 {
-    font-size: 1.25rem;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    @apply px-5 py-2.5 text-sm;
-  }
-
-  .card-modern {
-    @apply p-3;
-  }
-
-  .section-padding {
-    @apply py-10;
-  }
-
-  .container-custom {
-    @apply px-3;
-  }
-}
-
-/* iPhone 6/7/8, iPhone SE 2020/2022, Android Small (375px - 413px) */
-@media (min-width: 375px) and (max-width: 413px) {
-  h1 {
-    font-size: 2rem;
-    line-height: 1.2;
-  }
-
-  h2 {
-    font-size: 1.75rem;
-    line-height: 1.3;
-  }
-
-  h3 {
-    font-size: 1.5rem;
-  }
-
-  .section-padding {
-    @apply py-12;
-  }
-}
-
-/* iPhone 12/13/14 mini (375px width but taller) */
-@media (min-width: 375px) and (min-height: 812px) {
-  .min-h-screen {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-  }
-}
-
-/* iPhone 12/13/14/15, iPhone 14 Plus, Android Medium (390px - 428px) */
-@media (min-width: 390px) and (max-width: 428px) {
-  h1 {
-    font-size: 2.25rem;
-    line-height: 1.2;
-  }
-
-  h2 {
-    font-size: 1.875rem;
-    line-height: 1.3;
-  }
-
-  .btn-primary,
-  .btn-secondary {
-    @apply px-6 py-3 text-base;
-  }
-}
-
-/* iPhone 14 Pro Max, 15 Pro Max, Android Large (428px - 480px) */
-@media (min-width: 428px) and (max-width: 480px) {
-  h1 {
-    font-size: 2.5rem;
-  }
-
-  h2 {
-    font-size: 2rem;
-  }
-
-  .container-custom {
-    @apply px-5;
-  }
-}
-
-/* Responsive Mobile Utilities (All phones up to 640px) */
-@media (max-width: 640px) {
-  .mobile-padding {
-    @apply px-4;
-  }
-
-  .mobile-text-sm {
-    @apply text-sm;
-  }
-
-  /* Default mobile styles */
-  .card-modern {
-    @apply p-4;
-  }
-
-  /* Safe area for notched phones (iPhone X and newer) */
-  .safe-top {
-    padding-top: env(safe-area-inset-top);
-  }
-
-  .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  .safe-left {
-    padding-left: env(safe-area-inset-left);
-  }
-
-  .safe-right {
-    padding-right: env(safe-area-inset-right);
-  }
-
-  /* Prevent zoom on input focus (iOS Safari) */
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="tel"],
-  input[type="number"],
-  textarea,
-  select {
-    font-size: 16px !important;
-  }
-
-  /* Fix iOS Safari bottom bar issue */
-  .full-viewport {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-  }
-}
-
-/* Tablet Utilities - iPad, Android Tablets (641px - 1024px) */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .tablet-padding {
-    @apply px-6;
-  }
-
-  h1 {
-    font-size: 2.5rem;
-  }
-
-  h2 {
-    font-size: 2rem;
-  }
-
-  .section-padding {
-    @apply py-16;
-  }
-
-  /* iPad specific optimizations */
-  .container-custom {
-    @apply max-w-5xl;
-  }
-}
-
-/* iPad Mini, Small Tablets (768px - 820px) */
-@media (min-width: 768px) and (max-width: 820px) {
-  .grid-responsive-4 {
-    @apply grid-cols-3;
-  }
-
-  .grid-responsive-6 {
-    @apply grid-cols-4;
-  }
-}
-
-/* iPad Air, iPad Pro 11" (820px - 1024px) */
-@media (min-width: 820px) and (max-width: 1024px) {
-  .grid-responsive-4 {
-    @apply grid-cols-3;
-  }
-
-  .grid-responsive-6 {
-    @apply grid-cols-5;
-  }
-}
-
-/* iPad Pro 12.9" Portrait (1024px - 1366px) */
-@media (min-width: 1024px) and (max-width: 1366px) and (orientation: portrait) {
-  .container-custom {
-    @apply max-w-6xl px-12;
-  }
-
-  h1 {
-    font-size: 3.5rem;
-  }
-
-  h2 {
-    font-size: 2.5rem;
-  }
-}
-
-/* Desktop Utilities */
-@media (min-width: 1025px) {
-  .desktop-padding {
-    @apply px-8;
-  }
-}
-
-/* Touch Device Optimizations (All iOS and Android) */
-@media (hover: none) and (pointer: coarse) {
-
-  /* Larger touch targets */
-  button,
-  a,
-  input[type="button"],
-  input[type="submit"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* Remove hover effects on touch devices */
-  .hover-lift:hover {
-    transform: none;
-  }
-
-  /* Improve tap highlighting */
-  * {
-    -webkit-tap-highlight-color: rgba(16, 185, 129, 0.2);
-    -webkit-touch-callout: none;
-  }
-
-  /* Prevent text selection on double-tap */
-  .no-select {
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
-  /* Smooth scrolling for touch */
-  * {
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* Landscape Mobile Orientation (All phones in landscape) */
-@media (max-width: 896px) and (orientation: landscape) {
-  .section-padding {
-    @apply py-8;
-  }
-
-  /* Reduce hero height on landscape */
-  section[class*="min-h-"] {
-    min-height: 80vh;
-  }
-
-  /* Make better use of horizontal space */
-  .landscape-cols-2 {
-    @apply grid-cols-2;
-  }
-
-  /* Reduce vertical padding */
-  .card-modern {
-    @apply py-3;
-  }
-}
-
-/* Landscape Tablet Orientation */
-@media (min-width: 768px) and (max-width: 1366px) and (orientation: landscape) {
-  .section-padding {
-    @apply py-12;
-  }
-
-  .container-custom {
-    @apply max-w-7xl;
-  }
-}
-
-/* High DPI / Retina Displays (iPhone, high-end Android) */
-@media (-webkit-min-device-pixel-ratio: 2),
-(min-resolution: 192dpi) {
-
-  /* Optimize for crisp images on retina */
-  .img-responsive {
-    image-rendering: -webkit-optimize-contrast;
-  }
-
-  /* Thinner borders look better on retina */
-  .border {
-    border-width: 0.5px;
-  }
-}
-
-/* Dark Mode Support (iOS 13+, Android 10+) */
-@media (prefers-color-scheme: dark) {
-  /* Add dark mode support if needed */
-  /* Currently using light theme */
-}
-
-/* Reduced Motion (Accessibility - iOS, Android) */
-@media (prefers-reduced-motion: reduce) {
-
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Container Responsive Utilities */
-.container-fluid {
-  @apply w-full px-4 sm:px-6 lg:px-8;
-}
-
-.container-narrow {
-  @apply max-w-4xl mx-auto px-4 sm:px-6;
-}
-
-.container-wide {
-  @apply max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12;
-}
-
-/* Grid Responsive Utilities */
-.grid-responsive-2 {
-  @apply grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6;
-}
-
-.grid-responsive-3 {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
-}
-
-.grid-responsive-4 {
-  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8;
-}
-
-.grid-responsive-6 {
-  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-6;
-}
-
-/* Flex Responsive Utilities */
-.flex-responsive {
-  @apply flex flex-col sm:flex-row gap-4;
-}
-
-.flex-responsive-reverse {
-  @apply flex flex-col-reverse sm:flex-row gap-4;
-}
-
-/* Text Responsive Utilities */
-.text-responsive-xl {
-  @apply text-2xl sm:text-3xl lg:text-4xl xl:text-5xl;
-}
-
-.text-responsive-lg {
-  @apply text-xl sm:text-2xl lg:text-3xl;
-}
-
-.text-responsive-base {
-  @apply text-sm sm:text-base lg:text-lg;
-}
-
-/* Spacing Responsive Utilities */
-.spacing-responsive {
-  @apply space-y-4 sm:space-y-6 lg:space-y-8;
-}
-
-.gap-responsive {
-  @apply gap-4 sm:gap-6 lg:gap-8;
-}
-
-/* Image Responsive */
-.img-responsive {
-  @apply w-full h-auto object-cover;
-}
-
-/* Hide/Show Responsive */
-.mobile-only {
-  @apply block sm:hidden;
-}
-
-.tablet-up {
-  @apply hidden sm:block;
-}
-
-.desktop-only {
-  @apply hidden lg:block;
-}
-
-/* iOS Specific Fixes */
-@supports (-webkit-touch-callout: none) {
-
-  /* Fix for iOS Safari viewport height */
-  .ios-full-height {
-    height: -webkit-fill-available;
-  }
-
-  /* Fix for iOS bounce scroll */
-  body {
-    position: fixed;
-    overflow: hidden;
-    width: 100%;
-  }
-
-  #root {
-    overflow-y: auto;
-    height: 100vh;
-    height: -webkit-fill-available;
-  }
-}
-
-/* Android Specific Fixes */
-@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-device-width: 320px) and (max-device-width: 812px) {
-
-  /* Fix for Android Chrome address bar */
-  .android-viewport {
-    min-height: calc(100vh - 56px);
-  }
-}
-
-/* Custom Select Arrow */
-.custom-select-arrow {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7' /%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
+.animate-pulse-soft {
+  animation: pulse-soft 3s ease-in-out infinite;
 }
