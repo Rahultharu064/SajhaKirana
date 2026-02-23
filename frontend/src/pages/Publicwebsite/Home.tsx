@@ -7,7 +7,7 @@ import FeaturedProducts from '../../components/Publicwebsite/Homepage/FeaturedPr
 import BestSelling from '../../components/Publicwebsite/Homepage/BestSelling';
 import NewArrivals from '../../components/Publicwebsite/Homepage/NewArrivals';
 import Categories from '../../components/Publicwebsite/Homepage/Categories';
-import { Sparkles, Truck, Shield, Clock, Gift, HeadphonesIcon, CreditCard } from 'lucide-react';
+import { Sparkles, Truck, Shield, Clock, Gift, HeadphonesIcon, CreditCard, Sprout, Zap, Banknote, Lock, Bot, PhoneCall } from 'lucide-react';
 
 interface Category {
   id: number;
@@ -112,35 +112,56 @@ const Home = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">
-              Why Choose <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">SajhaKirana</span>?
+              Why should you use <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">our service?</span>
             </h2>
             <p className="text-slate-600 max-w-lg mx-auto">
               We're committed to providing the best shopping experience with quality products and exceptional service.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                icon: Sparkles,
-                title: 'Fresh & Quality',
-                desc: 'All products are sourced directly from farms and quality-checked before delivery.',
+                icon: Sprout,
+                title: '👨‍🌾 Fresh Farm Products',
+                desc: 'Directly sourced from local farms to ensure maximum freshness and quality.',
                 gradient: 'from-emerald-500 to-teal-500',
                 shadow: 'shadow-emerald-500/20'
               },
               {
-                icon: CreditCard,
-                title: 'Easy Payment',
-                desc: 'Multiple payment options including Cash on Delivery, eSewa, and Khalti.',
-                gradient: 'from-violet-500 to-purple-500',
-                shadow: 'shadow-violet-500/20'
-              },
-              {
-                icon: Truck,
-                title: 'Fast Delivery',
-                desc: 'Get your orders delivered within 30 minutes in Kathmandu valley.',
+                icon: Zap,
+                title: '⚡ Fast Delivery',
+                desc: 'Lightning fast 30-minute delivery within the valley for all your essentials.',
                 gradient: 'from-amber-500 to-orange-500',
                 shadow: 'shadow-amber-500/20'
+              },
+              {
+                icon: Banknote,
+                title: '💰 Best Price Guarantee',
+                desc: 'Premium quality products at the most competitive wholesale prices in the market.',
+                gradient: 'from-blue-500 to-cyan-500',
+                shadow: 'shadow-blue-500/20'
+              },
+              {
+                icon: Lock,
+                title: '🔒 Secure Payments',
+                desc: '100% encrypted and protected payment gateways for all your transactions.',
+                gradient: 'from-indigo-500 to-violet-500',
+                shadow: 'shadow-indigo-500/20'
+              },
+              {
+                icon: Bot,
+                title: '🤖 AI Recommendations',
+                desc: 'Smart shopping assistant that learns your preferences for personalized deals.',
+                gradient: 'from-purple-500 to-fuchsia-500',
+                shadow: 'shadow-purple-500/20'
+              },
+              {
+                icon: PhoneCall,
+                title: '📞 24/7 Support',
+                desc: 'Our dedicated team is available around the clock to assist you with any queries.',
+                gradient: 'from-rose-500 to-pink-500',
+                shadow: 'shadow-rose-500/20'
               },
             ].map((item, index) => (
               <motion.div
@@ -148,7 +169,7 @@ const Home = () => {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.15 }}
+                transition={{ delay: index * 0.1 }}
                 className="bg-white rounded-3xl p-8 border border-slate-100 hover:shadow-2xl transition-all duration-300 group"
               >
                 <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-6 shadow-xl ${item.shadow} group-hover:scale-110 transition-transform`}>
