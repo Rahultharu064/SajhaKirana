@@ -36,13 +36,8 @@ const NewArrivals = () => {
     fetchProducts();
   }, []);
 
-  const handleViewDetails = (productId: number) => {
-    const product = products.find(p => p.id === productId);
-    if (product?.slug) {
-      navigate(`/product/${product.slug}`);
-    } else {
-      navigate(`/product/${productId}`);
-    }
+  const handleViewDetails = (slugOrId: string) => {
+    navigate(`/product/${slugOrId}`);
   };
 
   const mapProductsToCardFormat = (products: Product[]) => {
@@ -100,7 +95,7 @@ const NewArrivals = () => {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid-products">
             {mapProductsToCardFormat(products).map((product, index) => (
               <motion.div
                 key={`new-${product.id}`}

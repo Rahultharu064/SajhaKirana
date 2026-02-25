@@ -277,7 +277,7 @@ export default function ProductsPage() {
               </div>
             ) : products.length > 0 ? (
               <>
-                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <div className="grid-products">
                   <AnimatePresence mode="popLayout">
                     {products.map((product) => (
                       <ProductCard

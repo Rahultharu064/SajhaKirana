@@ -89,7 +89,7 @@ const Categories = ({ onCategorySelect }: CategoriesProps) => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 sm:gap-8">
+        <div className="grid-categories">
           {categories.map((category, idx) => (
             <motion.div
               key={category.id}

@@ -98,13 +98,13 @@ const FeaturedProducts = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid-products">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="glass-card rounded-[2.5rem] h-[500px] animate-pulse bg-white/50" />
+              <div key={i} className="glass-card rounded-[2.5rem] h-[400px] animate-pulse bg-white/50" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid-products">
             {mapProductsToCardFormat(products).map((product) => (
               <ProductCard
                 key={product.id}

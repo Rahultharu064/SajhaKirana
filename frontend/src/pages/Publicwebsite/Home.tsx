@@ -29,15 +29,16 @@ const Home = () => {
       <Hero />
 
       {/* Trust Badges Section */}
-      <section className="py-8 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+      <section className="py-12 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/subtle-dots.png')] opacity-10"></div>
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
         <div className="container-custom relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: Truck, title: 'Free Delivery', desc: 'On orders over Rs. 1000', color: 'from-emerald-400 to-teal-500' },
-              { icon: Shield, title: 'Secure Payment', desc: '100% protected checkout', color: 'from-violet-400 to-purple-500' },
-              { icon: Clock, title: 'Fast Shipping', desc: '30 min express delivery', color: 'from-amber-400 to-orange-500' },
-              { icon: HeadphonesIcon, title: '24/7 Support', desc: 'Always here to help', color: 'from-pink-400 to-rose-500' },
+              { icon: Truck, title: 'Free Delivery', desc: 'Orders over Rs. 1000', color: 'bg-emerald-500' },
+              { icon: Shield, title: 'Secure Pay', desc: '100% Protected', color: 'bg-violet-500' },
+              { icon: Clock, title: 'Express', desc: '30 Min Delivery', color: 'bg-amber-500' },
+              { icon: HeadphonesIcon, title: 'Live Support', desc: '24/7 Assistance', color: 'bg-rose-500' },
             ].map((item, index) => (
               <motion.div
                 key={index}
@@ -45,14 +46,14 @@ const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all"
+                className="flex items-center gap-4 p-5 rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 transition-all group"
               >
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}>
+                <div className={`w-12 h-12 rounded-2xl ${item.color} flex-center shadow-lg group-hover:scale-110 transition-transform`}>
                   <item.icon size={22} className="text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-sm">{item.title}</h3>
-                  <p className="text-slate-400 text-xs">{item.desc}</p>
+                  <h3 className="font-black text-white text-xs sm:text-sm uppercase tracking-wider">{item.title}</h3>
+                  <p className="text-slate-400 text-[10px] sm:text-xs font-medium">{item.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -63,38 +64,41 @@ const Home = () => {
       <FeaturedProducts />
 
       {/* Promotional Banner */}
-      <section className="py-16 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+      <section className="py-24 bg-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-600/20 to-indigo-600/20"></div>
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-violet-500/20 rounded-full blur-[100px]"></div>
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-emerald-500/20 rounded-full blur-[100px]"></div>
 
-        <div className="container-custom relative z-10 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="max-w-3xl mx-auto"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm mb-6">
-              <Gift size={18} className="text-yellow-300" />
-              <span className="text-sm font-bold text-white">Limited Time Offer</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4">
-              Get <span className="text-yellow-300">30% OFF</span> on Your First Order
-            </h2>
-            <p className="text-lg text-white/80 mb-8 max-w-xl mx-auto">
-              Use code <span className="font-mono bg-white/20 px-3 py-1 rounded-lg font-bold">WELCOME30</span> at checkout
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/products')}
-              className="px-8 py-4 bg-white text-violet-600 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all inline-flex items-center gap-2"
+        <div className="container-custom relative z-10">
+          <div className="glass-dark rounded-[3.5rem] p-8 sm:p-16 text-center border-white/5 overflow-hidden relative">
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="relative z-10 max-w-3xl mx-auto"
             >
-              <Sparkles size={20} />
-              Shop Now
-            </motion.button>
-          </motion.div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10 mb-8">
+                <Gift size={18} className="text-amber-400" />
+                <span className="text-xs font-black text-white uppercase tracking-widest">Limited Time Offer</span>
+              </div>
+              <h2 className="text-4xl sm:text-5xl lg:text-7xl font-black text-white mb-6 leading-tight">
+                Fresh Savings <br />
+                <span className="text-gradient">30% DISCOUNT</span>
+              </h2>
+              <p className="text-lg text-slate-400 mb-10 max-w-xl mx-auto font-medium">
+                Experience the premium farm-to-table delivery. Use code <span className="text-white font-black bg-white/10 px-3 py-1 rounded-lg">FARM30</span>
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/products')}
+                className="btn-premium px-12 py-5 text-lg"
+              >
+                Claim Your Discount
+              </motion.button>
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -103,65 +107,65 @@ const Home = () => {
       <Categories onCategorySelect={handleCategorySelect} />
 
       {/* Features Section */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-24 bg-white relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-slate-50/50 -z-10 skew-y-3"></div>
         <div className="container-custom">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-20"
           >
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4">
-              Why should you use <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">our service?</span>
+            <div className="inline-flex items-center gap-3 mb-6">
+              <div className="h-px w-12 bg-slate-200"></div>
+              <span className="text-emerald-600 font-black text-xs uppercase tracking-[0.3em]">The Sajha Way</span>
+              <div className="h-px w-12 bg-slate-200"></div>
+            </div>
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 mb-6">
+              Why Choose <span className="text-gradient">Sajha Kirana?</span>
             </h2>
-            <p className="text-slate-600 max-w-lg mx-auto">
-              We're committed to providing the best shopping experience with quality products and exceptional service.
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg font-medium">
+              We've redesigned the grocery experience from the ground up to bring you premium quality with unmatched speed.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
             {[
               {
                 icon: Sprout,
-                title: '👨‍🌾 Fresh Farm Products',
-                desc: 'Directly sourced from local farms to ensure maximum freshness and quality.',
-                gradient: 'from-emerald-500 to-teal-500',
-                shadow: 'shadow-emerald-500/20'
+                title: 'Organic Sourcing',
+                desc: 'Direct partnerships with ethical local farms for zero-compromise freshness.',
+                color: 'bg-emerald-500',
               },
               {
                 icon: Zap,
-                title: '⚡ Fast Delivery',
-                desc: 'Lightning fast 30-minute delivery within the valley for all your essentials.',
-                gradient: 'from-amber-500 to-orange-500',
-                shadow: 'shadow-amber-500/20'
+                title: '30-Min Delivery',
+                desc: 'Proprietary logistics network ensuring your groceries arrive while they are still fresh.',
+                color: 'bg-amber-500',
               },
               {
                 icon: Banknote,
-                title: '💰 Best Price Guarantee',
-                desc: 'Premium quality products at the most competitive wholesale prices in the market.',
-                gradient: 'from-blue-500 to-cyan-500',
-                shadow: 'shadow-blue-500/20'
+                title: 'Wholesale Rates',
+                desc: 'Direct-to-consumer model that eliminates middlemen and saves you up to 25% daily.',
+                color: 'bg-blue-500',
               },
               {
                 icon: Lock,
-                title: '🔒 Secure Payments',
-                desc: '100% encrypted and protected payment gateways for all your transactions.',
-                gradient: 'from-indigo-500 to-violet-500',
-                shadow: 'shadow-indigo-500/20'
+                title: 'Secure Checkout',
+                desc: 'Military grade encryption for all your financial data and personal information.',
+                color: 'bg-indigo-500',
               },
               {
                 icon: Bot,
-                title: '🤖 AI Recommendations',
-                desc: 'Smart shopping assistant that learns your preferences for personalized deals.',
-                gradient: 'from-purple-500 to-fuchsia-500',
-                shadow: 'shadow-purple-500/20'
+                title: 'AI Smart Cart',
+                desc: 'Intelligent assistant that learns your dietary needs and suggests the best seasonal picks.',
+                color: 'bg-purple-500',
               },
               {
                 icon: PhoneCall,
-                title: '📞 24/7 Support',
-                desc: 'Our dedicated team is available around the clock to assist you with any queries.',
-                gradient: 'from-rose-500 to-pink-500',
-                shadow: 'shadow-rose-500/20'
+                title: 'Human Support',
+                desc: 'Round the clock assistance from real people who care about your family needs.',
+                color: 'bg-rose-500',
               },
             ].map((item, index) => (
               <motion.div
@@ -170,13 +174,13 @@ const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-3xl p-8 border border-slate-100 hover:shadow-2xl transition-all duration-300 group"
+                className="glass-card rounded-[3rem] p-10 hover:border-emerald-500/30 group"
               >
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-6 shadow-xl ${item.shadow} group-hover:scale-110 transition-transform`}>
+                <div className={`w-16 h-16 rounded-[1.5rem] ${item.color} flex-center mb-8 shadow-xl shadow-slate-200 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
                   <item.icon size={28} className="text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{item.title}</h3>
-                <p className="text-slate-600 leading-relaxed">{item.desc}</p>
+                <h3 className="text-2xl font-black text-slate-900 mb-4 tracking-tight">{item.title}</h3>
+                <p className="text-slate-500 font-medium leading-relaxed">{item.desc}</p>
               </motion.div>
             ))}
           </div>

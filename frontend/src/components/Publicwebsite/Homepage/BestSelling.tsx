@@ -36,13 +36,8 @@ const BestSelling = () => {
     fetchProducts();
   }, []);
 
-  const handleViewDetails = (productId: number) => {
-    const product = products.find(p => p.id === productId);
-    if (product?.slug) {
-      navigate(`/product/${product.slug}`);
-    } else {
-      navigate(`/product/${productId}`);
-    }
+  const handleViewDetails = (slugOrId: string) => {
+    navigate(`/product/${slugOrId}`);
   };
 
   const mapProductsToCardFormat = (products: Product[]) => {
@@ -118,7 +113,7 @@ const BestSelling = () => {
 
             {/* Products Carousel */}
             <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-              <div className="flex gap-6 pb-4 min-w-max lg:grid lg:grid-cols-5 lg:min-w-0">
+              <div className="flex gap-6 pb-4 min-w-max lg:grid-products lg:min-w-0">
                 {mapProductsToCardFormat(products).map((product, index) => (
                   <motion.div
                     key={`bestseller-${product.id}`}

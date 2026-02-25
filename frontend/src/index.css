@@ -6,93 +6,20 @@
   --animate-scaleIn: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-float: float 6s ease-in-out infinite;
 
-  /* Premium High-End Color Palette */
   --color-brand-primary: #10b981;
-  /* Emerald 500 */
   --color-brand-secondary: #0ea5e9;
-  /* Sky 500 */
   --color-brand-accent: #8b5cf6;
-  /* Violet 500 */
   --color-brand-surface: #f8fafc;
-  /* Slate 50 */
 
-  --color-glass-white: rgba(255, 255, 255, 0.7);
-  --color-glass-dark: rgba(15, 23, 42, 0.7);
-
-  /* Font Family */
   --font-heading: 'Outfit', 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes pulse-soft {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.8;
-    transform: scale(1.02);
-  }
-}
-
-/* Global Styles */
-:root {
-  --brand-gradient: linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-brand-secondary) 100%);
-  --brand-gradient-hover: linear-gradient(135deg, var(--color-brand-primary) 20%, var(--color-brand-secondary) 120%);
-}
-
+/* Standard CSS instead of Tailwind specific directives to avoid build issues */
 body {
   font-family: var(--font-body);
-  @apply text-slate-800 bg-slate-50 antialiased;
+  color: #1e293b;
+  background-color: #f8fafc;
 }
 
 h1,
@@ -102,86 +29,124 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
-  @apply font-bold tracking-tight text-slate-900;
+  font-weight: 700;
+  color: #0f172a;
 }
 
-/* Glassmorphism Utilities */
-.glass {
-  @apply bg-white/70 backdrop-blur-xl border border-white/30 shadow-xl;
-}
-
-.glass-dark {
-  @apply bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl;
-}
-
-.glass-card {
-  @apply bg-white/60 backdrop-blur-md border border-white/40 shadow-sm transition-all duration-300 hover:shadow-xl hover:bg-white/80 hover:-translate-y-1;
-}
-
-/* Premium Gradients */
 .bg-brand-gradient {
-  background: var(--brand-gradient);
+  background-image: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
 }
 
 .text-gradient {
-  @apply bg-clip-text text-transparent bg-brand-gradient;
+  background-image: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-/* Button System */
+.glass {
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-dark {
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card {
+  background-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+}
+
 .btn-premium {
-  @apply relative inline-flex items-center justify-center px-6 py-3 font-semibold text-white transition-all duration-300 rounded-2xl bg-brand-gradient hover:scale-[1.02] active:scale-[0.98] shadow-[0_10px_20px_-10px_rgba(16, 185, 129, 0.5)];
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  color: white;
+  border-radius: 1rem;
+  background-image: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+  transition: all 0.3s ease;
 }
 
-.btn-premium-outline {
-  @apply relative inline-flex items-center justify-center px-6 py-3 font-semibold transition-all duration-300 rounded-2xl border-2 border-emerald-500/30 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-500;
+.container-custom {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-.btn-glass {
-  @apply inline-flex items-center justify-center px-5 py-2.5 font-medium transition-all duration-300 rounded-xl glass hover:bg-white/90;
+@media (min-width: 640px) {
+  .container-custom {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
 
-/* Layout Utilities */
-.section-container {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24;
+@media (min-width: 1024px) {
+  .container-custom {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
 
-/* Form Styles */
-.input-premium {
-  @apply w-full px-4 py-3 bg-white/50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none;
+.grid-products {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1.5rem;
 }
 
-/* Micro-animations */
-.hover-lift {
-  @apply transition-transform duration-300 hover:-translate-y-2;
+@media (min-width: 640px) {
+  .grid-products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+  }
 }
 
-.hover-glow {
-  @apply transition-shadow duration-300 hover:shadow-[0_0_30px_rgba(16, 185, 129, 0.2)];
+@media (min-width: 1024px) {
+  .grid-products {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+@media (min-width: 1280px) {
+  .grid-products {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
-::-webkit-scrollbar-track {
-  @apply bg-slate-100;
+.grid-categories {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full border-2 border-transparent bg-clip-content hover:bg-slate-400;
+@media (min-width: 768px) {
+  .grid-categories {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+  }
 }
 
-/* Badge Styles */
-.badge-premium {
-  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 border border-emerald-200;
+@media (min-width: 1024px) {
+  .grid-categories {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
 }
 
-/* Animations */
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-pulse-soft {
-  animation: pulse-soft 3s ease-in-out infinite;
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
