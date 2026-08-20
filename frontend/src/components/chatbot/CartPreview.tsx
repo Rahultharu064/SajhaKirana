@@ -25,7 +25,7 @@ const CartPreview: React.FC<CartPreviewProps> = ({ cart, onClear, onCheckout }) 
                             <ShoppingBag size={18} className="text-white" />
                         </div>
                         <div>
-                            <h3 className="text-sm font-bold text-gray-800">Your Cart</h3>
+                            <h3 className="text-sm font-bold text-slate-800">Your Cart</h3>
                             <p className="text-[10px] text-emerald-600 font-semibold">
                                 {cart.itemCount} {cart.itemCount === 1 ? 'item' : 'items'} added
                             </p>
@@ -33,7 +33,7 @@ const CartPreview: React.FC<CartPreviewProps> = ({ cart, onClear, onCheckout }) 
                     </div>
                     <button
                         onClick={onClear}
-                        className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                        className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
                         title="Clear Cart"
                     >
                         <Trash2 size={16} />
@@ -41,10 +41,10 @@ const CartPreview: React.FC<CartPreviewProps> = ({ cart, onClear, onCheckout }) 
                 </div>
 
                 {/* Items */}
-                <div className="max-h-[180px] overflow-y-auto divide-y divide-gray-50">
+                <div className="max-h-[180px] overflow-y-auto divide-y divide-slate-50">
                     {cart.items.map((item) => (
-                        <div key={item.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 transition-colors">
-                            <div className="w-12 h-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
+                        <div key={item.id} className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50/50 transition-colors">
+                            <div className="w-12 h-12 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl overflow-hidden flex-shrink-0 border border-slate-100">
                                 {item.image ? (
                                     <img
                                         src={`${import.meta.env.VITE_API_URL}/${item.image}`}
@@ -52,17 +52,17 @@ const CartPreview: React.FC<CartPreviewProps> = ({ cart, onClear, onCheckout }) 
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
                                         <ShoppingBag size={18} />
                                     </div>
                                 )}
                             </div>
                             <div className="flex-1 min-w-0">
-                                <h4 className="text-[13px] font-semibold text-gray-800 truncate">
+                                <h4 className="text-[13px] font-semibold text-slate-800 truncate">
                                     {item.name}
                                 </h4>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-[11px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded font-medium">
+                                    <span className="text-[11px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded font-medium">
                                         Qty: {item.quantity}
                                     </span>
                                     <span className="text-[12px] font-bold text-emerald-600">

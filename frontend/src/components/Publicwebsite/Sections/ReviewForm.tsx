@@ -109,7 +109,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     };
 
     return (
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
             <h4 className="text-lg font-bold mb-4">
                 {editingReview ? 'Edit Your Review' : 'Write a Review'}
             </h4>
@@ -117,7 +117,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Rating */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
                         Your Rating *
                     </label>
                     <div className="flex items-center gap-2">
@@ -133,13 +133,13 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                 <Star
                                     className={`h-8 w-8 ${star <= (hoverRating || rating)
                                             ? 'fill-yellow-400 text-yellow-400'
-                                            : 'text-gray-300'
+                                            : 'text-slate-300'
                                         }`}
                                 />
                             </button>
                         ))}
                         {rating > 0 && (
-                            <span className="ml-2 text-sm text-gray-600">
+                            <span className="ml-2 text-sm text-slate-600">
                                 {rating} star{rating !== 1 ? 's' : ''}
                             </span>
                         )}
@@ -148,20 +148,20 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
                 {/* Comment */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
                         Your Review *
                     </label>
                     <textarea
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                         rows={5}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         placeholder="Share your experience with this product..."
                         required
                         minLength={10}
                         maxLength={1000}
                     />
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-slate-500 mt-1">
                         {comment.length}/1000 characters (minimum 10)
                     </p>
                 </div>
@@ -169,14 +169,14 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                 {/* Media Upload (only for new reviews) */}
                 {!editingReview && (
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
                             Add Photos or Videos (Optional)
                         </label>
                         <div className="flex items-center gap-4">
                             <label className="cursor-pointer">
-                                <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary-500 transition-colors">
-                                    <Upload className="h-5 w-5 text-gray-400" />
-                                    <span className="text-sm text-gray-600">Upload Media</span>
+                                <div className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-slate-300 rounded-xl hover:border-primary-500 transition-colors">
+                                    <Upload className="h-5 w-5 text-slate-400" />
+                                    <span className="text-sm text-slate-600">Upload Media</span>
                                 </div>
                                 <input
                                     type="file"
@@ -187,7 +187,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                                     disabled={mediaFiles.length >= 5}
                                 />
                             </label>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-slate-500">
                                 Max 5 files (images or videos)
                             </span>
                         </div>
@@ -196,7 +196,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                         {mediaPreviews.length > 0 && (
                             <div className="grid grid-cols-5 gap-2 mt-4">
                                 {mediaPreviews.map((preview, index) => (
-                                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200">
+                                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden border border-slate-200">
                                         {mediaFiles[index].type.startsWith('video/') ? (
                                             <video src={preview} className="w-full h-full object-cover" />
                                         ) : (
@@ -217,7 +217,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-4 border-t border-gray-100">
+                <div className="flex gap-3 pt-4 border-t border-slate-100">
                     <Button
                         type="submit"
                         variant="primary"

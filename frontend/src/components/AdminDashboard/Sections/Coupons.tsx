@@ -46,25 +46,25 @@ function CouponForm({ coupon, onSubmit, onCancel, loading }: CouponFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Coupon Code</label>
           <input
             type="text"
             name="code"
             value={formData.code}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 uppercase"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 uppercase"
             placeholder="SUMMER2024"
             required
           />
         </div>
         <div>
-          <label htmlFor="discountType" className="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
+          <label htmlFor="discountType" className="block text-sm font-medium text-slate-700 mb-1">Discount Type</label>
           <select
             id="discountType"
             name="discountType"
             value={formData.discountType}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
           >
             <option value="fixed">Fixed Amount</option>
             <option value="percentage">Percentage</option>
@@ -74,7 +74,7 @@ function CouponForm({ coupon, onSubmit, onCancel, loading }: CouponFormProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="discountValue" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="discountValue" className="block text-sm font-medium text-slate-700 mb-1">
             Discount Value {formData.discountType === 'percentage' ? '(%)' : '(Rs.)'}
           </label>
           <input
@@ -86,14 +86,14 @@ function CouponForm({ coupon, onSubmit, onCancel, loading }: CouponFormProps) {
             min="0"
             step={formData.discountType === 'percentage' ? "1" : "0.01"}
             max={formData.discountType === 'percentage' ? "100" : undefined}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
             placeholder={formData.discountType === 'percentage' ? "10" : "10.00"}
             title="Enter the discount value for the coupon"
             required
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Min Order Value (Rs.)</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Min Order Value (Rs.)</label>
           <input
             type="number"
             name="minOrderValue"
@@ -101,7 +101,7 @@ function CouponForm({ coupon, onSubmit, onCancel, loading }: CouponFormProps) {
             onChange={handleChange}
             min="0"
             step="0.01"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
             placeholder="0.00"
             title="Minimum order value required to use the coupon"
           />
@@ -111,7 +111,7 @@ function CouponForm({ coupon, onSubmit, onCancel, loading }: CouponFormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {formData.discountType === 'percentage' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Max Discount (Rs.)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Max Discount (Rs.)</label>
             <input
               type="number"
               name="maxDiscount"
@@ -119,21 +119,21 @@ function CouponForm({ coupon, onSubmit, onCancel, loading }: CouponFormProps) {
               onChange={handleChange}
               min="0"
               step="0.01"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
               placeholder="0.00"
               title="Maximum discount amount for percentage coupons"
             />
           </div>
         )}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Usage Limit</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Usage Limit</label>
           <input
             type="number"
             name="usageLimit"
             value={formData.usageLimit}
             onChange={handleChange}
             min="0"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
             placeholder="0"
             title="Maximum number of times this coupon can be used"
           />
@@ -141,27 +141,27 @@ function CouponForm({ coupon, onSubmit, onCancel, loading }: CouponFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
         <textarea
           name="description"
           value={formData.description}
           onChange={handleChange}
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
           placeholder="Enter coupon description"
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Expiry Date</label>
           <input
             type="date"
             name="expiryDate"
             value={formData.expiryDate}
             onChange={handleChange}
             min={new Date().toISOString().split('T')[0]}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
             title="Date when the coupon expires"
             required
           />
@@ -173,10 +173,10 @@ function CouponForm({ coupon, onSubmit, onCancel, loading }: CouponFormProps) {
             name="isActive"
             checked={formData.isActive}
             onChange={handleChange}
-            className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300 rounded"
+            className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-slate-300 rounded"
             title="Set coupon status as active or inactive"
           />
-          <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">Active</label>
+          <label htmlFor="isActive" className="ml-2 block text-sm text-slate-900">Active</label>
         </div>
       </div>
 
@@ -292,7 +292,7 @@ function Coupons() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Coupons</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Coupons</h1>
         <Button onClick={() => setModalOpen(true)} className="flex items-center gap-2">
           <Plus size={16} />
           Create Coupon
@@ -300,23 +300,23 @@ function Coupons() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Search</label>
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-3 text-gray-400" />
+              <Search size={16} className="absolute left-3 top-3 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search by code or description"
                 value={filters.search || ''}
                 onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }))}
-                className="pl-10 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+                className="pl-10 w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-emerald-500 focus:border-emerald-500 dark:bg-slate-700 dark:text-white"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
             <select
               title="Filter coupons by status"
               value={filters.isActive === undefined ? '' : filters.isActive.toString()}
@@ -325,7 +325,7 @@ function Coupons() {
                 isActive: e.target.value === '' ? undefined : e.target.value === 'true',
                 page: 1
               }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-emerald-500 focus:border-emerald-500 dark:bg-slate-700 dark:text-white"
             >
               <option value="">All</option>
               <option value="true">Active</option>
@@ -333,12 +333,12 @@ function Coupons() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Sort By</label>
             <select
               title="Sort coupons by selected field"
               value={filters.sortBy || 'createdAt'}
               onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value, page: 1 }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-emerald-500 focus:border-emerald-500 dark:bg-slate-700 dark:text-white"
             >
               <option value="createdAt">Created Date</option>
               <option value="code">Code</option>
@@ -346,12 +346,12 @@ function Coupons() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Order</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Order</label>
             <select
               title="Sort order for coupon list"
               value={filters.sortOrder || 'desc'}
               onChange={(e) => setFilters(prev => ({ ...prev, sortOrder: e.target.value as 'asc' | 'desc', page: 1 }))}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md focus:ring-emerald-500 focus:border-emerald-500 dark:bg-slate-700 dark:text-white"
             >
               <option value="desc">Newest First</option>
               <option value="asc">Oldest First</option>
@@ -361,7 +361,7 @@ function Coupons() {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
@@ -381,7 +381,7 @@ function Coupons() {
                         setEditingCoupon(coupon);
                         setModalOpen(true);
                       }}
-                      className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                      className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700"
                       title="Edit"
                     >
                       <Edit size={16} />
@@ -389,7 +389,7 @@ function Coupons() {
                     <button
                       type="button"
                       onClick={() => handleDeleteCoupon(coupon)}
-                      className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-red-500"
+                      className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-red-500"
                       title="Delete"
                     >
                       <Trash size={16} />
@@ -401,8 +401,8 @@ function Coupons() {
 
             {/* Pagination */}
             {coupons && coupons.pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 dark:border-gray-700">
-                <div className="text-sm text-gray-700 dark:text-gray-300">
+              <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-700">
+                <div className="text-sm text-slate-700 dark:text-slate-300">
                   Showing {(coupons.pagination.page - 1) * coupons.pagination.limit + 1} to{' '}
                   {Math.min(coupons.pagination.page * coupons.pagination.limit, coupons.pagination.total)} of{' '}
                   {coupons.pagination.total} results

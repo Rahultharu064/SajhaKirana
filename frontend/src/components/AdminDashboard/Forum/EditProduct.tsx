@@ -250,8 +250,8 @@ const EditProduct: React.FC = () => {
         <div>
           <label htmlFor="images" className="block font-medium">Images</label>
           <div className="mb-2">
-            <span className="text-sm text-gray-500">Current images: {currentImages.length} </span>
-            {currentImages.length > 0 && <span className="text-xs text-gray-400">(Upload new images to replace existing ones)</span>}
+            <span className="text-sm text-slate-500">Current images: {currentImages.length} </span>
+            {currentImages.length > 0 && <span className="text-xs text-slate-400">(Upload new images to replace existing ones)</span>}
           </div>
           <input
             id="images"
@@ -260,7 +260,7 @@ const EditProduct: React.FC = () => {
             accept="image/*"
             title="Select multiple image files"
             onChange={handleImageChange}
-            className="mt-1 block w-full text-sm text-gray-500
+            className="mt-1 block w-full text-sm text-slate-500
               file:mr-4 file:py-2 file:px-4
               file:rounded-full file:border-0
               file:text-sm file:font-semibold

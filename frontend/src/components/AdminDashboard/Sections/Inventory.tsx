@@ -87,8 +87,8 @@ function Inventory() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Inventory Management</h1>
-          <p className="text-sm text-gray-500">Track and manage product stock levels</p>
+          <h1 className="text-2xl font-bold text-slate-900">Inventory Management</h1>
+          <p className="text-sm text-slate-500">Track and manage product stock levels</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={fetchInventory} className="flex items-center gap-2">
@@ -97,24 +97,24 @@ function Inventory() {
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
           <input
             type="text"
             placeholder="Search by name or SKU..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <Filter className="text-gray-400 h-4 w-4" />
+          <Filter className="text-slate-400 h-4 w-4" />
           <label htmlFor="statusFilter">Filter by stock status:</label>
           <select
             id="statusFilter"
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
           >
@@ -130,7 +130,7 @@ function Inventory() {
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden border border-slate-100">
           <Table
             columns={['Product Info', 'SKU', 'Category', 'Stock Level', 'Status', 'Actions']}
             data={filteredProducts}
@@ -187,7 +187,7 @@ function Inventory() {
             */}
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-gray-50 text-gray-500 font-medium border-b border-gray-100">
+              <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-100">
                 <tr>
                   <th className="px-6 py-4">Product</th>
                   <th className="px-6 py-4">SKU</th>
@@ -197,21 +197,21 @@ function Inventory() {
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-slate-50">
                 {filteredProducts.map((product) => {
                   const status = getStockStatus(product.stock);
                   const StatusIcon = status.icon;
 
                   return (
-                    <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4 font-medium text-gray-900">{product.title}</td>
-                      <td className="px-6 py-4 text-gray-500 font-mono text-xs">{product.sku}</td>
-                      <td className="px-6 py-4 text-gray-600">
-                        <span className="px-2 py-1 bg-gray-100 rounded-full text-xs">
+                    <tr key={product.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4 font-medium text-slate-900">{product.title}</td>
+                      <td className="px-6 py-4 text-slate-500 font-mono text-xs">{product.sku}</td>
+                      <td className="px-6 py-4 text-slate-600">
+                        <span className="px-2 py-1 bg-slate-100 rounded-full text-xs">
                           {product.category?.name || 'Uncategorized'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-semibold text-gray-900">{product.stock}</td>
+                      <td className="px-6 py-4 font-semibold text-slate-900">{product.stock}</td>
                       <td className="px-6 py-4">
                         <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full w-fit text-xs font-medium ${status.color}`}>
                           <StatusIcon size={12} />
@@ -264,7 +264,7 @@ function Inventory() {
                 })}
                 {filteredProducts.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                       No products found matching your criteria.
                     </td>
                   </tr>

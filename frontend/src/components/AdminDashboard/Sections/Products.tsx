@@ -83,16 +83,16 @@ function Products() {
         <div className="flex items-center gap-4">
           <button
             onClick={fetchProducts}
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 text-sm"
+            className="bg-slate-500 text-white px-4 py-2 rounded hover:bg-slate-600 text-sm"
           >
             Refresh
           </button>
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-slate-100 rounded-lg p-1">
             <button
               onClick={() => setViewMode('table')}
               className={`flex items-center gap-2 px-3 py-1 rounded ${viewMode === 'table'
                 ? 'bg-white shadow text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-slate-600 hover:text-slate-900'
                 }`}
             >
               <List size={16} />
@@ -102,7 +102,7 @@ function Products() {
               onClick={() => setViewMode('card')}
               className={`flex items-center gap-2 px-3 py-1 rounded ${viewMode === 'card'
                 ? 'bg-white shadow text-blue-600'
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-slate-600 hover:text-slate-900'
                 }`}
             >
               <Grid size={16} />
@@ -128,7 +128,7 @@ function Products() {
                 onClick={() => handleEdit(row.id)}
                 type="button"
                 aria-label="Edit"
-                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700"
               >
                 <Edit size={16} />
               </button>
@@ -136,7 +136,7 @@ function Products() {
                 onClick={() => handleDelete(row.id)}
                 type="button"
                 aria-label="Delete"
-                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-red-500"
+                className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-red-500"
               >
                 <Trash size={16} />
               </button>
@@ -145,7 +145,7 @@ function Products() {
         />
       ) : products.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-gray-400 mb-4">
+          <div className="text-slate-400 mb-4">
             <Grid size={48} className="mx-auto mb-4" />
             <p className="text-lg">No products found</p>
             <p className="text-sm">Create your first product to get started</p>

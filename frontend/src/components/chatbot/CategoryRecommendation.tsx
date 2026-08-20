@@ -27,7 +27,7 @@ const CategoryRecommendation: React.FC<CategoryRecommendationProps> = ({ categor
                 <div className="w-6 h-6 bg-gradient-to-br from-violet-400 to-purple-500 rounded-lg flex items-center justify-center shadow-sm">
                     <Layers size={12} className="text-white" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-800">Browse Categories</h3>
+                <h3 className="text-sm font-bold text-slate-800">Browse Categories</h3>
             </div>
 
             {/* Category Chips */}
@@ -36,7 +36,7 @@ const CategoryRecommendation: React.FC<CategoryRecommendationProps> = ({ categor
                     <div
                         key={category.id}
                         onClick={() => onSelect?.(`Show me items in ${category.name}`)}
-                        className="flex-shrink-0 bg-white border border-gray-100 rounded-2xl px-4 py-3 hover:shadow-md hover:border-emerald-200 transition-all duration-200 cursor-pointer flex items-center gap-3 group"
+                        className="flex-shrink-0 bg-white border border-slate-100 rounded-2xl px-4 py-3 hover:shadow-md hover:border-emerald-200 transition-all duration-200 cursor-pointer flex items-center gap-3 group"
                     >
                         <div className={`w-10 h-10 bg-gradient-to-br ${gradients[index % gradients.length]} rounded-xl flex items-center justify-center overflow-hidden shadow-sm`}>
                             {category.image ? (
@@ -52,10 +52,10 @@ const CategoryRecommendation: React.FC<CategoryRecommendationProps> = ({ categor
                             )}
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-gray-700 group-hover:text-emerald-600 transition-colors whitespace-nowrap">
+                            <span className="text-sm font-semibold text-slate-700 group-hover:text-emerald-600 transition-colors whitespace-nowrap">
                                 {category.name}
                             </span>
-                            <ChevronRight size={14} className="text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all" />
+                            <ChevronRight size={14} className="text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all" />
                         </div>
                     </div>
                 ))}

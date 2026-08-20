@@ -55,7 +55,7 @@ function Orders() {
       case 'confirmed': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border border-purple-200 dark:border-purple-800';
       case 'pending': return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700';
       case 'cancelled': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800';
-      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400 border border-gray-200 dark:border-gray-700';
+      default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700';
     }
   };
 
@@ -99,8 +99,8 @@ function Orders() {
     'Order ID': `#${order.id}`,
     'Customer': (
       <div>
-        <p className="font-medium text-gray-900">{order.user?.name || 'Guest'}</p>
-        <p className="text-xs text-gray-500">{order.user?.email}</p>
+        <p className="font-medium text-slate-900">{order.user?.name || 'Guest'}</p>
+        <p className="text-xs text-slate-500">{order.user?.email}</p>
       </div>
     ),
     'Date': new Date(order.createdAt).toLocaleDateString(),
@@ -119,7 +119,7 @@ function Orders() {
       </select>
     ),
     'Total': <span className="font-medium">Rs. {order.total}</span>,
-    'Payment': <span className="capitalize text-gray-600 text-sm">{order.paymentMethod}</span>,
+    'Payment': <span className="capitalize text-slate-600 text-sm">{order.paymentMethod}</span>,
     originalId: order.id // hidden, used for actions
   }));
 
@@ -270,13 +270,13 @@ function Orders() {
         {editingOrder && (
           <form onSubmit={handleStatusFormSubmit} className="space-y-6 p-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 Order Status
               </label>
               <select
                 value={statusForm.status}
                 onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 required
               >
                 <option value="pending">Pending</option>
@@ -289,17 +289,17 @@ function Orders() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">
                 Admin Notes (Optional)
               </label>
               <textarea
                 value={statusForm.notes}
                 onChange={(e) => setStatusForm({ ...statusForm, notes: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 rows={4}
                 placeholder="Add notes about this status change..."
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 These notes will be saved in the order history and sent to the customer via email.
               </p>
             </div>

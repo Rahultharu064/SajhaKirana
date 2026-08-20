@@ -29,8 +29,8 @@ const AdminProductCard: React.FC<AdminProductCardProps> = ({ product, onEdit, on
             className="w-full h-48 object-cover"
           />
         ) : (
-          <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-            <span className="text-gray-400">No Image</span>
+          <div className="w-full h-48 bg-slate-200 flex items-center justify-center">
+            <span className="text-slate-400">No Image</span>
           </div>
         )}
         <div className="absolute top-2 left-2">
@@ -44,15 +44,15 @@ const AdminProductCard: React.FC<AdminProductCardProps> = ({ product, onEdit, on
       </div>
 
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{product.title}</h3>
+        <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2">{product.title}</h3>
 
-        <div className="space-y-1 text-sm text-gray-600 mb-3">
+        <div className="space-y-1 text-sm text-slate-600 mb-3">
           <p><span className="font-medium">SKU:</span> {product.sku}</p>
           <div className="flex items-center space-x-2">
             <span className="font-medium">Price:</span>
             <span className="text-green-600 font-semibold">Rs. {product.price}</span>
             {product.mrp > product.price && (
-              <span className="text-gray-400 line-through">Rs. {product.mrp}</span>
+              <span className="text-slate-400 line-through">Rs. {product.mrp}</span>
             )}
           </div>
           <p><span className="font-medium">Stock:</span> {product.stock}</p>

@@ -166,8 +166,8 @@ const ReviewModeration: React.FC = () => {
             <div className="p-6">
                 <h2 className="text-2xl font-bold mb-6">Review Moderation</h2>
                 <div className="animate-pulse space-y-4">
-                    <div className="h-32 bg-gray-200 rounded"></div>
-                    <div className="h-32 bg-gray-200 rounded"></div>
+                    <div className="h-32 bg-slate-200 rounded"></div>
+                    <div className="h-32 bg-slate-200 rounded"></div>
                 </div>
             </div>
         );
@@ -178,7 +178,7 @@ const ReviewModeration: React.FC = () => {
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold">Review Moderation</h2>
                 <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-slate-600">
                         {pendingReviews.length} pending review{pendingReviews.length !== 1 ? 's' : ''}
                     </span>
                 </div>
@@ -208,29 +208,29 @@ const ReviewModeration: React.FC = () => {
             )}
 
             {pendingReviews.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <div className="text-center py-12 bg-slate-50 rounded-lg">
                     <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">All Caught Up!</h3>
-                    <p className="text-gray-600">No pending reviews to moderate at the moment.</p>
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">All Caught Up!</h3>
+                    <p className="text-slate-600">No pending reviews to moderate at the moment.</p>
                 </div>
             ) : (
                 <div className="space-y-4">
                     {/* Select All */}
-                    <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg">
                         <label htmlFor="selectAll">Select All</label>
                         <input
                             id="selectAll"
                             type="checkbox"
                             checked={selectedIds.length === pendingReviews.length}
                             onChange={toggleSelectAll}
-                            className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                            className="h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                         />
-                        <span className="text-sm font-medium text-gray-700">Select All</span>
+                        <span className="text-sm font-medium text-slate-700">Select All</span>
                     </div>
 
                     {/* Review Cards */}
                     {pendingReviews.map((review) => (
-                        <div key={review.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                        <div key={review.id} className="bg-white border border-slate-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                             <div className="flex items-start gap-4">
                                 {/* Checkbox */}
                                 <label htmlFor={`review-${review.id}`}>Select</label>
@@ -239,7 +239,7 @@ const ReviewModeration: React.FC = () => {
                                     type="checkbox"
                                     checked={selectedIds.includes(review.id)}
                                     onChange={() => toggleSelect(review.id)}
-                                    className="mt-1 h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                    className="mt-1 h-4 w-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                                 />
 
                                 {/* Content */}
@@ -247,15 +247,15 @@ const ReviewModeration: React.FC = () => {
                                     {/* Header */}
                                     <div className="flex items-start justify-between mb-3">
                                         <div>
-                                            <h3 className="font-semibold text-gray-900">{review.product.title}</h3>
-                                            <p className="text-sm text-gray-600">
+                                            <h3 className="font-semibold text-slate-900">{review.product.title}</h3>
+                                            <p className="text-sm text-slate-600">
                                                 by {review.user.name} ({review.user.email})
                                             </p>
-                                            <p className="text-xs text-gray-500 mt-1">{formatDate(review.createdAt)}</p>
+                                            <p className="text-xs text-slate-500 mt-1">{formatDate(review.createdAt)}</p>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             {[...Array(5)].map((_, i) => (
-                                                <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-gray-300'}>
+                                                <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-slate-300'}>
                                                     ★
                                                 </span>
                                             ))}
@@ -263,18 +263,18 @@ const ReviewModeration: React.FC = () => {
                                     </div>
 
                                     {/* Comment */}
-                                    <p className="text-gray-700 mb-4">{review.comment}</p>
+                                    <p className="text-slate-700 mb-4">{review.comment}</p>
 
                                     {/* Media Preview */}
                                     {review.media && review.media.length > 0 && (
                                         <div className="mb-4">
-                                            <p className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                            <p className="text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
                                                 <AlertCircle className="h-4 w-4" />
                                                 Media Attachments ({review.media.length})
                                             </p>
                                             <div className="grid grid-cols-4 gap-2">
                                                 {review.media.map((media) => (
-                                                    <div key={media.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 relative">
+                                                    <div key={media.id} className="aspect-square rounded-lg overflow-hidden bg-slate-100 border border-slate-200 relative">
                                                         {media.mediaType === 'video' ? (
                                                             <>
                                                                 <video
@@ -335,17 +335,17 @@ const ReviewModeration: React.FC = () => {
                     <button
                         onClick={() => setPage(p => Math.max(1, p - 1))}
                         disabled={page === 1}
-                        className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Previous
                     </button>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-slate-600">
                         Page {page} of {totalPages}
                     </span>
                     <button
                         onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                         disabled={page === totalPages}
-                        className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 border border-slate-300 rounded-md hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Next
                     </button>
@@ -359,13 +359,13 @@ const ReviewModeration: React.FC = () => {
                         <h3 className="text-lg font-semibold mb-4">
                             {rejectingId === -1 ? 'Reject Selected Reviews' : 'Reject Review'}
                         </h3>
-                        <p className="text-sm text-gray-600 mb-4">
+                        <p className="text-sm text-slate-600 mb-4">
                             Please provide a reason for rejection (optional):
                         </p>
                         <textarea
                             value={rejectionReason}
                             onChange={(e) => setRejectionReason(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 mb-4"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 mb-4"
                             rows={3}
                             placeholder="e.g., Inappropriate content, Low quality media, etc."
                         />
@@ -376,7 +376,7 @@ const ReviewModeration: React.FC = () => {
                                     setRejectingId(null);
                                     setRejectionReason('');
                                 }}
-                                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                                className="px-4 py-2 border border-slate-300 text-slate-700 rounded-md hover:bg-slate-50"
                             >
                                 Cancel
                             </button>

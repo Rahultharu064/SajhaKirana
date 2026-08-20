@@ -1,18 +1,57 @@
 @import "tailwindcss";
 
+/* Enables `dark:` classes to respond to a `.dark` ancestor (Tailwind v4 defaults
+   to prefers-color-scheme only) — required for the admin dashboard's theme toggle. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --animate-fadeIn: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-slideUp: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-scaleIn: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   --animate-float: float 6s ease-in-out infinite;
 
+  /* Brand identity — fresh produce greens paired with a sky accent */
   --color-brand-primary: #10b981;
+  --color-brand-primary-dark: #059669;
   --color-brand-secondary: #0ea5e9;
   --color-brand-accent: #8b5cf6;
   --color-brand-surface: #f8fafc;
 
+  /* Semantic aliases so every component (public site, admin, auth) shares one
+     source of truth instead of reaching for arbitrary indigo/blue defaults. */
+  --color-primary-50: #ecfdf5;
+  --color-primary-100: #d1fae5;
+  --color-primary-200: #a7f3d0;
+  --color-primary-300: #6ee7b7;
+  --color-primary-400: #34d399;
+  --color-primary-500: #10b981;
+  --color-primary-600: #059669;
+  --color-primary-700: #047857;
+  --color-primary-800: #065f46;
+  --color-primary-900: #064e3b;
+
   --font-heading: 'Outfit', 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
+
+  --shadow-brand: 0 10px 30px -8px rgba(16, 185, 129, 0.35);
+  --shadow-brand-lg: 0 20px 45px -12px rgba(16, 185, 129, 0.4);
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
 }
 
 /* Standard CSS instead of Tailwind specific directives to avoid build issues */
@@ -31,6 +70,25 @@ h6 {
   font-family: var(--font-heading);
   font-weight: 700;
   color: #0f172a;
+}
+
+::selection {
+  background-color: var(--color-brand-primary);
+  color: white;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .bg-brand-gradient {
@@ -77,6 +135,44 @@ h6 {
   background-image: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
   box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
   transition: all 0.3s ease;
+}
+
+.btn-premium:hover {
+  box-shadow: 0 14px 24px -6px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-premium:active {
+  transform: translateY(0);
+}
+
+/* Consistent form control used across auth flows and the admin panel.
+   Horizontal padding is intentionally left to the `pl-10`/`px-4` utility applied
+   at each call site (icon fields need more left clearance than plain fields);
+   this file's plain classes sit in the unlayered — i.e. highest-priority — bucket,
+   so declaring padding-left here would silently beat any Tailwind pl-* utility. */
+.input-field {
+  display: block;
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+  font-size: 0.875rem;
+  color: #0f172a;
+  transition: all 0.2s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  background-color: white;
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.input-field::placeholder {
+  color: #94a3b8;
 }
 
 .container-custom {
@@ -149,4 +245,22 @@ h6 {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Thin scrollbar used by the admin sidebar navigation */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.4);
+  border-radius: 999px;
 }

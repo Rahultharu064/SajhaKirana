@@ -120,7 +120,7 @@ const ProfileEdit: React.FC = () => {
     if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
             </div>
         );
     }
@@ -129,11 +129,11 @@ const ProfileEdit: React.FC = () => {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-                    <p className="text-gray-600 mb-4">Please log in to edit your profile.</p>
+                    <h2 className="text-2xl font-bold text-slate-900 mb-4">Access Denied</h2>
+                    <p className="text-slate-600 mb-4">Please log in to edit your profile.</p>
                     <button
                         onClick={() => navigate('/login')}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                        className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
                     >
                         Go to Login
                     </button>
@@ -143,11 +143,11 @@ const ProfileEdit: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden">
                     {/* Header */}
-                    <div className="bg-indigo-600 text-white px-6 py-8">
+                    <div className="bg-emerald-600 text-white px-6 py-8">
                         <div className="flex items-start justify-between">
                             <div className="flex items-center space-x-6">
                                 {/* Profile Image */}
@@ -182,7 +182,7 @@ const ProfileEdit: React.FC = () => {
                                     <button
                                         onClick={handleImageUploadClick}
                                         disabled={imageUploading}
-                                        className="absolute -bottom-1 -right-1 h-6 w-6 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center transition-colors"
+                                        className="absolute -bottom-1 -right-1 h-6 w-6 bg-yellow-500 hover:bg-yellow-600 disabled:bg-slate-400 text-white rounded-full flex items-center justify-center transition-colors"
                                         type="button"
                                         title="Change profile image"
                                         aria-label="Upload new profile image"
@@ -199,7 +199,7 @@ const ProfileEdit: React.FC = () => {
                                     <h1 className="text-2xl md:text-3xl font-bold">
                                         Edit Profile
                                     </h1>
-                                    <p className="text-indigo-100">Update your account information</p>
+                                    <p className="text-emerald-100">Update your account information</p>
                                 </div>
                             </div>
 
@@ -217,43 +217,43 @@ const ProfileEdit: React.FC = () => {
                     <div className="px-6 py-8">
                         <div className="max-w-2xl mx-auto space-y-8">
                             {/* Current Profile Info */}
-                            <div className="bg-gray-50 rounded-lg p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Current Profile Information</h3>
+                            <div className="bg-slate-50 rounded-lg p-6">
+                                <h3 className="text-lg font-semibold text-slate-900 mb-4">Current Profile Information</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                     <div>
-                                        <span className="text-gray-500">Name:</span>
-                                        <p className="font-medium text-gray-900">{user.name || 'Not set'}</p>
+                                        <span className="text-slate-500">Name:</span>
+                                        <p className="font-medium text-slate-900">{user.name || 'Not set'}</p>
                                     </div>
                                     <div>
-                                        <span className="text-gray-500">Email:</span>
-                                        <p className="font-medium text-gray-900">{user.email}</p>
+                                        <span className="text-slate-500">Email:</span>
+                                        <p className="font-medium text-slate-900">{user.email}</p>
                                     </div>
                                     <div>
-                                        <span className="text-gray-500">Phone:</span>
-                                        <p className="font-medium text-gray-900">{user.phone || 'Not set'}</p>
+                                        <span className="text-slate-500">Phone:</span>
+                                        <p className="font-medium text-slate-900">{user.phone || 'Not set'}</p>
                                     </div>
                                     <div>
-                                        <span className="text-gray-500">Role:</span>
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize">
+                                        <span className="text-slate-500">Role:</span>
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 capitalize">
                                             {user.role || 'customer'}
                                         </span>
                                     </div>
                                 </div>
                                 {user.address && (
                                     <div className="mt-4">
-                                        <span className="text-gray-500">Address:</span>
-                                        <p className="font-medium text-gray-900">{user.address}</p>
+                                        <span className="text-slate-500">Address:</span>
+                                        <p className="font-medium text-slate-900">{user.address}</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Edit Form */}
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-6">Edit Information</h3>
+                                <h3 className="text-lg font-semibold text-slate-900 mb-6">Edit Information</h3>
                                 <form onSubmit={(e) => { e.preventDefault(); handleSaveProfile(); }} className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label htmlFor="edit-name" className="block text-sm font-medium text-slate-700 mb-2">
                                                 Full Name *
                                             </label>
                                             <input
@@ -263,13 +263,13 @@ const ProfileEdit: React.FC = () => {
                                                 value={formData.name}
                                                 onChange={handleInputChange}
                                                 required
-                                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
                                                 placeholder="Enter your full name"
                                             />
                                         </div>
 
                                         <div>
-                                            <label htmlFor="edit-phone" className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label htmlFor="edit-phone" className="block text-sm font-medium text-slate-700 mb-2">
                                                 Phone Number
                                             </label>
                                             <input
@@ -278,14 +278,14 @@ const ProfileEdit: React.FC = () => {
                                                 name="phone"
                                                 value={formData.phone}
                                                 onChange={handleInputChange}
-                                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
                                                 placeholder="Enter your phone number"
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label htmlFor="edit-address" className="block text-sm font-medium text-gray-700 mb-2">
+                                        <label htmlFor="edit-address" className="block text-sm font-medium text-slate-700 mb-2">
                                             Address
                                         </label>
                                         <textarea
@@ -294,13 +294,13 @@ const ProfileEdit: React.FC = () => {
                                             value={formData.address}
                                             onChange={handleInputChange}
                                             rows={4}
-                                            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                                            className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 resize-none"
                                             placeholder="Enter your complete address"
                                         />
                                     </div>
 
                                     <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                                        <div className="text-sm text-gray-500">
+                                        <div className="text-sm text-slate-500">
                                             * Required fields
                                         </div>
 
@@ -308,14 +308,14 @@ const ProfileEdit: React.FC = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => navigate('/profile')}
-                                                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                                                className="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
                                             >
                                                 Cancel
                                             </button>
                                             <button
                                                 type="submit"
                                                 disabled={loading || !hasChanges}
-                                                className="flex items-center space-x-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-medium transition-colors"
+                                                className="flex items-center space-x-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-lg font-medium transition-colors"
                                                 aria-label="Save profile changes"
                                             >
                                                 {loading ? (

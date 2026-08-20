@@ -14,7 +14,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onSelect 
                 <div
                     className={`border rounded-lg p-4 cursor-pointer flex flex-col items-center justify-center transition-all ${selectedMethod === 'esewa'
                             ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200'
-                            : 'border-gray-200 hover:border-emerald-200'
+                            : 'border-slate-200 hover:border-emerald-200'
                         }`}
                     onClick={() => onSelect('esewa')}
                 >
@@ -27,7 +27,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onSelect 
                 <div
                     className={`border rounded-lg p-4 cursor-pointer flex flex-col items-center justify-center transition-all ${selectedMethod === 'khalti'
                             ? 'border-purple-500 bg-purple-50 ring-2 ring-purple-200'
-                            : 'border-gray-200 hover:border-purple-200'
+                            : 'border-slate-200 hover:border-purple-200'
                         }`}
                     onClick={() => onSelect('khalti')}
                 >
@@ -40,7 +40,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onSelect 
                 <div
                     className={`border rounded-lg p-4 cursor-pointer flex flex-col items-center justify-center transition-all ${selectedMethod === 'cod'
                             ? 'border-orange-500 bg-orange-50 ring-2 ring-orange-200'
-                            : 'border-gray-200 hover:border-orange-200'
+                            : 'border-slate-200 hover:border-orange-200'
                         }`}
                     onClick={() => onSelect('cod')}
                 >
@@ -51,7 +51,7 @@ const PaymentMethod: React.FC<PaymentMethodProps> = ({ selectedMethod, onSelect 
                 </div>
             </div>
 
-            <div className="mt-4 p-4 bg-gray-50 rounded-md text-sm text-gray-600">
+            <div className="mt-4 p-4 bg-slate-50 rounded-md text-sm text-slate-600">
                 {selectedMethod === 'esewa' && (
                     <p>You will be redirected to eSewa to complete your payment securely.</p>
                 )}

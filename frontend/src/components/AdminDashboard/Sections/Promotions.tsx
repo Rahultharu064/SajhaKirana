@@ -14,10 +14,10 @@ function Promotions() {
         data={samplePromotions}
         actions={(_row) => (
           <div className="flex gap-2">
-            <button type="button" aria-label="Edit" className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+            <button type="button" aria-label="Edit" className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700">
               <Edit size={16} />
             </button>
-            <button type="button" aria-label="Delete" className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-red-500">
+            <button type="button" aria-label="Delete" className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-red-500">
               <Trash size={16} />
             </button>
           </div>

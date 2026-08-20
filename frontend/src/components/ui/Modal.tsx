@@ -47,13 +47,13 @@ const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+                        className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
                     >
-                        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                            <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+                        <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-700">
+                            <h2 className="text-lg font-bold text-slate-900 dark:text-white">{title}</h2>
                             <button
                                 onClick={onClose}
-                                className="p-2 rounded-full hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                                className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white"
                             >
                                 <X size={20} />
                             </button>

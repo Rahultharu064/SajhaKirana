@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, ShoppingBag, Truck, ShieldCheck, Clock, Sparkles, Star, Zap } from 'lucide-react';
+import { ArrowRight, ShoppingBag, Truck, ShieldCheck, Sparkles, Star, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {

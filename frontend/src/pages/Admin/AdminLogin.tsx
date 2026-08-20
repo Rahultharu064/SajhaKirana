@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 import { adminLogin } from '../../services/authService';
 import { setCredentials } from '../../Redux/slices/authSlice';
 import Button from '../../components/ui/Button';
-import { Lock, Mail, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, ShieldCheck, Eye, EyeOff, Package } from 'lucide-react';
 
 const AdminLogin: React.FC = () => {
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -20,60 +22,30 @@ const AdminLogin: React.FC = () => {
         setError('');
         setLoading(true);
 
-        console.log('🔐 [AdminLogin] Starting login process...');
-        console.log('📧 Email:', identifier);
-        console.log('🔑 Password length:', password.length);
-
         try {
-            console.log('📤 Sending login request...');
             const response = await adminLogin(identifier, password);
 
-            console.log('📥 Response received:', response);
-            console.log('✅ Response status:', response.status);
-            console.log('📦 Response data:', response.data);
-
-            // Backend returns { message, user, token } - check for token and user to determine success
             if (response.data.token && response.data.user) {
-                console.log('🎉 Login successful!');
                 toast.success('Welcome back, Admin!');
-                // Store token
                 localStorage.setItem('token', response.data.token);
-
-                // Update Redux state
                 dispatch(setCredentials({ user: response.data.user, token: response.data.token }));
-
-                // Navigate to admin dashboard
-                console.log('🚀 Navigating to admin dashboard...');
                 navigate('/admin/dashboard');
             } else {
-                console.log('❌ Login failed:', response.data.message);
                 const errorMsg = response.data.message || 'Login failed';
                 toast.error(errorMsg);
                 setError(errorMsg);
             }
-        } catch (err: any) {
-            console.error('❌ [AdminLogin] Error caught:', err);
-            console.error('📊 Error details:', {
-                message: err.message,
-                response: err.response,
-                status: err.response?.status,
-                data: err.response?.data
-            });
-
-            // Handle different error scenarios
+        } catch (err) {
             let errorMsg = 'An error occurred during login. Please try again.';
 
-            if (err.response?.data?.error) {
-                console.log('🔴 Setting error from response.data.error:', err.response.data.error);
-                errorMsg = err.response.data.error;
-            } else if (err.response?.data?.message) {
-                console.log('🔴 Setting error from response.data.message:', err.response.data.message);
-                errorMsg = err.response.data.message;
-            } else if (err.response?.status === 401) {
-                console.log('🔴 401 error - Invalid credentials');
-                errorMsg = 'Invalid credentials or insufficient privileges. Please check your email and password.';
-            } else {
-                console.log('🔴 Unknown error');
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 401) {
+                    errorMsg = 'Invalid credentials or insufficient privileges. Please check your email and password.';
+                } else if (err.response?.data?.error) {
+                    errorMsg = err.response.data.error;
+                } else if (err.response?.data?.message) {
+                    errorMsg = err.response.data.message;
+                }
             }
 
             toast.error(errorMsg);
@@ -84,62 +56,83 @@ const AdminLogin: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
-            <div className="max-w-md w-full">
+        <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-12 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-slate-950 to-slate-950" />
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-emerald-500/20 rounded-full blur-[100px]" />
+            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-sky-500/10 rounded-full blur-[100px]" />
+
+            <div className="max-w-md w-full relative z-10">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-full mb-4">
-                        <ShieldCheck className="w-8 h-8 text-white" />
+                    <Link to="/" className="inline-flex items-center gap-3 mb-8">
+                        <div className="bg-brand-gradient p-2.5 rounded-2xl shadow-lg">
+                            <Package className="w-6 h-6 text-white" />
+                        </div>
+                        <span className="text-2xl font-black tracking-tight text-white">SajhaKirana</span>
+                    </Link>
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 border border-white/10 rounded-2xl mb-4">
+                        <ShieldCheck className="w-8 h-8 text-emerald-400" />
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Login</h1>
-                    <p className="text-gray-600">Sign in to access the admin dashboard</p>
+                    <h1 className="text-3xl font-black text-white mb-2">Admin Portal</h1>
+                    <p className="text-slate-400 font-medium">Sign in to manage your e-commerce platform</p>
                 </div>
 
                 {/* Login Form */}
-                <div className="bg-white rounded-2xl shadow-xl p-8">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Error Message */}
+                <div className="bg-white rounded-3xl shadow-2xl p-8">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                                <p className="text-sm">{error}</p>
+                            <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl">
+                                <p className="text-sm font-medium">{error}</p>
                             </div>
                         )}
 
                         {/* Email Input */}
                         <div>
-                            <label htmlFor="identifier" className="block text-sm font-medium text-gray-700 mb-2">
-                                Email Address
+                            <label htmlFor="identifier" className="block text-sm font-semibold text-slate-700 mb-1.5">
+                                Admin Email Address
                             </label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input
                                     id="identifier"
                                     type="email"
-                                    placeholder="admin@example.com"
+                                    placeholder="admin@sajhakirana.com"
                                     value={identifier}
                                     onChange={(e) => setIdentifier(e.target.value)}
                                     required
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    className="input-field pl-10 pr-4"
                                 />
                             </div>
                         </div>
 
                         {/* Password Input */}
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                            <label htmlFor="password" className="block text-sm font-semibold text-slate-700 mb-1.5">
                                 Password
                             </label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input
                                     id="password"
-                                    type="password"
+                                    type={passwordVisible ? 'text' : 'password'}
                                     placeholder="Enter your password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                    className="input-field pl-10 pr-10"
                                 />
+                                <button
+                                    type="button"
+                                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center"
+                                    onClick={() => setPasswordVisible(!passwordVisible)}
+                                    aria-label={passwordVisible ? 'Hide password' : 'Show password'}
+                                >
+                                    {passwordVisible ? (
+                                        <EyeOff className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
+                                    ) : (
+                                        <Eye className="h-5 w-5 text-slate-400 hover:text-slate-600 transition-colors" />
+                                    )}
+                                </button>
                             </div>
                         </div>
 
@@ -147,31 +140,33 @@ const AdminLogin: React.FC = () => {
                         <Button
                             type="submit"
                             variant="primary"
-                            className="w-full"
+                            fullWidth
+                            size="lg"
+                            loading={loading}
                             disabled={loading}
                         >
-                            {loading ? 'Signing in...' : 'Sign In'}
+                            {loading ? 'Signing in...' : 'Sign In to Admin Panel'}
                         </Button>
                     </form>
 
                     {/* Additional Info */}
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-slate-500 font-medium">
                             Need admin access?{' '}
-                            <a href="/admin/create" className="text-primary-600 hover:text-primary-700 font-medium">
+                            <Link to="/admin/create" className="text-emerald-600 hover:text-emerald-700 font-semibold">
                                 Create Admin Account
-                            </a>
+                            </Link>
                         </p>
                     </div>
                 </div>
 
                 {/* Footer Note */}
                 <div className="mt-6 text-center">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-slate-400 font-medium">
                         Regular users should use the{' '}
-                        <a href="/login" className="text-primary-600 hover:text-primary-700 font-medium">
+                        <Link to="/login" className="text-emerald-400 hover:text-emerald-300 font-semibold">
                             customer login
-                        </a>
+                        </Link>
                     </p>
                 </div>
             </div>

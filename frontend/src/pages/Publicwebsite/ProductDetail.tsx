@@ -297,12 +297,12 @@ export default function ProductDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-slate-50 flex flex-col">
         <Header />
         <div className="flex-grow flex justify-center items-center">
           <div className="flex flex-col items-center gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-            <p className="text-gray-500 font-medium">Loading product details...</p>
+            <p className="text-slate-500 font-medium">Loading product details...</p>
           </div>
         </div>
         <Footer />
@@ -312,14 +312,14 @@ export default function ProductDetail() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-slate-50 flex flex-col">
         <Header />
         <div className="container mx-auto px-4 py-16 text-center flex-grow flex flex-col justify-center items-center max-w-md">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-            <ShoppingCart className="h-10 w-10 text-gray-400" />
+          <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-6">
+            <ShoppingCart className="h-10 w-10 text-slate-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Product not found</h1>
-          <p className="text-gray-500 mb-8">The product you are looking for might have been removed or is temporarily unavailable.</p>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Product not found</h1>
+          <p className="text-slate-500 mb-8">The product you are looking for might have been removed or is temporarily unavailable.</p>
           <Button variant="primary" onClick={() => navigate('/')}>Continue Shopping</Button>
         </div>
         <Footer />
@@ -371,21 +371,21 @@ export default function ProductDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-gray-900">
+    <div className="min-h-screen bg-white font-sans text-slate-900">
       <Header />
       <div className="container mx-auto px-4 py-6 md:py-10">
         {/* Breadcrumb - Clean & Minimal */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide">
+        <nav className="flex items-center gap-2 text-sm text-slate-500 mb-8 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide">
           <Link to="/" className="hover:text-primary-600 transition-colors">Home</Link>
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
+          <ChevronRight className="h-4 w-4 text-slate-400 flex-shrink-0" />
           <Link
             to={product.category?.slug ? `/category/${product.category.slug}` : '/categories'}
             className="hover:text-primary-600 transition-colors"
           >
             {product.category?.name || 'Category'}
           </Link>
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
-          <span className="text-gray-900 font-medium truncate">
+          <ChevronRight className="h-4 w-4 text-slate-400 flex-shrink-0" />
+          <span className="text-slate-900 font-medium truncate">
             {product.title}
           </span>
         </nav>
@@ -395,7 +395,7 @@ export default function ProductDetail() {
           {/* Left Column: Image Gallery */}
           <div className="space-y-6">
             <div
-              className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/3] rounded-3xl overflow-hidden bg-gray-50 group border border-gray-100 shadow-sm cursor-zoom-in"
+              className="relative aspect-[4/5] md:aspect-square lg:aspect-[4/3] rounded-3xl overflow-hidden bg-slate-50 group border border-slate-100 shadow-sm cursor-zoom-in"
               onClick={() => setIsZoomed(!isZoomed)}
             >
               <AnimatePresence mode="wait">
@@ -430,7 +430,7 @@ export default function ProductDetail() {
                 <button
                   type="button"
                   aria-label="Share"
-                  className="bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-sm hover:shadow-md transition-all text-gray-600 hover:text-primary-600"
+                  className="bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-sm hover:shadow-md transition-all text-slate-600 hover:text-primary-600"
                 >
                   <Share2 className="h-5 w-5" />
                 </button>
@@ -440,14 +440,14 @@ export default function ProductDetail() {
                 <>
                   <button
                     onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-md hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-md hover:bg-white text-slate-800 p-3 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
                     aria-label="Previous image"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-md hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-md hover:bg-white text-slate-800 p-3 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110"
                     aria-label="Next image"
                   >
                     <ChevronRight className="h-5 w-5" />
@@ -464,10 +464,10 @@ export default function ProductDetail() {
                     key={index}
                     onClick={() => setSelectedImage(index)}
                     className={cn(
-                      "flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all p-2 snap-center bg-gray-50",
+                      "flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 transition-all p-2 snap-center bg-slate-50",
                       selectedImage === index
                         ? "border-primary-600 ring-2 ring-primary-50 scale-105"
-                        : "border-transparent hover:border-gray-200 grayscale hover:grayscale-0 opacity-70 hover:opacity-100"
+                        : "border-transparent hover:border-slate-200 grayscale hover:grayscale-0 opacity-70 hover:opacity-100"
                     )}
                   >
                     <img
@@ -499,7 +499,7 @@ export default function ProductDetail() {
                 )}
               </div>
 
-              <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+              <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4 leading-tight">
                 {product.title}
               </h1>
 
@@ -508,16 +508,16 @@ export default function ProductDetail() {
                 <div className="flex items-center gap-4 mb-4">
                   <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg border border-yellow-100">
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="font-bold text-gray-900">
+                    <span className="font-bold text-slate-900">
                       {reviewStats ? reviewStats.averageRating.toFixed(1) : '0.0'}
                     </span>
                   </div>
-                  <span className="text-gray-400 text-sm">|</span>
-                  <a href="#reviews" className="text-sm font-medium text-gray-500 hover:text-primary-600 underline-offset-4 hover:underline">
+                  <span className="text-slate-400 text-sm">|</span>
+                  <a href="#reviews" className="text-sm font-medium text-slate-500 hover:text-primary-600 underline-offset-4 hover:underline">
                     {reviewStats ? reviewStats.total : 0} Review{reviewStats && reviewStats.total !== 1 ? 's' : ''}
                   </a>
-                  <span className="text-gray-400 text-sm">|</span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-slate-400 text-sm">|</span>
+                  <span className="text-sm text-slate-500">
                     {Math.floor(Math.random() * 500) + 100}k Sold
                   </span>
                 </div>
@@ -532,16 +532,16 @@ export default function ProductDetail() {
                       return (
                         <div key={star} className="flex items-center gap-3 text-sm">
                           <div className="flex items-center gap-1 min-w-[60px]">
-                            <span className="text-gray-600 text-sm">{star}</span>
+                            <span className="text-slate-600 text-sm">{star}</span>
                             <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                           </div>
-                          <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div className="flex-1 bg-slate-200 rounded-full h-2">
                             <div
                               className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
                               style={{ width: `${percentage}%` }}
                             ></div>
                           </div>
-                          <span className="text-gray-600 min-w-[50px] text-right">
+                          <span className="text-slate-600 min-w-[50px] text-right">
                             {starCount}
                           </span>
                         </div>
@@ -552,34 +552,34 @@ export default function ProductDetail() {
               </div>
 
               {/* Price Block */}
-              <div className="bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-100">
+              <div className="bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100">
                 <div className="flex items-end gap-3 mb-2">
-                  <span className="text-4xl font-extrabold text-gray-900 tracking-tight">
+                  <span className="text-4xl font-extrabold text-slate-900 tracking-tight">
                     Rs. {product.price.toLocaleString()}
                   </span>
                   {product.mrp > product.price && (
-                    <span className="text-xl text-gray-400 line-through font-medium mb-1">
+                    <span className="text-xl text-slate-400 line-through font-medium mb-1">
                       Rs. {product.mrp.toLocaleString()}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-500 font-medium">Inclusive of all taxes</p>
+                <p className="text-sm text-slate-500 font-medium">Inclusive of all taxes</p>
               </div>
 
-              <div className="prose prose-sm text-gray-600 mb-8 line-clamp-3">
+              <div className="prose prose-sm text-slate-600 mb-8 line-clamp-3">
                 {product.description}
               </div>
 
               {/* Selector & Actions */}
-              <div className="space-y-6 pt-6 border-t border-gray-100">
+              <div className="space-y-6 pt-6 border-t border-slate-100">
                 <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                   {/* Quantity */}
                   {product.stock > 0 && (
-                    <div className="flex items-center justify-between border-2 border-gray-200 rounded-xl overflow-hidden bg-white hover:border-primary-200 transition-colors w-full sm:w-auto min-w-[140px]">
+                    <div className="flex items-center justify-between border-2 border-slate-200 rounded-xl overflow-hidden bg-white hover:border-primary-200 transition-colors w-full sm:w-auto min-w-[140px]">
                       <button
                         type="button"
                         aria-label="Decrease quantity"
-                        className="p-3.5 hover:bg-gray-50 text-gray-600 hover:text-primary-600 transition-colors"
+                        className="p-3.5 hover:bg-slate-50 text-slate-600 hover:text-primary-600 transition-colors"
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
                         disabled={quantity <= 1}
                       >
@@ -589,7 +589,7 @@ export default function ProductDetail() {
                       <button
                         type="button"
                         aria-label="Increase quantity"
-                        className="p-3.5 hover:bg-gray-50 text-gray-600 hover:text-primary-600 transition-colors"
+                        className="p-3.5 hover:bg-slate-50 text-slate-600 hover:text-primary-600 transition-colors"
                         onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
                         disabled={quantity >= product.stock}
                       >
@@ -603,8 +603,8 @@ export default function ProductDetail() {
                     type="button"
                     aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
                     className={cn(
-                      "sm:hidden flex items-center justify-center p-3.5 border-2 border-gray-200 rounded-xl",
-                      isWishlisted ? "text-red-500 border-red-200 bg-red-50" : "text-gray-400 hover:text-gray-600"
+                      "sm:hidden flex items-center justify-center p-3.5 border-2 border-slate-200 rounded-xl",
+                      isWishlisted ? "text-red-500 border-red-200 bg-red-50" : "text-slate-400 hover:text-slate-600"
                     )}
                     onClick={handleToggleWishlist}
                   >
@@ -625,15 +625,15 @@ export default function ProductDetail() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="hidden sm:flex h-14 w-14 p-0 items-center justify-center rounded-xl border-gray-200 hover:border-red-200 hover:bg-red-50 group transition-all"
+                    className="hidden sm:flex h-14 w-14 p-0 items-center justify-center rounded-xl border-slate-200 hover:border-red-200 hover:bg-red-50 group transition-all"
                     onClick={handleToggleWishlist}
                   >
                     <Heart
-                      className={cn("h-6 w-6 text-gray-400 group-hover:text-red-500 transition-colors", isWishlisted && "text-red-500 fill-current")}
+                      className={cn("h-6 w-6 text-slate-400 group-hover:text-red-500 transition-colors", isWishlisted && "text-red-500 fill-current")}
                     />
                   </Button>
                   <Button
-                    className="flex-1 h-14 text-lg font-semibold rounded-xl border-2 border-gray-900 bg-gray-900 text-white hover:bg-gray-800 hover:border-gray-800 transition-all"
+                    className="flex-1 h-14 text-lg font-semibold rounded-xl border-2 border-slate-900 bg-slate-900 text-white hover:bg-slate-800 hover:border-slate-800 transition-all"
                     onClick={handleBuyNow}
                     disabled={product.stock <= 0}
                   >
@@ -643,14 +643,14 @@ export default function ProductDetail() {
               </div>
 
               {/* Features Grid */}
-              <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-gray-100">
+              <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-slate-100">
                 {features.map((feature) => (
-                  <div key={feature.title} className="flex flex-col items-center text-center p-4 bg-gray-50 rounded-2xl hover:bg-primary-50/50 transition-colors">
+                  <div key={feature.title} className="flex flex-col items-center text-center p-4 bg-slate-50 rounded-2xl hover:bg-primary-50/50 transition-colors">
                     <div className="mb-3 p-2.5 bg-white rounded-xl shadow-sm text-primary-600">
                       <feature.icon className="h-6 w-6" />
                     </div>
-                    <p className="text-xs font-bold text-gray-900 uppercase tracking-wide mb-1">{feature.title}</p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 leading-tight">{feature.desc}</p>
+                    <p className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-1">{feature.title}</p>
+                    <p className="text-[10px] sm:text-xs text-slate-500 leading-tight">{feature.desc}</p>
                   </div>
                 ))}
               </div>
@@ -663,7 +663,7 @@ export default function ProductDetail() {
         <div className="max-w-6xl mx-auto mb-20">
           <Tabs defaultValue="description" className="w-full">
             <div className="flex justify-center mb-8">
-              <TabsList className="bg-gray-100/80 p-1 rounded-full inline-flex h-auto">
+              <TabsList className="bg-slate-100/80 p-1 rounded-full inline-flex h-auto">
                 <TabsTrigger
                   value="description"
                   className="rounded-full px-8 py-3 text-sm font-medium data-[state=active]:bg-white data-[state=active]:text-primary-600 data-[state=active]:shadow-md transition-all"
@@ -689,10 +689,10 @@ export default function ProductDetail() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm"
+                className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm"
               >
                 <h3 className="text-xl font-bold mb-4">Product Description</h3>
-                <div className="prose max-w-none text-gray-600 leading-relaxed">
+                <div className="prose max-w-none text-slate-600 leading-relaxed">
                   <p>
                     {product.description ||
                       "This high-quality product is sourced directly from local Nepali farmers. We ensure freshness by maintaining a cold chain from farm to your doorstep."}
@@ -708,27 +708,27 @@ export default function ProductDetail() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm"
+                className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm"
               >
                 <h3 className="text-xl font-bold mb-6">Technical Specifications</h3>
                 <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
-                  <div className="flex justify-between py-3 border-b border-gray-100">
-                    <span className="text-gray-500 font-medium">Category</span>
-                    <span className="font-semibold text-gray-900 text-right">{product.category?.name}</span>
+                  <div className="flex justify-between py-3 border-b border-slate-100">
+                    <span className="text-slate-500 font-medium">Category</span>
+                    <span className="font-semibold text-slate-900 text-right">{product.category?.name}</span>
                   </div>
-                  <div className="flex justify-between py-3 border-b border-gray-100">
-                    <span className="text-gray-500 font-medium">SKU / Code</span>
-                    <span className="font-semibold text-gray-900 text-right">{product.sku || product.slug || 'N/A'}</span>
+                  <div className="flex justify-between py-3 border-b border-slate-100">
+                    <span className="text-slate-500 font-medium">SKU / Code</span>
+                    <span className="font-semibold text-slate-900 text-right">{product.sku || product.slug || 'N/A'}</span>
                   </div>
-                  <div className="flex justify-between py-3 border-b border-gray-100">
-                    <span className="text-gray-500 font-medium">Stock Status</span>
+                  <div className="flex justify-between py-3 border-b border-slate-100">
+                    <span className="text-slate-500 font-medium">Stock Status</span>
                     <span className={cn("font-semibold text-right", product.stock > 0 ? "text-green-600" : "text-red-600")}>
                       {product.stock > 0 ? `${product.stock} units left` : 'Out of Stock'}
                     </span>
                   </div>
-                  <div className="flex justify-between py-3 border-b border-gray-100">
-                    <span className="text-gray-500 font-medium">Created Date</span>
-                    <span className="font-semibold text-gray-900 text-right">
+                  <div className="flex justify-between py-3 border-b border-slate-100">
+                    <span className="text-slate-500 font-medium">Created Date</span>
+                    <span className="font-semibold text-slate-900 text-right">
                       {new Date(product.createdAt).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
@@ -736,9 +736,9 @@ export default function ProductDetail() {
                       })}
                     </span>
                   </div>
-                  <div className="flex justify-between py-3 border-b border-gray-100">
-                    <span className="text-gray-500 font-medium">Last Updated</span>
-                    <span className="font-semibold text-gray-900 text-right">
+                  <div className="flex justify-between py-3 border-b border-slate-100">
+                    <span className="text-slate-500 font-medium">Last Updated</span>
+                    <span className="font-semibold text-slate-900 text-right">
                       {new Date(product.updatedAt).toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
@@ -748,12 +748,12 @@ export default function ProductDetail() {
                       })}
                     </span>
                   </div>
-                  <div className="flex justify-between py-3 border-b border-gray-100">
-                    <span className="text-gray-500 font-medium">Product ID</span>
-                    <span className="font-semibold text-gray-900 text-right">{product.id}</span>
+                  <div className="flex justify-between py-3 border-b border-slate-100">
+                    <span className="text-slate-500 font-medium">Product ID</span>
+                    <span className="font-semibold text-slate-900 text-right">{product.id}</span>
                   </div>
-                  <div className="flex justify-between py-3 border-b border-gray-100">
-                    <span className="text-gray-500 font-medium">Availability</span>
+                  <div className="flex justify-between py-3 border-b border-slate-100">
+                    <span className="text-slate-500 font-medium">Availability</span>
                     <span className={cn("font-semibold text-right", product.isActive ? "text-green-600" : "text-red-600")}>
                       {product.isActive ? 'Active' : 'Inactive'}
                     </span>
@@ -774,7 +774,7 @@ export default function ProductDetail() {
                   </div>
                   <Button
                     variant="outline"
-                    className="h-12 px-4 border-gray-300 hover:border-primary-500 hover:bg-primary-50 transition-all"
+                    className="h-12 px-4 border-slate-300 hover:border-primary-500 hover:bg-primary-50 transition-all"
                     onClick={handleWriteReview}
                     title={userHasReviewed ? 'Edit Your Review' : 'Write a Review'}
                   >
@@ -828,7 +828,7 @@ export default function ProductDetail() {
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
-          <div className="border-t border-gray-100 pt-16">
+          <div className="border-t border-slate-100 pt-16">
             <ProductCarousel
               title="You May Also Like"
               subtitle="Curated products just for you"

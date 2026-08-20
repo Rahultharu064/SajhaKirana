@@ -64,14 +64,14 @@ const SmartSearchBar = () => {
 
     return (
         <div className="relative w-full max-w-md group" ref={dropdownRef}>
-            <div className={`flex items-center bg-gray-100 rounded-xl px-4 py-2 border-2 transition-all ${showDropdown ? 'border-emerald-500 shadow-md ring-4 ring-emerald-50' : 'border-transparent group-hover:bg-gray-200'}`}>
+            <div className={`flex items-center bg-slate-100 rounded-xl px-4 py-2 border-2 transition-all ${showDropdown ? 'border-emerald-500 shadow-md ring-4 ring-emerald-50' : 'border-transparent group-hover:bg-slate-200'}`}>
                 <input
                     type="text"
                     placeholder="Search with AI (e.g. healthy snacks)"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => query.length >= 2 && setShowDropdown(true)}
-                    className="bg-transparent outline-none text-gray-700 placeholder-gray-500 w-full font-medium"
+                    className="bg-transparent outline-none text-slate-700 placeholder-slate-500 w-full font-medium"
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch(correctedQuery || query)}
                 />
 
@@ -80,7 +80,7 @@ const SmartSearchBar = () => {
                         <Loader2 className="h-5 w-5 text-emerald-600 animate-spin" />
                     ) : query ? (
                         <button onClick={() => { setQuery(''); setSuggestions([]); }} className="hover:text-red-500 transition-colors" aria-label="Clear search">
-                            <X className="h-4 w-4 text-gray-400" />
+                            <X className="h-4 w-4 text-slate-400" />
                         </button>
                     ) : (
                         <Sparkles className="h-4 w-4 text-emerald-500 animate-pulse" />
@@ -97,20 +97,20 @@ const SmartSearchBar = () => {
 
             {/* Suggestions Dropdown */}
             {showDropdown && (suggestions.length > 0 || correctedQuery) && (
-                <div className="absolute top-full mt-2 w-full bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute top-full mt-2 w-full bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
 
                     {correctedQuery && correctedQuery.toLowerCase() !== query.toLowerCase() && (
                         <div className="px-4 py-3 bg-emerald-50 border-b border-emerald-100">
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-slate-500">
                                 Did you mean: <button onClick={() => handleSearch(correctedQuery)} className="text-emerald-700 font-bold hover:underline">{correctedQuery}</button>
                             </p>
                         </div>
                     )}
 
                     {intent && intent !== 'general_search' && (
-                        <div className="px-4 py-2 bg-gray-50 flex items-center">
+                        <div className="px-4 py-2 bg-slate-50 flex items-center">
                             <Sparkles className="h-3 w-3 text-emerald-500 mr-2" />
-                            <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Intent: {intent.replace('_', ' ')}</span>
+                            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Intent: {intent.replace('_', ' ')}</span>
                         </div>
                     )}
 
@@ -119,10 +119,10 @@ const SmartSearchBar = () => {
                             <button
                                 key={index}
                                 onClick={() => handleSearch(suggestion)}
-                                className="w-full text-left px-4 py-3 flex items-center hover:bg-gray-100 transition-colors group"
+                                className="w-full text-left px-4 py-3 flex items-center hover:bg-slate-100 transition-colors group"
                             >
-                                <Search className="h-4 w-4 text-gray-400 mr-3 group-hover:text-emerald-500 transition-colors" />
-                                <span className="text-gray-700 font-medium">{suggestion}</span>
+                                <Search className="h-4 w-4 text-slate-400 mr-3 group-hover:text-emerald-500 transition-colors" />
+                                <span className="text-slate-700 font-medium">{suggestion}</span>
                             </button>
                         ))}
                     </div>

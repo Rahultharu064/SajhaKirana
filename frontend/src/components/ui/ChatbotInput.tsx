@@ -66,14 +66,14 @@ const ChatbotInput: React.FC<ChatbotInputProps> = ({ onSend, isLoading }) => {
     return (
         <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-2 p-1.5 bg-gray-50 rounded-2xl border-2 border-gray-100 focus-within:border-emerald-300 focus-within:bg-white transition-all duration-200"
+            className="flex items-center gap-2 p-1.5 bg-slate-50 rounded-2xl border-2 border-slate-100 focus-within:border-emerald-300 focus-within:bg-white transition-all duration-200"
         >
             <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask me anything..."
-                className="flex-1 px-4 py-2.5 bg-transparent border-none outline-none text-gray-700 placeholder:text-gray-400 text-sm font-medium"
+                className="flex-1 px-4 py-2.5 bg-transparent border-none outline-none text-slate-700 placeholder:text-slate-400 text-sm font-medium"
                 disabled={isLoading}
             />
 
@@ -84,7 +84,7 @@ const ChatbotInput: React.FC<ChatbotInputProps> = ({ onSend, isLoading }) => {
                     disabled={isLoading}
                     className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 ${isListening
                             ? 'bg-gradient-to-br from-rose-500 to-pink-500 text-white shadow-lg shadow-rose-500/30 animate-pulse'
-                            : 'text-gray-400 hover:text-emerald-600 hover:bg-emerald-50'
+                            : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
                         }`}
                     title="Voice input"
                 >
@@ -95,7 +95,7 @@ const ChatbotInput: React.FC<ChatbotInputProps> = ({ onSend, isLoading }) => {
                     type="submit"
                     disabled={isLoading || !input.trim()}
                     className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${isLoading || !input.trim()
-                            ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                            ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
                             : 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white hover:shadow-lg hover:shadow-emerald-500/30 hover:scale-105'
                         }`}
                 >
