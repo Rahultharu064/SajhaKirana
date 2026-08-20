@@ -10,25 +10,30 @@ import type { AppDispatch } from './Redux/store';
 import { getCurrentUserAsync } from './Redux/slices/authSlice';
 
 // ErrorBoundary component
-class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: any }> {
+class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean; error: unknown }> {
   constructor(props: { children: ReactNode }) {
     super(props);
     this.state = { hasError: false, error: null };
   }
-  static getDerivedStateFromError(error: any) {
+  static getDerivedStateFromError(error: unknown) {
     return { hasError: true, error };
   }
-  componentDidCatch(error: any, errorInfo: any) {
+  componentDidCatch(error: unknown, errorInfo: unknown) {
     // You can log error to an error reporting service here
     console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-red-50 text-red-700">
-          <h1 className="text-3xl font-bold mb-4">Something went wrong.</h1>
-          <pre className="bg-white p-4 rounded shadow text-left max-w-xl overflow-x-auto">{String(this.state.error)}</pre>
-          <button className="mt-6 px-4 py-2 bg-indigo-600 text-white rounded" onClick={() => window.location.reload()}>Reload</button>
+        <div className="min-h-screen flex flex-col items-center justify-center bg-rose-50 text-rose-700 px-4">
+          <h1 className="text-3xl font-black mb-4">Something went wrong.</h1>
+          <pre className="bg-white p-4 rounded-xl shadow text-left max-w-xl overflow-x-auto text-sm">{String(this.state.error)}</pre>
+          <button
+            className="mt-6 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-colors"
+            onClick={() => window.location.reload()}
+          >
+            Reload
+          </button>
         </div>
       );
     }
@@ -44,7 +49,20 @@ function App() {
       <ErrorBoundary>
         <Provider store={store}>
           <ChatbotProvider>
-            <Toaster position="top-right" />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                style: {
+                  borderRadius: '16px',
+                  background: '#0f172a',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                },
+                success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
+                error: { iconTheme: { primary: '#f43f5e', secondary: '#fff' } },
+              }}
+            />
 
             <AppContent />
           </ChatbotProvider>

@@ -46,7 +46,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, onClick }) => {
         />
       </div>
       <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-900 text-center group-hover:text-blue-600 transition-colors duration-200">
+        <h3 className="text-lg font-semibold text-slate-900 text-center group-hover:text-blue-600 transition-colors duration-200">
           {name}
         </h3>
       </div>

@@ -9,7 +9,7 @@ import { applyCoupon } from '../../services/couponService';
 import type { CouponWithDiscount } from '../../services/couponService';
 import { getDistricts } from '../../services/districtService';
 import toast from 'react-hot-toast';
-import { Tag, X, Check, Search, ChevronDown, MapPin, CreditCard, ShieldCheck, ArrowRight, Package, Truck, Lock } from 'lucide-react';
+import { X, Check, ChevronDown, MapPin, CreditCard, ShieldCheck, ArrowRight, Package, Truck, Lock } from 'lucide-react';
 import Header from '../../components/Publicwebsite/Layouts/Header';
 import Footer from '../../components/Publicwebsite/Layouts/Footer';
 
@@ -26,7 +26,6 @@ const Checkout = () => {
     const [districtSearch, setDistrictSearch] = useState('');
     const [isDistrictDropdownOpen, setIsDistrictDropdownOpen] = useState(false);
     const [highlightedIndex, setHighlightedIndex] = useState(-1);
-    const [isDropdownItemClicked, setIsDropdownItemClicked] = useState(false);
 
     const [shippingAddress, setShippingAddress] = useState({
         fullName: '',

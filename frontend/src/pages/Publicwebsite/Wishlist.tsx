@@ -80,10 +80,10 @@ const Wishlist = () => {
 
     return (
         <Layout>
-            <div className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+            <div className="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center justify-between mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
                             <Heart className="w-8 h-8 text-red-500 fill-current" />
                             My Wishlist
                         </h1>
@@ -96,13 +96,13 @@ const Wishlist = () => {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center"
+                            className="bg-white rounded-2xl shadow-sm border border-slate-100 p-12 text-center"
                         >
-                            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Heart className="w-10 h-10 text-gray-400" />
+                            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Heart className="w-10 h-10 text-slate-400" />
                             </div>
-                            <h2 className="text-xl font-semibold text-gray-900 mb-2">Your wishlist is empty</h2>
-                            <p className="text-gray-500 mb-8 max-w-sm mx-auto">
+                            <h2 className="text-xl font-semibold text-slate-900 mb-2">Your wishlist is empty</h2>
+                            <p className="text-slate-500 mb-8 max-w-sm mx-auto">
                                 Save items you love to your wishlist and shop them later!
                             </p>
                             <Button onClick={() => navigate('/products')} size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white">
@@ -119,9 +119,9 @@ const Wishlist = () => {
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.9 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-lg transition-all duration-300"
+                                        className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden group hover:shadow-lg transition-all duration-300"
                                     >
-                                        <div className="relative aspect-square bg-gray-50 overflow-hidden">
+                                        <div className="relative aspect-square bg-slate-50 overflow-hidden">
                                             <img
                                                 src={getImageUrl(item.product.images)}
                                                 alt={item.product.title}
@@ -154,17 +154,17 @@ const Wishlist = () => {
                                                 </span>
                                             </div>
                                             <h3
-                                                className="font-semibold text-gray-900 mb-2 line-clamp-2 cursor-pointer hover:text-emerald-600 transition-colors"
+                                                className="font-semibold text-slate-900 mb-2 line-clamp-2 cursor-pointer hover:text-emerald-600 transition-colors"
                                                 onClick={() => navigate(`/product/${item.product.slug}`)}
                                             >
                                                 {item.product.title}
                                             </h3>
                                             <div className="flex items-end gap-2 mb-4">
-                                                <span className="text-2xl font-bold text-gray-900">
+                                                <span className="text-2xl font-bold text-slate-900">
                                                     Rs. {item.product.price.toLocaleString()}
                                                 </span>
                                                 {item.product.mrp > item.product.price && (
-                                                    <span className="text-sm text-gray-400 line-through mb-1">
+                                                    <span className="text-sm text-slate-400 line-through mb-1">
                                                         Rs. {item.product.mrp.toLocaleString()}
                                                     </span>
                                                 )}

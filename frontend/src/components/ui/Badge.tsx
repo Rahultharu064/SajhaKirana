@@ -46,13 +46,13 @@ const Badge: React.FC<BadgeProps> = ({
   };
 
   const variantClasses = {
-    primary: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-    secondary: 'bg-gray-100 text-gray-800 border-gray-200',
+    primary: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+    secondary: 'bg-slate-100 text-slate-800 border-slate-200',
     success: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    danger: 'bg-red-100 text-red-800 border-red-200',
-    warning: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    outline: 'bg-transparent border border-indigo-600 text-indigo-600',
-    ghost: 'bg-transparent text-gray-700 border-transparent',
+    danger: 'bg-rose-100 text-rose-800 border-rose-200',
+    warning: 'bg-amber-100 text-amber-800 border-amber-200',
+    outline: 'bg-transparent border border-emerald-600 text-emerald-600',
+    ghost: 'bg-transparent text-slate-700 border-transparent',
   };
 
   const baseClasses = 'inline-flex items-center rounded-full font-medium border';

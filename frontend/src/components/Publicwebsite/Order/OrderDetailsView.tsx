@@ -129,8 +129,8 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
     if (!order) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center text-center p-4">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Order Not Found</h2>
-                <p className="text-gray-600 mb-6">We couldn't find the order you're looking for.</p>
+                <h2 className="text-2xl font-bold text-slate-800 mb-4">Order Not Found</h2>
+                <p className="text-slate-600 mb-6">We couldn't find the order you're looking for.</p>
                 <Button onClick={() => navigate('/')}>Return to Home</Button>
             </div>
         );
@@ -167,7 +167,7 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
         : 0;
 
     return (
-        <div className="bg-gray-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+        <div className="bg-slate-50 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
 
                 {/* Header Section */}
@@ -184,7 +184,7 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-4xl font-extrabold text-gray-900 mb-2"
+                        className="text-4xl font-extrabold text-slate-900 mb-2"
                     >
                         {isPaymentSuccess ? "Payment Successful!" : "Order Confirmed!"}
                     </motion.h1>
@@ -192,10 +192,10 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="text-lg text-gray-600"
+                        className="text-lg text-slate-600"
                     >
                         {isPaymentSuccess ? "Your transaction has been verified." : "Thank you for your purchase."}
-                        Your order <span className="font-bold text-gray-900">#{order.id}</span> has been received.
+                        Your order <span className="font-bold text-slate-900">#{order.id}</span> has been received.
                     </motion.p>
                 </div>
 
@@ -210,14 +210,14 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                     >
 
                         {/* Order Status Timeline */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden">
-                            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 overflow-hidden">
+                            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
                                 <Clock className="w-5 h-5 text-emerald-600" />
                                 Order Status
                             </h3>
                             <div className="relative flex justify-between">
                                 {/* Connecting Line */}
-                                <div className="absolute top-5 left-0 w-full h-1 bg-gray-100 -z-0 rounded-full"></div>
+                                <div className="absolute top-5 left-0 w-full h-1 bg-slate-100 -z-0 rounded-full"></div>
                                 <div
                                     className="absolute top-5 left-0 h-1 bg-emerald-500 -z-0 rounded-full transition-all duration-1000 ease-out"
                                     style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
@@ -229,10 +229,10 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
 
                                     return (
                                         <div key={step.status} className="flex flex-col items-center z-10 relative">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border-4 transition-colors duration-300 ${isCompleted ? 'bg-emerald-600 border-white text-white' : 'bg-white border-gray-100 text-gray-300'}`}>
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border-4 transition-colors duration-300 ${isCompleted ? 'bg-emerald-600 border-white text-white' : 'bg-white border-slate-100 text-slate-300'}`}>
                                                 <step.icon className="w-5 h-5" />
                                             </div>
-                                            <span className={`mt-2 text-xs font-semibold uppercase tracking-wider ${isCurrent ? 'text-emerald-600' : isCompleted ? 'text-gray-900' : 'text-gray-400'}`}>
+                                            <span className={`mt-2 text-xs font-semibold uppercase tracking-wider ${isCurrent ? 'text-emerald-600' : isCompleted ? 'text-slate-900' : 'text-slate-400'}`}>
                                                 {step.label}
                                             </span>
                                         </div>
@@ -253,12 +253,12 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                         {/* Status History */}
                         {/* {statusHistory.length > 0 && (
                             <div className="space-y-6">
-                                <h3 className="text-lg font-semibold text-gray-900">
+                                <h3 className="text-lg font-semibold text-slate-900">
                                     Status History
                                 </h3>
                                 <div className="space-y-4">
                                     {statusHistory.map((historyItem: any) => (
-                                        <div key={historyItem.id} className="flex gap-4 pb-4 border-b border-gray-100 last:border-0">
+                                        <div key={historyItem.id} className="flex gap-4 pb-4 border-b border-slate-100 last:border-0">
                                             <div className="flex-shrink-0">
                                                 <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
                                                     <Check className="w-4 h-4 text-emerald-600" />
@@ -266,14 +266,14 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                                             </div>
                                             <div className="flex-1">
                                                 <div className="flex justify-between">
-                                                    <h4 className="font-medium text-gray-900 capitalize">
+                                                    <h4 className="font-medium text-slate-900 capitalize">
                                                         {historyItem.status}
                                                     </h4>
-                                                    <span className="text-sm text-gray-500">
+                                                    <span className="text-sm text-slate-500">
                                                         {format(new Date(historyItem.timestamp), "MMM d, yyyy 'at' h:mm a")}
                                                     </span>
                                                 </div>
-                                                <p className="text-sm text-gray-600 mt-1">
+                                                <p className="text-sm text-slate-600 mt-1">
                                                     {historyItem.description}
                                                 </p>
                                             </div>
@@ -284,25 +284,25 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                         )} */}
 
                         {/* Order Items */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
                                 <ShoppingBag className="w-5 h-5 text-emerald-600" />
                                 Order Items
                             </h3>
-                            <div className="divide-y divide-gray-100">
+                            <div className="divide-y divide-slate-100">
                                 {order.orderItems.map((item) => (
                                     <div key={item.id} className="py-4 flex gap-4 items-center">
-                                        <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
+                                        <div className="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200">
                                             {/* Placeholder for product image integration - can be replaced with item.product.images[0] if available */}
-                                            <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
+                                            <div className="w-full h-full flex items-center justify-center text-slate-400 bg-slate-50">
                                                 <ShoppingBag className="w-6 h-6" />
                                             </div>
                                         </div>
                                         <div className="flex-1">
-                                            <h4 className="font-medium text-gray-900">{item.product?.title || item.sku}</h4>
-                                            <p className="text-sm text-gray-500">Qty: {item.quantity} × Rs. {item.price}</p>
+                                            <h4 className="font-medium text-slate-900">{item.product?.title || item.sku}</h4>
+                                            <p className="text-sm text-slate-500">Qty: {item.quantity} × Rs. {item.price}</p>
                                         </div>
-                                        <div className="font-bold text-gray-900">
+                                        <div className="font-bold text-slate-900">
                                             Rs. {item.price * item.quantity}
                                         </div>
                                     </div>
@@ -320,54 +320,54 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                         transition={{ delay: 0.5 }}
                     >
                         {/* Order Summary Card */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-6">Order Summary</h3>
-                            <div className="space-y-3 pb-6 border-b border-gray-100">
-                                <div className="flex justify-between text-gray-600">
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                            <h3 className="text-lg font-bold text-slate-900 mb-6">Order Summary</h3>
+                            <div className="space-y-3 pb-6 border-b border-slate-100">
+                                <div className="flex justify-between text-slate-600">
                                     <span>Subtotal</span>
                                     <span>Rs. {order.total}</span>
                                 </div>
-                                <div className="flex justify-between text-gray-600">
+                                <div className="flex justify-between text-slate-600">
                                     <span>Shipping</span>
                                     <span className="text-emerald-600 font-medium">Free</span>
                                 </div>
-                                <div className="flex justify-between text-gray-600">
+                                <div className="flex justify-between text-slate-600">
                                     <span>Discount</span>
                                     <span>Rs. 0</span>
                                 </div>
                             </div>
                             <div className="pt-4 flex justify-between items-center mb-6">
-                                <span className="font-bold text-gray-900 text-lg">Total</span>
+                                <span className="font-bold text-slate-900 text-lg">Total</span>
                                 <span className="font-bold text-emerald-600 text-xl">Rs. {order.total}</span>
                             </div>
 
-                            <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                            <div className="bg-slate-50 rounded-xl p-4 mb-4">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-semibold text-gray-500 uppercase">Payment Method</span>
+                                    <span className="text-xs font-semibold text-slate-500 uppercase">Payment Method</span>
                                     {order.paymentMethod === 'esewa' && <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">eSewa</span>}
                                     {order.paymentMethod === 'khalti' && <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold">Khalti</span>}
                                     {order.paymentMethod === 'cod' && <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-bold">COD</span>}
                                 </div>
-                                <div className="flex items-center gap-2 text-gray-700">
-                                    <CreditCard className="w-4 h-4 text-gray-400" />
+                                <div className="flex items-center gap-2 text-slate-700">
+                                    <CreditCard className="w-4 h-4 text-slate-400" />
                                     <span className="font-medium capitalize">{order.paymentMethod === 'cod' ? 'Cash on Delivery' : order.paymentMethod}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Shipping Details Card */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-gray-500" />
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <MapPin className="w-5 h-5 text-slate-500" />
                                 Shipping To
                             </h3>
-                            <div className="text-gray-600 space-y-1 text-sm">
-                                <p className="font-bold text-gray-900 text-base mb-1">{addressObj.fullName}</p>
+                            <div className="text-slate-600 space-y-1 text-sm">
+                                <p className="font-bold text-slate-900 text-base mb-1">{addressObj.fullName}</p>
                                 <p>{addressObj.address}, {addressObj.city}</p>
                                 <p>{addressObj.district}</p>
-                                {addressObj.landmark && <p className="text-gray-500 italic">Near {addressObj.landmark}</p>}
-                                <p className="mt-3 text-gray-900">{addressObj.phone}</p>
-                                <p className="text-gray-500">{addressObj.email}</p>
+                                {addressObj.landmark && <p className="text-slate-500 italic">Near {addressObj.landmark}</p>}
+                                <p className="mt-3 text-slate-900">{addressObj.phone}</p>
+                                <p className="text-slate-500">{addressObj.email}</p>
                             </div>
                         </div>
 
@@ -390,7 +390,7 @@ const OrderDetailsView = ({ orderId, isPaymentSuccess = false }: OrderDetailsVie
                                 Download Invoice
                             </Button>
                             <Button
-                                className="w-full border-gray-200 hover:bg-gray-50 text-gray-700"
+                                className="w-full border-slate-200 hover:bg-slate-50 text-slate-700"
                                 variant="outline"
                                 onClick={() => window.print()}
                             >

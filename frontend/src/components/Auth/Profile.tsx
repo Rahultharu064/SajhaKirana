@@ -121,7 +121,7 @@ const Profile: React.FC = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
       </div>
     );
   }
@@ -130,11 +130,11 @@ const Profile: React.FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-          <p className="text-gray-600 mb-4">Please log in to view your profile.</p>
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Access Denied</h2>
+          <p className="text-slate-600 mb-4">Please log in to view your profile.</p>
           <button
             onClick={() => navigate('/login')}
-            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
           >
             Go to Login
           </button>
@@ -144,11 +144,11 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-sky-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Header */}
-          <div className="bg-indigo-600 text-white px-6 py-8">
+          <div className="bg-emerald-600 text-white px-6 py-8">
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-6">
                 {/* Profile Image */}
@@ -183,7 +183,7 @@ const Profile: React.FC = () => {
                   <button
                     onClick={handleImageUploadClick}
                     disabled={imageUploading}
-                    className="absolute -bottom-1 -right-1 h-6 w-6 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 text-white rounded-full flex items-center justify-center transition-colors"
+                    className="absolute -bottom-1 -right-1 h-6 w-6 bg-yellow-500 hover:bg-yellow-600 disabled:bg-slate-400 text-white rounded-full flex items-center justify-center transition-colors"
                     type="button"
                     title="Change profile image"
                     aria-label="Upload new profile image"
@@ -200,7 +200,7 @@ const Profile: React.FC = () => {
                   <h1 className="text-2xl md:text-3xl font-bold">
                     Welcome, {user.name}!
                   </h1>
-                  <p className="text-indigo-100">Your Account Dashboard</p>
+                  <p className="text-emerald-100">Your Account Dashboard</p>
                 </div>
               </div>
 
@@ -219,35 +219,35 @@ const Profile: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Account Information */}
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900 border-b pb-2">
+                <h2 className="text-xl font-semibold text-slate-900 border-b pb-2">
                   Account Information
                 </h2>
 
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                    <Mail className="h-5 w-5 text-slate-400" />
                     <div>
-                      <p className="text-sm text-gray-500">Email</p>
-                      <p className="font-medium text-gray-900">{user.email}</p>
+                      <p className="text-sm text-slate-500">Email</p>
+                      <p className="font-medium text-slate-900">{user.email}</p>
                     </div>
                   </div>
 
                   {user.phone && (
                     <div className="flex items-center space-x-3">
-                      <Phone className="h-5 w-5 text-gray-400" />
+                      <Phone className="h-5 w-5 text-slate-400" />
                       <div>
-                        <p className="text-sm text-gray-500">Phone</p>
-                        <p className="font-medium text-gray-900">{user.phone}</p>
+                        <p className="text-sm text-slate-500">Phone</p>
+                        <p className="font-medium text-slate-900">{user.phone}</p>
                       </div>
                     </div>
                   )}
 
                   {user.role && (
                     <div className="flex items-center space-x-3">
-                      <User className="h-5 w-5 text-gray-400" />
+                      <User className="h-5 w-5 text-slate-400" />
                       <div>
-                        <p className="text-sm text-gray-500">Role</p>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 capitalize">
+                        <p className="text-sm text-slate-500">Role</p>
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 capitalize">
                           {user.role}
                         </span>
                       </div>
@@ -256,20 +256,20 @@ const Profile: React.FC = () => {
 
                   {user.address && (
                     <div className="flex items-center space-x-3">
-                      <MapPin className="h-5 w-5 text-gray-400" />
+                      <MapPin className="h-5 w-5 text-slate-400" />
                       <div>
-                        <p className="text-sm text-gray-500">Address</p>
-                        <p className="font-medium text-gray-900">{user.address}</p>
+                        <p className="text-sm text-slate-500">Address</p>
+                        <p className="font-medium text-slate-900">{user.address}</p>
                       </div>
                     </div>
                   )}
 
                   {user.lastLogin && (
                     <div className="flex items-center space-x-3">
-                      <Calendar className="h-5 w-5 text-gray-400" />
+                      <Calendar className="h-5 w-5 text-slate-400" />
                       <div>
-                        <p className="text-sm text-gray-500">Last Login</p>
-                        <p className="font-medium text-gray-900">
+                        <p className="text-sm text-slate-500">Last Login</p>
+                        <p className="font-medium text-slate-900">
                           {new Date(user.lastLogin).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -286,19 +286,19 @@ const Profile: React.FC = () => {
 
               {/* Quick Actions */}
               <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900 border-b pb-2">
+                <h2 className="text-xl font-semibold text-slate-900 border-b pb-2">
                   Quick Actions
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <button
                     onClick={() => navigate('/orders')}
-                    className="flex items-center space-x-3 p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+                    className="flex items-center space-x-3 p-4 bg-emerald-50 rounded-lg hover:bg-emerald-100 transition-colors"
                   >
-                    <div className="h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-indigo-600" />
+                    <div className="h-8 w-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-emerald-600" />
                     </div>
-                    <span className="font-medium text-gray-900">My Orders</span>
+                    <span className="font-medium text-slate-900">My Orders</span>
                   </button>
 
                   <button
@@ -308,7 +308,7 @@ const Profile: React.FC = () => {
                     <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
                       <User className="h-4 w-4 text-green-600" />
                     </div>
-                    <span className="font-medium text-gray-900">My Cart</span>
+                    <span className="font-medium text-slate-900">My Cart</span>
                   </button>
 
                   <button
@@ -318,7 +318,7 @@ const Profile: React.FC = () => {
                     <div className="h-8 w-8 bg-yellow-100 rounded-full flex items-center justify-center">
                       <User className="h-4 w-4 text-yellow-600" />
                     </div>
-                    <span className="font-medium text-gray-900">Edit Profile</span>
+                    <span className="font-medium text-slate-900">Edit Profile</span>
                   </button>
 
                   <button
@@ -328,7 +328,7 @@ const Profile: React.FC = () => {
                     <div className="h-8 w-8 bg-red-100 rounded-full flex items-center justify-center">
                       <LogOut className="h-4 w-4 text-red-600" />
                     </div>
-                    <span className="font-medium text-gray-900">Logout</span>
+                    <span className="font-medium text-slate-900">Logout</span>
                   </button>
                 </div>
               </div>
@@ -336,13 +336,13 @@ const Profile: React.FC = () => {
 
             {/* Edit Profile Section */}
             {showEditSection && (
-              <div className="mt-8 pt-8 border-t border-gray-200">
+              <div className="mt-8 pt-8 border-t border-slate-200">
                 <div className="max-w-2xl mx-auto">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-6">Edit Profile Information</h3>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-6">Edit Profile Information</h3>
                   <form onSubmit={(e) => { e.preventDefault(); handleSaveProfile(); }} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
-                        <label htmlFor="edit-name" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="edit-name" className="block text-sm font-medium text-slate-700 mb-2">
                           Full Name
                         </label>
                         <input
@@ -351,13 +351,13 @@ const Profile: React.FC = () => {
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                          className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
                           placeholder="Enter your full name"
                         />
                       </div>
 
                       <div>
-                        <label htmlFor="edit-phone" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="edit-phone" className="block text-sm font-medium text-slate-700 mb-2">
                           Phone Number
                         </label>
                         <input
@@ -366,14 +366,14 @@ const Profile: React.FC = () => {
                           name="phone"
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                          className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500"
                           placeholder="Enter your phone number"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label htmlFor="edit-address" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="edit-address" className="block text-sm font-medium text-slate-700 mb-2">
                         Address
                       </label>
                       <textarea
@@ -382,7 +382,7 @@ const Profile: React.FC = () => {
                         value={formData.address}
                         onChange={handleInputChange}
                         rows={3}
-                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 resize-none"
+                        className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 resize-none"
                         placeholder="Enter your address"
                       />
                     </div>
@@ -391,7 +391,7 @@ const Profile: React.FC = () => {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="flex items-center space-x-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-lg font-medium transition-colors"
+                        className="flex items-center space-x-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-lg font-medium transition-colors"
                         aria-label="Save profile changes"
                       >
                         {loading ? (

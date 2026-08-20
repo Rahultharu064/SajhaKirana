@@ -18,7 +18,7 @@ const ProductRecommendation: React.FC<ProductRecommendationProps> = ({ products,
                 <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center shadow-sm">
                     <TrendingUp size={12} className="text-white" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-800">Recommended for You</h3>
+                <h3 className="text-sm font-bold text-slate-800">Recommended for You</h3>
             </div>
 
             {/* Product Cards */}
@@ -30,10 +30,10 @@ const ProductRecommendation: React.FC<ProductRecommendationProps> = ({ products,
                     return (
                         <div
                             key={details.id}
-                            className="flex-shrink-0 w-48 bg-white border border-gray-100 rounded-2xl p-3 hover:shadow-lg hover:border-emerald-200 transition-all duration-300 group"
+                            className="flex-shrink-0 w-48 bg-white border border-slate-100 rounded-2xl p-3 hover:shadow-lg hover:border-emerald-200 transition-all duration-300 group"
                         >
                             {/* Image */}
-                            <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl mb-3 relative overflow-hidden">
+                            <div className="aspect-square bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl mb-3 relative overflow-hidden">
                                 {details.image ? (
                                     <img
                                         src={`${import.meta.env.VITE_API_URL}/${details.image}`}
@@ -41,7 +41,7 @@ const ProductRecommendation: React.FC<ProductRecommendationProps> = ({ products,
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
                                 ) : (
-                                    <div className="absolute inset-0 flex items-center justify-center text-gray-300">
+                                    <div className="absolute inset-0 flex items-center justify-center text-slate-300">
                                         <ImageIcon size={28} strokeWidth={1.5} />
                                     </div>
                                 )}
@@ -58,7 +58,7 @@ const ProductRecommendation: React.FC<ProductRecommendationProps> = ({ products,
                                 <p className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wide mb-0.5">
                                     {details.category}
                                 </p>
-                                <h4 className="text-[13px] font-semibold text-gray-800 line-clamp-1 group-hover:text-emerald-600 transition-colors">
+                                <h4 className="text-[13px] font-semibold text-slate-800 line-clamp-1 group-hover:text-emerald-600 transition-colors">
                                     {details.name}
                                 </h4>
                                 {details.rating > 0 && (
@@ -69,10 +69,10 @@ const ProductRecommendation: React.FC<ProductRecommendationProps> = ({ products,
                                                 size={10}
                                                 className={i < Math.floor(details.rating)
                                                     ? "fill-yellow-400 text-yellow-400"
-                                                    : "text-gray-200"}
+                                                    : "text-slate-200"}
                                             />
                                         ))}
-                                        <span className="text-[10px] text-gray-400 font-medium ml-0.5">
+                                        <span className="text-[10px] text-slate-400 font-medium ml-0.5">
                                             ({details.rating.toFixed(1)})
                                         </span>
                                     </div>
@@ -82,11 +82,11 @@ const ProductRecommendation: React.FC<ProductRecommendationProps> = ({ products,
                             {/* Price & Action */}
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <span className="text-base font-bold text-gray-900">
+                                    <span className="text-base font-bold text-slate-900">
                                         {formatPrice(details.price)}
                                     </span>
                                     {details.mrp && details.mrp > details.price && (
-                                        <span className="text-[11px] text-gray-400 line-through ml-1.5">
+                                        <span className="text-[11px] text-slate-400 line-through ml-1.5">
                                             {formatPrice(details.mrp)}
                                         </span>
                                     )}

@@ -43,15 +43,15 @@ const Categories = () => {
 
             <div className="container mx-auto px-4 py-6 md:py-10">
                 {/* Breadcrumb */}
-                <nav className="flex items-center gap-2 text-sm text-gray-500 mb-8 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide">
+                <nav className="flex items-center gap-2 text-sm text-slate-500 mb-8 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide">
                     <Link to="/" className="hover:text-primary-600 transition-colors">Home</Link>
-                    <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                    <span className="text-gray-900 font-medium">Categories</span>
+                    <ChevronRight className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                    <span className="text-slate-900 font-medium">Categories</span>
                 </nav>
 
                 <div className="text-center mb-12">
-                    <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">All Categories</h1>
-                    <p className="text-lg text-gray-600">Explore our wide range of products by category</p>
+                    <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">All Categories</h1>
+                    <p className="text-lg text-slate-600">Explore our wide range of products by category</p>
                 </div>
 
                 {loading ? (
@@ -71,8 +71,8 @@ const Categories = () => {
                 )}
 
                 {!loading && categories.length === 0 && (
-                    <div className="text-center py-16 bg-gray-50 rounded-2xl">
-                        <p className="text-gray-500 text-lg">No categories found.</p>
+                    <div className="text-center py-16 bg-slate-50 rounded-2xl">
+                        <p className="text-slate-500 text-lg">No categories found.</p>
                     </div>
                 )}
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, X, Sparkles, Bot } from 'lucide-react';
+import { X, Sparkles, Bot } from 'lucide-react';
 import ChatWindow from './ChatWindow';
 
 const ChatFloatingButton: React.FC = () => {

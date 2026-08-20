@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Apple, Milk, Wheat, Carrot, Coffee, Sandwich, ShoppingBag, ArrowRight, Grid3X3, Sparkles } from 'lucide-react';
+import { Apple, Milk, Wheat, Carrot, Coffee, Sandwich, ShoppingBag, ArrowRight, Sparkles } from 'lucide-react';
 import { getCategories } from '../../../services/categoryService';
 import type { Category as CategoryType } from '../../../services/categoryService';
 

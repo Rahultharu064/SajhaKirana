@@ -79,7 +79,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
         return (
             <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                    <div key={i} className="animate-pulse bg-gray-100 rounded-2xl p-6 h-32" />
+                    <div key={i} className="animate-pulse bg-slate-100 rounded-2xl p-6 h-32" />
                 ))}
             </div>
         );
@@ -87,10 +87,10 @@ const ReviewList: React.FC<ReviewListProps> = ({
 
     if (reviews.length === 0) {
         return (
-            <div className="text-center py-12 bg-gray-50 rounded-2xl">
-                <Star className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
-                <p className="text-gray-600">Be the first to review this product!</p>
+            <div className="text-center py-12 bg-slate-50 rounded-2xl">
+                <Star className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">No Reviews Yet</h3>
+                <p className="text-slate-600">Be the first to review this product!</p>
             </div>
         );
     }
@@ -100,7 +100,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
             {reviews.map((review) => (
                 <div
                     key={review.id}
-                    className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-md transition-shadow"
+                    className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md transition-shadow"
                 >
                     <div className="flex items-start justify-between mb-4">
                         <div className="flex items-start gap-4">
@@ -108,7 +108,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
                                 {review.user.name.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                                <h4 className="font-semibold text-gray-900">{review.user.name}</h4>
+                                <h4 className="font-semibold text-slate-900">{review.user.name}</h4>
                                 <div className="flex items-center gap-2 mt-1">
                                     <div className="flex items-center">
                                         {[1, 2, 3, 4, 5].map((star) => (
@@ -116,13 +116,13 @@ const ReviewList: React.FC<ReviewListProps> = ({
                                                 key={star}
                                                 className={`h-4 w-4 ${star <= review.rating
                                                     ? 'fill-yellow-400 text-yellow-400'
-                                                    : 'text-gray-300'
+                                                    : 'text-slate-300'
                                                     }`}
                                             />
                                         ))}
                                     </div>
-                                    <span className="text-sm text-gray-500">•</span>
-                                    <span className="text-sm text-gray-500">{formatDate(review.createdAt)}</span>
+                                    <span className="text-sm text-slate-500">•</span>
+                                    <span className="text-sm text-slate-500">{formatDate(review.createdAt)}</span>
                                 </div>
                             </div>
                         </div>
@@ -141,14 +141,14 @@ const ReviewList: React.FC<ReviewListProps> = ({
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => onReviewEdit(review)}
-                                        className="p-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                                        className="p-2 text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                                         title="Edit review"
                                     >
                                         <Edit className="h-4 w-4" />
                                     </button>
                                     <button
                                         onClick={() => handleDelete(review.id)}
-                                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        className="p-2 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                         title="Delete review"
                                     >
                                         <Trash2 className="h-4 w-4" />
@@ -158,7 +158,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
                         })()}
                     </div>
 
-                    <p className="text-gray-700 leading-relaxed mb-4">{review.comment}</p>
+                    <p className="text-slate-700 leading-relaxed mb-4">{review.comment}</p>
 
                     {/* Media Gallery */}
                     {review.media && review.media.length > 0 && (
@@ -166,7 +166,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
                             {review.media.map((media) => (
                                 <div
                                     key={media.id}
-                                    className="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200 relative"
+                                    className="aspect-square rounded-lg overflow-hidden bg-slate-100 border border-slate-200 relative"
                                 >
                                     {media.mediaType === 'video' ? (
                                         <>
@@ -200,17 +200,17 @@ const ReviewList: React.FC<ReviewListProps> = ({
                     <button
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                         disabled={page === 1}
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         Previous
                     </button>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-slate-600">
                         Page {page} of {totalPages}
                     </span>
                     <button
                         onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                         disabled={page === totalPages}
-                        className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         Next
                     </button>

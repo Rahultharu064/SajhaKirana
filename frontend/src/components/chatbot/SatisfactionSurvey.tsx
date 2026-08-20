@@ -70,7 +70,7 @@ const SatisfactionSurvey: React.FC<SatisfactionSurveyProps> = ({
                         <Star
                             key={star}
                             size={20}
-                            className={star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}
+                            className={star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300'}
                         />
                     ))}
                 </div>
@@ -82,17 +82,17 @@ const SatisfactionSurvey: React.FC<SatisfactionSurveyProps> = ({
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-200 animate-in slide-in-from-bottom-2 duration-300">
             <div className="flex items-start justify-between mb-4">
                 <div>
-                    <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <h4 className="font-semibold text-slate-800 flex items-center gap-2">
                         📊 Quick Feedback
                     </h4>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-slate-500 mt-1">
                         How was your experience today?
                     </p>
                 </div>
                 <button
                     onClick={onDismiss}
                     aria-label="Dismiss feedback survey"
-                    className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-white/50 transition-colors"
+                    className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-white/50 transition-colors"
                 >
                     <X size={18} />
                 </button>
@@ -112,11 +112,11 @@ const SatisfactionSurvey: React.FC<SatisfactionSurveyProps> = ({
                             size={32}
                             className={`transition-colors ${star <= (hoveredRating || rating)
                                 ? 'text-yellow-400 fill-yellow-400'
-                                : 'text-gray-300 group-hover:text-yellow-200'
+                                : 'text-slate-300 group-hover:text-yellow-200'
                                 }`}
                         />
                         {/* Tooltip */}
-                        <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                             {ratingLabels[star - 1]}
                         </span>
                     </button>
@@ -127,7 +127,7 @@ const SatisfactionSurvey: React.FC<SatisfactionSurveyProps> = ({
             {rating > 0 && (
                 <div className="text-center mb-4 animate-in fade-in duration-200">
                     <span className="text-2xl">{ratingEmojis[rating - 1]}</span>
-                    <span className="ml-2 font-medium text-gray-700">{ratingLabels[rating - 1]}</span>
+                    <span className="ml-2 font-medium text-slate-700">{ratingLabels[rating - 1]}</span>
                 </div>
             )}
 
@@ -138,7 +138,7 @@ const SatisfactionSurvey: React.FC<SatisfactionSurveyProps> = ({
                         placeholder="Tell us how we can improve... (optional)"
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                        className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
                         rows={2}
                     />
                 </div>
@@ -149,7 +149,7 @@ const SatisfactionSurvey: React.FC<SatisfactionSurveyProps> = ({
                 onClick={handleSubmit}
                 disabled={rating === 0 || isSubmitting}
                 className={`w-full py-2.5 rounded-xl flex items-center justify-center gap-2 font-medium transition-all ${rating === 0
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     : 'bg-primary text-white hover:bg-primary-dark'
                     }`}
             >

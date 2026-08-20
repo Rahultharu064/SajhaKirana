@@ -7,7 +7,7 @@ import FeaturedProducts from '../../components/Publicwebsite/Homepage/FeaturedPr
 import BestSelling from '../../components/Publicwebsite/Homepage/BestSelling';
 import NewArrivals from '../../components/Publicwebsite/Homepage/NewArrivals';
 import Categories from '../../components/Publicwebsite/Homepage/Categories';
-import { Sparkles, Truck, Shield, Clock, Gift, HeadphonesIcon, CreditCard, Sprout, Zap, Banknote, Lock, Bot, PhoneCall } from 'lucide-react';
+import { Truck, Shield, Clock, Gift, HeadphonesIcon, Sprout, Zap, Banknote, Lock, Bot, PhoneCall } from 'lucide-react';
 
 interface Category {
   id: number;

@@ -48,7 +48,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                     if (bMatch.index > bIdx) {
                         lineParts.push(remainingText.substring(bIdx, bMatch.index));
                     }
-                    lineParts.push(<strong key={`b-${i}-${bMatch.index}`} className="font-semibold text-gray-900">{bMatch[1]}</strong>);
+                    lineParts.push(<strong key={`b-${i}-${bMatch.index}`} className="font-semibold text-slate-900">{bMatch[1]}</strong>);
                     bIdx = boldRegex.lastIndex;
                 }
                 if (bIdx < remainingText.length) {
@@ -81,12 +81,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 
                 {/* Message */}
                 <div className="flex flex-col">
-                    <span className={`text-[10px] text-gray-400 font-medium mb-1 ${isAssistant ? '' : 'text-right'}`}>
+                    <span className={`text-[10px] text-slate-400 font-medium mb-1 ${isAssistant ? '' : 'text-right'}`}>
                         {formatTimestamp(message.timestamp)}
                     </span>
                     <div
                         className={`px-4 py-3 text-[13px] leading-relaxed ${isAssistant
-                            ? 'bg-white border border-emerald-100 text-gray-700 rounded-2xl rounded-tl-sm shadow-sm'
+                            ? 'bg-white border border-emerald-100 text-slate-700 rounded-2xl rounded-tl-sm shadow-sm'
                             : 'bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-2xl rounded-tr-sm shadow-md shadow-emerald-500/20'
                             }`}
                     >

@@ -85,17 +85,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const variantClasses = {
-      primary: 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500 text-white',
-      secondary: 'bg-gray-600 hover:bg-gray-700 focus:ring-gray-500 text-white',
+      primary: 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500 text-white shadow-sm shadow-emerald-600/20',
+      secondary: 'bg-slate-700 hover:bg-slate-800 focus:ring-slate-500 text-white',
       success: 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500 text-white',
-      danger: 'bg-red-600 hover:bg-red-700 focus:ring-red-500 text-white',
-      warning: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500 text-white',
-      outline: 'bg-transparent border border-indigo-600 text-indigo-600 hover:bg-indigo-50 focus:ring-indigo-500',
-      ghost: 'bg-transparent hover:bg-gray-100 focus:ring-gray-500 text-gray-700',
+      danger: 'bg-rose-600 hover:bg-rose-700 focus:ring-rose-500 text-white',
+      warning: 'bg-amber-500 hover:bg-amber-600 focus:ring-amber-400 text-white',
+      outline: 'bg-transparent border border-emerald-600 text-emerald-600 hover:bg-emerald-50 focus:ring-emerald-500',
+      ghost: 'bg-transparent hover:bg-slate-100 focus:ring-slate-400 text-slate-700',
     };
 
     const baseClasses =
-      'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50';
+      'inline-flex items-center justify-center rounded-xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50';
 
     const loadingClasses = loading ? 'cursor-wait opacity-75' : '';
 

@@ -51,7 +51,7 @@ const SearchResults = () => {
   }, [query, user]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -59,16 +59,16 @@ const SearchResults = () => {
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-2">
             <Sparkles className="h-6 w-6 text-emerald-600" />
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-3xl font-bold text-slate-900">
               Search Results
             </h1>
           </div>
-          <p className="text-gray-600 flex items-center">
+          <p className="text-slate-600 flex items-center">
             <SearchIcon className="h-4 w-4 mr-2" />
             Showing results for: <span className="font-semibold ml-2 text-emerald-700">"{query}"</span>
           </p>
           {results.length > 0 && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-slate-500 mt-1">
               Found {results.length} products ranked by relevance, popularity, and availability
             </p>
           )}
@@ -78,7 +78,7 @@ const SearchResults = () => {
         {loading && (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="h-12 w-12 text-emerald-600 animate-spin mb-4" />
-            <p className="text-gray-600">Searching with AI...</p>
+            <p className="text-slate-600">Searching with AI...</p>
           </div>
         )}
 
@@ -89,10 +89,10 @@ const SearchResults = () => {
               <Link
                 key={product.productId}
                 to={`/products/${product.productId}`}
-                className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100"
+                className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group border border-slate-100"
               >
                 {/* Product Image */}
-                <div className="relative h-48 bg-gray-100 overflow-hidden">
+                <div className="relative h-48 bg-slate-100 overflow-hidden">
                   {product.image ? (
                     <img
                       src={product.image}
@@ -100,7 +100,7 @@ const SearchResults = () => {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <div className="w-full h-full flex items-center justify-center text-slate-400">
                       No Image
                     </div>
                   )}
@@ -123,7 +123,7 @@ const SearchResults = () => {
 
                 {/* Product Info */}
                 <div className="p-4">
-                  <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                  <h3 className="font-semibold text-slate-900 mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
                     {product.title}
                   </h3>
 
@@ -137,7 +137,7 @@ const SearchResults = () => {
                           </span>
                         ))}
                       </div>
-                      <span className="text-xs text-gray-500 ml-2">
+                      <span className="text-xs text-slate-500 ml-2">
                         ({product.avgRating.toFixed(1)})
                       </span>
                     </div>
@@ -150,7 +150,7 @@ const SearchResults = () => {
                     </span>
                     {product.mrp > product.price && (
                       <>
-                        <span className="text-sm text-gray-400 line-through">
+                        <span className="text-sm text-slate-400 line-through">
                           Rs. {product.mrp}
                         </span>
                         <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">
@@ -159,13 +159,6 @@ const SearchResults = () => {
                       </>
                     )}
                   </div>
-
-                  {/* Relevance Score (Debug) */}
-                  {process.env.NODE_ENV === 'development' && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Search executed in {searchTime}ms
-                    </div>
-                  )}
                 </div>
               </Link>
             ))}
@@ -175,9 +168,9 @@ const SearchResults = () => {
         {/* No Results */}
         {!loading && results.length === 0 && query && (
           <div className="text-center py-20">
-            <SearchIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">No results found</h2>
-            <p className="text-gray-500 mb-6">
+            <SearchIcon className="h-16 w-16 text-slate-300 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-slate-700 mb-2">No results found</h2>
+            <p className="text-slate-500 mb-6">
               We couldn't find any products matching "{query}"
             </p>
             <Link

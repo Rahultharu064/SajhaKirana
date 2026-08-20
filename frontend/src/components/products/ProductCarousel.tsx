@@ -24,8 +24,8 @@ export const ProductCarousel: React.FC<ProductCarouselProps> = ({
         <section className="py-8">
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-                    {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+                    <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
+                    {subtitle && <p className="text-sm text-slate-500 mt-1">{subtitle}</p>}
                 </div>
                 {viewAllLink && (
                     <Link

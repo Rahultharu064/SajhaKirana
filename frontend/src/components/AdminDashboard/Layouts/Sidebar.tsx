@@ -9,17 +9,17 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
   const menu = [
-    { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin/dashboard", color: "from-blue-500 to-indigo-600" },
-    { name: "Products", icon: <Package size={20} />, path: "/admin/products", color: "from-purple-500 to-pink-600" },
-    { name: "Orders", icon: <ShoppingCart size={20} />, path: "/admin/orders", color: "from-emerald-500 to-teal-600" },
-    { name: "Users", icon: <Users size={20} />, path: "/admin/users", color: "from-orange-500 to-red-600" },
-    { name: "Customer Service", icon: <Headphones size={20} />, path: "/admin/customer-service", color: "from-cyan-500 to-blue-600" },
-    { name: "Reviews", icon: <MessageSquare size={20} />, path: "/admin/reviews", color: "from-yellow-500 to-orange-600" },
-    { name: "Inventory", icon: <Layers size={20} />, path: "/admin/inventory", color: "from-green-500 to-emerald-600" },
-    { name: "Categories", icon: <Tag size={20} />, path: "/admin/categories", color: "from-violet-500 to-purple-600" },
-    { name: "Coupons", icon: <Gift size={20} />, path: "/admin/coupons", color: "from-pink-500 to-rose-600" },
-    { name: "Promotions", icon: <Gift size={20} />, path: "/admin/promotions", color: "from-fuchsia-500 to-pink-600" },
-    { name: "Settings", icon: <Settings size={20} />, path: "/admin/settings", color: "from-gray-500 to-slate-600" },
+    { name: "Dashboard", icon: <LayoutDashboard size={20} />, path: "/admin/dashboard" },
+    { name: "Products", icon: <Package size={20} />, path: "/admin/products" },
+    { name: "Orders", icon: <ShoppingCart size={20} />, path: "/admin/orders" },
+    { name: "Users", icon: <Users size={20} />, path: "/admin/users" },
+    { name: "Customer Service", icon: <Headphones size={20} />, path: "/admin/customer-service" },
+    { name: "Reviews", icon: <MessageSquare size={20} />, path: "/admin/reviews" },
+    { name: "Inventory", icon: <Layers size={20} />, path: "/admin/inventory" },
+    { name: "Categories", icon: <Tag size={20} />, path: "/admin/categories" },
+    { name: "Coupons", icon: <Gift size={20} />, path: "/admin/coupons" },
+    { name: "Promotions", icon: <Gift size={20} />, path: "/admin/promotions" },
+    { name: "Settings", icon: <Settings size={20} />, path: "/admin/settings" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -61,8 +61,8 @@ export default function Sidebar() {
               className={`
                 group relative flex items-center gap-3 w-full px-4 py-3.5 rounded-xl
                 transition-all duration-200 ease-in-out
-                ${active 
-                  ? 'bg-gradient-to-r ' + item.color + ' text-white shadow-lg transform scale-[1.02]' 
+                ${active
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-900/30'
                   : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
                 }
                 ${collapsed ? 'justify-center' : ''}
@@ -73,12 +73,12 @@ export default function Sidebar() {
               {active && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
               )}
-              
+
               {/* Icon */}
               <div className={`flex-shrink-0 ${active ? 'text-white' : 'text-slate-400 group-hover:text-emerald-400'} transition-colors`}>
                 {item.icon}
               </div>
-              
+
               {/* Label */}
               {!collapsed && (
                 <span className="font-medium text-sm tracking-wide">
