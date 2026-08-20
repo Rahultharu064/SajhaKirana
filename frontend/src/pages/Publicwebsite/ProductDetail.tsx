@@ -332,6 +332,24 @@ export default function ProductDetail() {
       ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
       : 0;
 
+  const isNewArrival = product.createdAt
+    ? (Date.now() - new Date(product.createdAt).getTime()) < 14 * 24 * 60 * 60 * 1000
+    : false;
+
+  const handleShare = async () => {
+    const shareData = { title: product.title, text: product.title, url: window.location.href };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        // User cancelled the share sheet — no action needed
+      }
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success('Product link copied to clipboard');
+    }
+  };
+
   // Handle images array from backend
   const getImages = () => {
     if (!product) return [];
@@ -420,16 +438,18 @@ export default function ProductDetail() {
                     -{discountPercent}% OFF
                   </span>
                 )}
-                {/* New Arrival Badge Mockup */}
-                <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg w-max">
-                  NEW
-                </span>
+                {isNewArrival && (
+                  <span className="bg-sky-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg w-max">
+                    NEW
+                  </span>
+                )}
               </div>
 
               <div className="absolute top-4 right-4 z-10">
                 <button
                   type="button"
                   aria-label="Share"
+                  onClick={handleShare}
                   className="bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-sm hover:shadow-md transition-all text-slate-600 hover:text-primary-600"
                 >
                   <Share2 className="h-5 w-5" />
@@ -516,10 +536,6 @@ export default function ProductDetail() {
                   <a href="#reviews" className="text-sm font-medium text-slate-500 hover:text-primary-600 underline-offset-4 hover:underline">
                     {reviewStats ? reviewStats.total : 0} Review{reviewStats && reviewStats.total !== 1 ? 's' : ''}
                   </a>
-                  <span className="text-slate-400 text-sm">|</span>
-                  <span className="text-sm text-slate-500">
-                    {Math.floor(Math.random() * 500) + 100}k Sold
-                  </span>
                 </div>
 
                 {/* Star Distribution */}
@@ -797,16 +813,11 @@ export default function ProductDetail() {
                       productId={product.id}
                       editingReview={editingReview}
                       onReviewSubmit={async () => {
-                        console.log('ProductDetail: onReviewSubmit called');
                         setShowReviewForm(false);
                         setEditingReview(null);
                         if (product?.id) {
                           await fetchReviewStats(product.id);
-                          setReviewRefreshTrigger(prev => {
-                            const newValue = prev + 1;
-                            console.log('ProductDetail: reviewRefreshTrigger updated to:', newValue);
-                            return newValue;
-                          }); // Trigger review list refresh
+                          setReviewRefreshTrigger(prev => prev + 1); // Trigger review list refresh
                         }
                       }}
                       onReviewCancel={() => {

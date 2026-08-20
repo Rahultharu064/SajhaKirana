@@ -51,7 +51,6 @@ const MyOrders = () => {
         fetchOrders();
 
         const handleStatusUpdate = (data: any) => {
-            console.log("Socket Event in MyOrders:", data);
             setOrders(prevOrders => prevOrders.map(order =>
                 order.id === data.orderId
                     ? { ...order, orderStatus: data.status, paymentStatus: data.updatedOrder?.paymentStatus || order.paymentStatus }
