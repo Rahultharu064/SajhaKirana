@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, ShoppingCart, Trash2, X } from 'lucide-react';
+import { Heart, Eye, Trash2, X } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import Button from '../../components/ui/Button';
 import { wishlistService, type WishlistItem } from '../../services/wishlistService';
@@ -175,7 +175,7 @@ const Wishlist = () => {
                                                     className="flex-1 h-10 text-sm"
                                                     onClick={() => navigate(`/product/${item.product.slug}`)}
                                                 >
-                                                    <ShoppingCart className="w-4 h-4 mr-1" />
+                                                    <Eye className="w-4 h-4 mr-1" />
                                                     View
                                                 </Button>
                                                 <Button

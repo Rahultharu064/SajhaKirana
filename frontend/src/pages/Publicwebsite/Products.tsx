@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -55,6 +56,7 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({ page: 1, total: 0, pages: 1 });
   const [showFilters, setShowFilters] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [sortBy, setSortBy] = useState("newest");
   const [priceRange, setPriceRange] = useState([0, 10000]);
@@ -149,12 +151,21 @@ export default function ProductsPage() {
     }
   };
 
+  const handleSearchSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
   const hasActiveFilters =
     selectedCategories.length > 0 ||
     priceRange[0] > 0 ||
     priceRange[1] < 10000 ||
     inStockOnly ||
     minRating > 0;
+
+  const visibleProducts = products.filter((p) => p.rating >= minRating);
 
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
@@ -196,14 +207,18 @@ export default function ProductsPage() {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-4"
             >
-              <div className="relative group">
+              <form onSubmit={handleSearchSubmit} className="relative group">
                 <input
                   type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search Selection..."
                   className="h-14 pl-14 pr-6 rounded-2xl bg-white border-2 border-slate-100 focus:border-emerald-500/30 focus:outline-none w-full md:w-80 font-bold text-sm shadow-sm transition-all"
                 />
-                <Search size={20} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" />
-              </div>
+                <button type="submit" aria-label="Search" className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-600 transition-colors">
+                  <Search size={20} />
+                </button>
+              </form>
             </motion.div>
           </div>
         </div>
@@ -275,11 +290,11 @@ export default function ProductsPage() {
                 <h2 className="text-3xl font-black text-slate-900 mb-4">{error}</h2>
                 <button onClick={() => window.location.reload()} className="btn-premium px-10 py-4">RETRY CONNECTION</button>
               </div>
-            ) : products.length > 0 ? (
+            ) : visibleProducts.length > 0 ? (
               <>
                 <div className="grid-products">
                   <AnimatePresence mode="popLayout">
-                    {products.map((product) => (
+                    {visibleProducts.map((product) => (
                       <ProductCard
                         key={product.id}
                         product={product}
@@ -464,6 +479,29 @@ function FiltersPanel({
           />
           <span className="text-sm font-black text-slate-700 uppercase tracking-tight">Only Ready Selection</span>
         </label>
+      </div>
+
+      {/* Rating */}
+      <div className="glass p-8 rounded-[2.5rem] border-white/50 shadow-xl">
+        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400 mb-6 flex items-center gap-2">
+          <Star size={14} className="text-emerald-500" /> Minimum Rating
+        </h3>
+        <div className="flex flex-wrap gap-2">
+          {[4, 3, 2, 1].map((rating) => (
+            <button
+              key={rating}
+              onClick={() => setMinRating(minRating === rating ? 0 : rating)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-black transition-all border ${
+                minRating === rating
+                  ? "bg-emerald-600 border-emerald-600 text-white"
+                  : "bg-white border-slate-200 text-slate-600 hover:border-emerald-300"
+              }`}
+            >
+              <Star size={14} className={minRating === rating ? "fill-white" : "fill-amber-400 text-amber-400"} />
+              {rating}+
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Clear Filters */}
